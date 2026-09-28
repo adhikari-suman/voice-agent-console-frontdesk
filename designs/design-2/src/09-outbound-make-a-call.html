@@ -2,93 +2,66 @@
 <html lang="en-GB">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=1440">
-<title>Kiku · Make a call</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&display=block">
-<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
-<script src="../../_shared/data.js"></script>
+<title>Kiku, make a call</title>
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
 <script src="app.js"></script>
 <style>
-  .paths { flex: 1; min-height: 0; display: grid; grid-template-columns: 440px 56px 1fr; border-top: var(--rule); padding-top: 18px; }
-  .or { position: relative; display: flex; justify-content: center; }
-  .or::before { content: ""; position: absolute; top: 0; bottom: 20px; left: 50%; width: 1.5px; background: var(--ink); }
-  .or span { position: relative; margin-top: 180px; width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-weight: 700; font-size: 13px; }
-  .path { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
-  .path-head { display: flex; align-items: baseline; gap: 12px; padding-bottom: 8px; border-bottom: var(--rule); }
-  .path-head .aside { margin-left: auto; font-size: 12.5px; color: var(--moss); }
-  .textarea { min-height: 112px; font-size: 15px; }
-  .go { display: flex; gap: 12px; align-items: center; margin-top: 4px; }
-  .colchips { display: inline-flex; gap: 6px; align-items: center; }
-  .prev { table-layout: fixed; }
-  .prev td { padding: 7px 10px; font-size: 13px; line-height: 1.35; }
-  .prev .mono { font-size: 12px; }
-  .prev .rn { font: 500 12px var(--mono); color: var(--moss); }
-  .bad { background: var(--pink-35); padding: 1px 4px; }
-  .empty { color: var(--moss); font-size: 12.5px; }
-  .why td { background: var(--pink-15); padding-top: 0 !important; font-size: 12.5px; }
-  .tpl { display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: center; background: var(--paper-2); padding: 10px 12px; font-size: 13px; }
-  .tpl > i { font-size: 22px; }
-  .tpl .mono { font-size: 12px; }
-  .purpose-help { display: flex; gap: 8px; font-size: 12.5px; color: var(--moss); }
+  .content { display: flex; flex-direction: column; gap: 16px; }
+  .intro { display: flex; align-items: baseline; gap: 16px; flex: none; }
+  .intro p { color: var(--ink-soft); max-width: 80ch; }
+  .paths { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 36px 1.3fr; }
+  .purpose { font-size: 16px; line-height: 1.6; min-height: 180px; }
+  .count { font-size: 12px; color: var(--ink-mute); text-align: right; }
+  .brief { background: var(--kiku-tint); padding: 12px 14px; display: grid; grid-template-columns: 26px 1fr; gap: 12px; font-size: 13.5px; color: var(--ink-2); }
+  .prev .r { grid-template-columns: 36px 150px 120px 1fr; }
+  .prev .r .pp { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tpl { display: flex; gap: 10px; align-items: center; border: 1px dashed var(--line); padding: 10px 12px; font-size: 13px; color: var(--ink-soft); }
+  .tpl a { color: var(--kiku); font-weight: 700; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
 </style>
 </head>
 <body>
-<div id="app"></div>
 <script>
-(function () {
-  const { K, esc, ic, mis } = Kiku;
-  const S = K.makeCallSingle, C = K.makeCallCsv;
+  const { K, icon, mount, SHAPE } = UI;
+  const s = K.makeCallSingle, u = K.makeCallCsv;
+  const sm = (k) => SHAPE[k].replace("<svg", '<svg width="11" height="11"');
+  const prev = u.preview.map((r, i) => {
+    const gap = i > 0 && r.row - u.preview[i - 1].row > 1 ? `<div class="gap">Row ${u.preview[i - 1].row + 1} ready</div>` : "";
+    return gap + (r.ok
+      ? `<div class="r"><span class="faint num">${r.row}</span><span class="num">${r.phone}</span><span>${r.name || '<span class="faint">No name</span>'}</span><span class="pp" title="${r.purpose}">${r.purpose}</span></div>`
+      : `<div class="r bad"><span class="faint num">${r.row}</span><span class="err">${sm("failed")}${r.error}</span><span>${r.name}</span><span class="pp">${r.purpose}</span></div>`);
+  }).join("") + `<div class="gap">Rows 7–${u.rows} ready</div>`;
 
-  let prevHtml = "", prevRow = 0;
-  C.preview.forEach((r) => {
-    if (r.row - prevRow > 1) prevHtml += `<tr class="gap"><td></td><td colspan="4">${r.row - prevRow === 2 ? `Row ${prevRow + 1}` : `Rows ${prevRow + 1}–${r.row - 1}`} ready</td></tr>`;
-    prevRow = r.row;
-    const name = r.name ? esc(r.name) : `<span class="empty">no name given</span>`;
-    if (r.ok) {
-      prevHtml += `<tr><td class="rn">${r.row}</td><td class="mono">${esc(r.phone)}</td><td>${name}</td><td>${esc(r.purpose)}</td><td><span class="st st-done"><span class="st-mark">${ic("check")}</span><span>Ready</span></span></td></tr>`;
-    } else {
-      prevHtml += `<tr class="err"><td class="rn" style="color:var(--ink)">${r.row}</td><td class="mono"><span class="bad">empty</span></td><td>${name}</td><td>${esc(r.purpose)}</td><td><span class="st st-esc"><span class="st-mark">${ic("exclamation-mark")}</span><span>Error</span></span></td></tr>
-        <tr class="why err"><td></td><td colspan="4"><b>${esc(r.error)}.</b> Kiku needs a number to call. Add it to the file and upload again, or this row is skipped.</td></tr>`;
-    }
-  });
-  if (prevRow < C.rows) prevHtml += `<tr class="gap"><td></td><td colspan="4">Rows ${prevRow + 1}–${C.rows} ready</td></tr>`;
-
-  Kiku.shell({
-    role: "admin", active: "make", html: `
-    <header class="page-head">
-      ${mis("make a call")}
-      <span class="moss" style="padding-bottom:6px;font-size:14px">Tell Kiku who to ring and what the call is for</span>
-    </header>
+  mount({ role: "admin", active: "make", title: "Make a call", crumb: "Outbound" }, `
+    <div class="intro"><p>Tell Kiku why it's calling, in plain words. Every call appears in the call logs like any other.</p></div>
     <div class="paths">
-      <section class="path">
-        <div class="path-head"><h2 class="h2">one call</h2><span class="aside">Kiku rings as soon as you place it</span></div>
-        <div class="field"><label for="pp">purpose <span class="opt">what Kiku should do on the call</span></label>
-          <textarea id="pp" class="textarea" rows="4">${esc(S.purpose)}</textarea>
-          <span class="purpose-help">${ic("info")}<span>Write it the way you'd brief a colleague at the desk.</span></span></div>
-        <div class="field"><label for="nm">name <span class="opt">optional</span></label><input id="nm" class="input" value="${esc(S.name)}" placeholder="Who Kiku should ask for"></div>
-        <div class="field"><label for="ph">phone</label><input id="ph" class="input mono is-focus" value="${esc(S.phone)}"></div>
-        <div class="go"><button class="btn pink big">${ic("phone-outgoing")}place call</button></div>
+      <section class="pane">
+        <div class="pane-head"><span class="path">1</span><span class="t">One call</span></div>
+        <div class="pane-body">
+          <div class="field"><label>What's the call for?</label><textarea class="input purpose" rows="4">${s.purpose}</textarea><span class="count">${s.purpose.length} characters</span></div>
+          <div class="field"><label>Name <em>optional</em></label><div class="input">${s.name}</div><span class="hint">Leave it blank if you don't know it.</span></div>
+          <div class="field"><label>Phone</label><div class="input num">${s.phone}</div></div>
+        </div>
+        <div class="pane-foot"><span class="small faint">From the hotel line ${K.hotel.line}</span><span style="flex:1"></span><button class="btn ink">${icon("call")}Place call</button></div>
       </section>
-      <div class="or" aria-hidden="true"><span>or</span></div>
-      <section class="path">
-        <div class="path-head"><h2 class="h2">a list of calls</h2><span class="aside colchips">CSV columns ${C.columns.map((c) => `<span class="tag mono">${esc(c)}</span>`).join("")}</span></div>
-        <div class="slip">${ic("file-csv")}<div><div class="slip-name">${esc(C.file)}</div><div class="slip-meta">${esc(C.size)} · ${C.rows} rows</div></div>
-          <div class="counts-line" style="margin-left:auto"><span class="st st-done"><span class="st-mark">${ic("check")}</span><span><b>${C.ready}</b> ready</span></span><span class="st st-esc"><span class="st-mark">${ic("exclamation-mark")}</span><span><b>${C.errors}</b> error</span></span></div>
-          <a class="link" href="#" style="margin-left:14px">replace</a></div>
-        <table class="ruled prev">
-          <colgroup><col style="width:48px"><col style="width:158px"><col style="width:130px"><col><col style="width:104px"></colgroup>
-          <thead><tr><th>row</th><th>phone</th><th>name</th><th>purpose</th><th>check</th></tr></thead>
-          <tbody>${prevHtml}</tbody>
-        </table>
-        <div class="tpl">${ic("download-simple")}<span>Start from the template: one call per row, with <span class="mono">phone</span>, an optional <span class="mono">name</span> and a <span class="mono">purpose</span>.</span><a class="link" href="#">download template</a></div>
-        <div class="go"><button class="btn pink big">${ic("phone-outgoing")}start ${C.ready} calls</button><span class="hint">The row with an error is skipped.</span></div>
+      <div class="or">or</div>
+      <section class="pane">
+        <div class="pane-head"><span class="path">2</span><span class="t">Many calls from a file</span><span style="flex:1"></span><span class="cols">Columns ${u.columns.map(c => `<span class="col-chip">${c}</span>`).join("")}</span></div>
+        <div class="pane-body">
+          <div class="filecard"><span class="fic">${icon("file")}</span>
+            <div><div class="fname">${u.file} <span class="faint" style="font-weight:400">${u.size}, ${u.rows} rows</span></div>
+              <div class="qbar"><span style="width:${u.ready / u.rows * 100}%;background:var(--ok)"></span><span style="width:${u.errors / u.rows * 100}%;background:var(--fail)"></span></div>
+              <div class="qlegend"><span style="color:var(--ok)">${sm("completed")}<b class="num">${u.ready}</b>&nbsp;ready</span><span style="color:var(--fail)">${sm("failed")}<b class="num">${u.errors}</b>&nbsp;error, will be skipped</span></div></div>
+            <button class="btn sm">${icon("upload")}Replace</button></div>
+          <div class="prev scroll">
+            <div class="r h"><span>Row</span><span>Phone</span><span>Name</span><span>Purpose</span></div>
+            ${prev}
+          </div>
+          <div class="tpl">${icon("file")}<span>Start from the template: one row per call, name can be left blank.</span><span style="flex:1"></span><a href="#">${icon("download")}Download template CSV</a></div>
+        </div>
+        <div class="pane-foot"><span class="small faint">Each row is a separate call with its own purpose.</span><span style="flex:1"></span><button class="btn ink">${icon("call")}Place ${u.ready} calls</button></div>
       </section>
-    </div>`
-  });
-})();
+    </div>`);
 </script>
 </body>
 </html>

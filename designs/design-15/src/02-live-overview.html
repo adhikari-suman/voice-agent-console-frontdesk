@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Live board</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .page { display: grid; grid-template-rows: auto 1fr; gap: 18px; }
+  .today { font-size: 17px; line-height: 1.6; color: var(--ink-2); max-width: 1060px; }
+  .today b { color: var(--ink); font-weight: 700; }
+  .cols { display: grid; grid-template-columns: minmax(0,1fr) 336px; gap: 18px; min-height: 0; }
+  .col { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  .sec-h { display: flex; align-items: baseline; gap: 10px; }
+  .needs { border: 1.5px solid #e2b98f; background: #fffaf4; border-radius: 12px; padding: 22px 24px; display: grid; grid-template-columns: 1fr auto; gap: 14px 24px; }
+  .needs h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .needs .purpose { font-size: 15px; margin-top: 4px; }
+  .needs .reason { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--esc); font-weight: 600; margin-top: 10px; }
+  .wait { text-align: right; display: grid; gap: 10px; justify-items: end; align-content: start; }
+  .wait .clock2 { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; color: var(--esc); }
+  .wait .clock2 small { display: block; font-size: 12px; color: var(--ink-3); font-weight: 500; letter-spacing: 0; margin-top: 4px; }
+  .live-list { display: grid; }
+  .lc { display: grid; grid-template-columns: 132px minmax(0,1fr) 112px 44px 164px; gap: 16px; align-items: center; padding: 19px 18px; border-bottom: 1px solid var(--line-2); }
+  .lc:last-child { border-bottom: 0; }
+  .lc.mine { background: #fbfde9; }
+  .lanes { display: grid; gap: 3px; transform: skewX(var(--skew)); }
+  .lanes i { display: block; height: 7px; border-radius: 1px; }
+  .lanes .k.on { background: var(--teal); }
+  .lanes .k.off { border: 1.5px solid var(--teal); }
+  .lanes .h.on { background: var(--lime); border: 1px solid #8fb300; }
+  .lanes .h.ear { border: 1.5px dashed #8fb300; }
+  .lanes .h.none { background: var(--line-2); }
+  .who-on { font-size: 12.5px; font-weight: 600; }
+  .fin { padding: 4px 18px; }
+  .f { display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; padding: 11px 0; border-bottom: 1px solid var(--line-2); }
+  .f:last-child { border-bottom: 0; }
+  .f .o { grid-column: 1 / -1; font-size: 12.5px; color: var(--ink-2); }
+</style>
+</head>
+<body data-role="specialist">
+<div class="app">
+  <aside class="rail" id="rail"></aside>
+  <main class="main">
+    <header class="top" id="top"></header>
+    <div class="page" id="page"></div>
+  </main>
+</div>
+<script>
+$("#rail").innerHTML = rail("specialist", "live");
+$("#top").innerHTML = topbar("Live board");
+const S = K.stats;
+const owen = K.calls.find(c => c.guest === "Owen Pritchard");
+const live = K.calls.filter(c => (c.status === "in_progress" || c.status === "escalated") && c !== owen);
+const finished = K.calls.filter(c => c.status === "completed" || c.status === "failed");
+
+function presence(c) {
+  if (c.status === "escalated" && c.specialist) return { k: "off", h: "on", t: "You're speaking", sub: "Kiku writing lines" };
+  if (c.specialist && c.specialist.includes("listening")) return { k: "on", h: "ear", t: "You're listening", sub: "Kiku speaking" };
+  return { k: "on", h: "none", t: "Kiku alone", sub: "No one listening" };
+}
+function action(c) {
+  if (c.status === "escalated" && c.specialist) return `<a class="btn sm human" href="06-takeover-karaoke.html">${ic("mic")}Back to call</a>`;
+  if (c.specialist) return `<a class="btn sm ink" href="05-live-call-listening.html">${ic("headphones")}Open</a>`;
+  return `<span class="row" style="gap:6px"><button class="btn sm">${ic("headphones")}Listen</button><button class="btn sm">${ic("log-in")}Join</button></span>`;
+}
+
+$("#page").innerHTML = `
+<p class="today"><b>${S.callsToday} calls</b> so far today, ${S.inbound} inbound and ${S.outbound} outbound. <b>${S.completed}</b> completed, <b>${S.inProgress}</b> in progress, <b>${S.escalated}</b> escalated and <b>${S.failed}</b> failed. Specialists took over <b>${S.takeoversToday}</b> times, calls averaged <b>${S.avgHandle}</b>, and upsells added <b>${S.upsellValueToday}</b>.</p>
+<div class="cols">
+  <div class="col">
+    <div class="sec-h"><span class="h2">Needs a specialist</span><span class="small muted">Kiku has handed this call over and is holding the line</span></div>
+    <section class="needs">
+      <div>
+        <div class="row" style="gap:12px">${statusTag("escalated")}<span class="id">${owen.id}</span>${dirTag(owen.direction)}<span class="small dim">${owen.phone}</span></div>
+        <h2 style="margin-top:8px">${esc(owen.guest)}</h2>
+        <p class="purpose">${esc(owen.purpose)}</p>
+        <p class="reason">${ic("credit-card")}${esc(owen.escalationReason)}</p>
+      </div>
+      <div class="wait">
+        <div class="clock2">${owen.waiting}<small>waiting for you, ${owen.duration} on call</small></div>
+        <button class="btn human lg">${ic("mic")}Take over</button>
+        <button class="btn sm ghost">${ic("headphones")}Listen first</button>
+      </div>
+    </section>
+    <div class="sec-h" style="margin-top:6px"><span class="h2">On the line now</span><span class="small muted">${live.length} calls</span></div>
+    <section class="card live-list">
+      ${live.map(c => { const p = presence(c); return `
+      <div class="lc ${c.specialist ? "mine" : ""}">
+        <div class="row" style="gap:10px"><span class="lanes" style="width:24px;flex:none"><i class="k ${p.k}"></i><i class="h ${p.h}"></i></span><div><div class="who-on">${p.t}</div><div class="xs muted">${p.sub}</div></div></div>
+        <div style="min-width:0"><div style="font-weight:600">${esc(c.guest)} <span class="id" style="margin-left:4px">${c.id}</span></div><div class="small dim ell" title="${esc(c.purpose)}">${esc(c.purpose)}</div></div>
+        <div style="display:grid;gap:2px">${statusTag(c.status)}<span class="xs muted">${c.direction === "inbound" ? "Inbound" : "Out · " + c.type}</span></div>
+        <div style="font-weight:600">${c.duration}</div>
+        <div style="justify-self:end">${action(c)}</div>
+      </div>`; }).join("")}
+    </section>
+    <p class="note row" style="gap:14px"><span class="row" style="gap:6px"><span class="lanes" style="display:inline-grid"><i class="k on" style="width:16px"></i><i class="h none" style="width:16px"></i></span>Upper bar: Kiku. Lower bar: a person.</span><span>Solid means speaking, dashed means listening.</span></p>
+  </div>
+  <div class="col">
+    <div class="sec-h"><span class="h2">Recently finished</span><a href="03-call-logs.html" class="small" style="margin-left:auto;color:var(--teal);font-weight:600;text-decoration:none">All call logs</a></div>
+    <section class="card fin scroll fade">
+      ${finished.map(c => `<div class="f"><span style="font-weight:600">${esc(c.guest)} <span class="id">${c.started}</span></span>${statusTag(c.status)}<span class="o">${esc(c.outcome || c.purpose)}</span></div>`).join("")}
+    </section>
+  </div>
+</div>`;
+boot();
+</script>
+</body>
+</html>

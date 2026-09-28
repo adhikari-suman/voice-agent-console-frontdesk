@@ -2,106 +2,88 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kiku · Make a call</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,300..800;1,400..500&display=block">
-<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Shippori+Mincho+B1:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="styles.css">
-<script src="app.js"></script>
 <style>
-  .body { padding: var(--s21); display: flex; flex-direction: column; gap: var(--s13); flex: 1; min-height: 0; }
-  .cols { display: inline-flex; gap: var(--s5); align-items: center; }
-  .cols code { font: 500 var(--f13)/1 var(--font); padding: var(--s3) var(--s5); border-radius: 5px; background: var(--surface-2); color: var(--text); }
-  .tbl-wrap { border: 1px solid var(--line); border-radius: var(--r-ctl); overflow: hidden; }
-  .tbl td.purpose { white-space: normal; }
-  .tbl td:last-child { white-space: nowrap; }
-  .tbl .fix { color: var(--text-2); display: block; }
-  .more { padding: var(--s8) var(--s21); font-size: var(--f13); line-height: 21px; color: var(--text-2); border-top: 1px solid var(--line); display: flex; align-items: center; gap: var(--s8); }
-  .template { display: flex; align-items: center; gap: var(--s13); padding: var(--s8) var(--s13); border-radius: var(--r-ctl); border: 1px dashed var(--line-2); font-size: var(--f13); line-height: 21px; color: var(--text-2); }
-  .template .ic { color: var(--gold); }
-  .template .grow { flex: 1; }
-  .foot { margin-top: auto; display: flex; align-items: center; gap: var(--s13); padding-top: var(--s13); }
-
-  .single { padding: 0 var(--s21) var(--s21); display: flex; flex-direction: column; gap: var(--s21); flex: 1; min-height: 0; }
-  .single .textarea { min-height: 144px; }
-  .single .btn.block { margin-top: auto; }
+  .wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; padding: 18px 28px 18px; }
+  .ttl { display: flex; align-items: baseline; gap: 12px; }
+  .ttl h1 { font-size: 26px; }
+  .paths { flex: 1; min-height: 0; display: grid; grid-template-columns: 470px minmax(0,1fr); gap: 18px; }
+  .path { min-height: 0; display: flex; flex-direction: column; }
+  .ph2 { padding: 14px 20px 12px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+  .ph2 .pl { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+  .ph2 h2 { font-size: 16px; font-weight: 700; }
+  .pbody { flex: 1; min-height: 0; padding: 16px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .purpose { min-height: 150px; font-size: 15px; line-height: 1.6; }
+  .brief { border-left: 3px solid var(--kiku); padding: 10px 14px; background: var(--kiku-wash); font-size: 13px; color: var(--ink-2); }
+  .brief b { color: #3E5516; }
+  .pfoot { padding: 14px 20px; border-top: 1px solid var(--line); background: var(--paper-2); display: flex; align-items: center; gap: 10px; }
+  .pfoot .meta { margin-right: auto; }
+  .prev { border: 1px solid var(--line); border-radius: 3px; background: #fff; overflow: hidden; }
+  .prev table.grid th { padding-top: 10px; font-size: 11.5px; background: var(--paper-2); }
+  .prev table.grid td { padding: 13px 12px; font-size: 13px; vertical-align: top; }
+  .prev .rn { color: var(--ink-3); font-variant-numeric: tabular-nums; width: 48px; }
+  .prev .nm .none { color: var(--ink-3); font-style: italic; }
+  .skip { font-size: 12px; color: var(--ink-3); padding: 6px 12px; background: var(--paper-2); text-align: center; }
+  .recent { margin-top: auto; border-top: 1px solid var(--line); padding-top: 12px; }
+  .rc { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: start; padding: 8px 0; border-bottom: 1px solid var(--line-2); font-size: 13px; }
+  .rc:last-child { border-bottom: 0; }
+  .tpl { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: 3px; font-size: 13px; }
+  .tpl .meta { flex: 1; }
 </style>
 </head>
 <body>
+<div class="app">
+  <div id="shell"></div>
+  <main class="main">
+    <section class="wrap">
+      <div class="ttl"><h1 class="h-serif">Make a call</h1><span class="meta">Tell Kiku who to ring and why. It places the call and handles the conversation.</span></div>
+      <div class="paths">
+        <section class="panel path" id="single"></section>
+        <section class="panel path" id="csv"></section>
+      </div>
+    </section>
+  </main>
+</div>
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
 <script>
-  const { K, esc, ic, shell, outboundTabs } = Kiku;
-  const S = K.makeCallSingle;
-  const C = K.makeCallCsv;
-  const fixes = { 'Phone number missing': 'Add a number with country code, or remove the row, then upload again.' };
+const { K, esc } = TT;
+TT.shell({ role: "admin", active: "09-outbound-make-a-call.html" });
+const m = K.makeCallSingle;
+document.getElementById("single").innerHTML = `
+  <div class="ph2"><span class="pl">A</span><h2>One call</h2><span class="meta" style="margin-left:auto">Kiku calls straight away</span></div>
+  <div class="pbody">
+    <div class="field"><label>What is the call for?</label><div class="input area focus purpose">${esc(m.purpose)}</div>
+      <span class="meta">Write it the way you'd brief a colleague. Kiku works from this.</span></div>
+    <div class="field"><label>Guest name <span class="opt">Optional</span></label><div class="input"><i data-lucide="user-round" style="color:var(--ink-3)"></i>${m.name}</div></div>
+    <div class="field"><label>Phone number</label><div class="input"><i data-lucide="phone" style="color:var(--ink-3)"></i><span class="num">${m.phone}</span></div></div>
+    <div class="recent"><div class="sec-title" style="font-size:13px;margin-bottom:4px">Earlier today <span class="aside">Calls placed from this page</span></div>
+      ${K.calls.filter(x => x.type === "Make a call").map(x => `<div class="rc"><span class="meta num">${x.started}</span><div><b>${x.guest}</b><div class="meta">${esc(x.outcome || x.purpose)}</div></div>${TT.status(x.status)}</div>`).join("")}
+    </div>
+  </div>
+  <div class="pfoot"><span class="meta">Calling ${m.name.split(" ")[0]} on ${m.phone}</span><button class="btn human"><i data-lucide="phone-outgoing"></i>Place call</button></div>`;
 
-  const row = (r) => {
-    const name = r.name ? esc(r.name) : '<span class="none">No name given</span>';
-    if (r.ok) return `<tr><td class="rn">${r.row}</td><td style="white-space:nowrap">${esc(r.phone)}</td><td style="white-space:nowrap">${name}</td><td class="purpose">${esc(r.purpose)}</td><td><span class="ok">${ic('circle-check', 'ic-13')}Ready</span></td></tr>`;
-    return `<tr class="err"><td class="rn">${r.row}</td><td>${r.phone ? esc(r.phone) : '<span class="missing">Missing</span>'}</td><td style="white-space:nowrap">${name}</td><td class="purpose">${esc(r.purpose)}</td>
-      <td><span class="err-msg">${ic('circle-alert', 'ic-13')}<span>${esc(r.error)}</span></span></td></tr>
-      <tr class="err"><td></td><td colspan="4" style="padding-top:0"><span class="fix">${fixes[r.error] || ''}</span></td></tr>`;
-  };
-
-  shell({
-    role: 'admin', active: 'outbound', title: 'Outbound',
-    sub: 'Calls Kiku places from the hotel',
-    titleExtra: `<span style="margin-left:21px">${outboundTabs('make')}</span>`,
-    content: `
-    <div class="split">
-      <section class="panel" aria-label="Calls from a file">
-        <div class="panel-head ruled"><h2 class="lg">Upload a list of calls</h2><span class="t13 muted">One call per row</span></div>
-        <div class="body">
-          <div class="template">${ic('file-down')}<span class="grow">Start from the template. Columns: <span class="cols">${C.columns.map((c) => `<code>${c}</code>`).join('')}</span></span><a class="link" href="#">Download template</a></div>
-          <div class="drop">
-            <span class="file-ic">${ic('file-spreadsheet')}</span>
-            <div class="grow">
-              <p class="fname">${esc(C.file)}</p>
-              <p class="fmeta">${C.size} · ${C.rows} rows</p>
-            </div>
-            <div class="tally" style="gap:13px">
-              <span class="k leaf">${ic('circle-check')}<b>${C.ready}</b> ready</span>
-              <span class="k pink">${ic('circle-alert')}<b>${C.errors}</b> needs fixing</span>
-            </div>
-            <button class="btn">${ic('replace')}Replace file</button>
-          </div>
-          <div class="tbl-wrap">
-            <table class="tbl">
-              <thead><tr><th>Row</th><th>Phone</th><th>Name</th><th>Purpose</th><th>Check</th></tr></thead>
-              <tbody>${C.preview.map(row).join('')}</tbody>
-            </table>
-            <p class="more">${ic('rows-3', 'ic-13')}${C.rows - C.preview.length} more rows, all ready.</p>
-          </div>
-          <div class="foot">
-            <button class="btn primary lg">${ic('phone-outgoing')}Place ${C.ready} calls</button>
-            <p class="help">Row 6 is skipped until it has a phone number. The name column is optional, so row 2 is fine as it is.</p>
-          </div>
-        </div>
-      </section>
-      <section class="panel" aria-label="Make one call">
-        <div class="panel-head"><h2 class="lg">Make one call</h2></div>
-        <div class="single">
-          <div class="field">
-            <label class="label" for="pp">Purpose <span class="opt">what the call is for</span></label>
-            <textarea class="textarea" id="pp" rows="5">${esc(S.purpose)}</textarea>
-            <p class="help">Write it the way you’d brief a colleague. Kiku works from this.</p>
-          </div>
-          <div class="field">
-            <label class="label" for="nm">Name <span class="opt">optional</span></label>
-            <input class="input lg-text" id="nm" value="${esc(S.name)}">
-          </div>
-          <div class="field">
-            <label class="label" for="ph">Phone</label>
-            <input class="input lg-text is-focus" id="ph" value="${esc(S.phone)}">
-          </div>
-          <button class="btn primary lg block">${ic('phone-outgoing')}Place call</button>
-        </div>
-      </section>
-    </div>`,
-  });
-  Kiku.done();
+const c = K.makeCallCsv;
+const ok = c.preview.filter(r => r.ok), bad = c.preview.filter(r => !r.ok);
+const row = r => `<tr class="${r.ok ? "" : "err"}"><td class="rn">${r.row}</td><td class="num" style="white-space:nowrap">${r.phone || '<span class="missing">Missing</span>'}</td><td class="nm">${r.name || '<span class="none">No name</span>'}</td><td>${r.ok ? esc(r.purpose) : `${esc(r.purpose)}<div class="rowerr" style="margin-top:4px;display:flex"><i data-lucide="circle-alert" style="width:14px;height:14px"></i>${r.error}</div>`}</td></tr>`;
+document.getElementById("csv").innerHTML = `
+  <div class="ph2"><span class="pl">B</span><h2>Many calls from a CSV</h2><span class="meta" style="margin-left:auto">Columns</span><span class="cols">${c.columns.map(x => `<code>${x}</code>`).join("")}</span></div>
+  <div class="pbody">
+    <div class="filechip"><span class="ic">CSV</span><div><div class="name">${c.file}</div><div class="meta">${c.size}, ${c.rows} rows</div></div>
+      <div class="tally" style="margin-left:auto"><span class="ok"><i data-lucide="circle-check"></i>${c.ready} ready</span><span class="bad"><i data-lucide="circle-alert"></i>${c.errors} error</span><button class="btn sm ghost"><i data-lucide="refresh-cw"></i>Replace file</button></div></div>
+    <div class="prev">
+      <table class="grid"><thead><tr><th>Row</th><th>Phone</th><th>Name</th><th>What the call is for</th></tr></thead>
+      <tbody>${ok.map(row).join("")}<tr><td colspan="4" class="skip">${c.ready - ok.length} more ready rows</td></tr>${bad.map(row).join("")}</tbody></table>
+    </div>
+    <div class="tpl"><i data-lucide="file-down" style="color:var(--ink-2)"></i><span class="meta">Start from the template so the columns match: phone, name (optional), purpose. One call per row.</span><button class="btn sm"><i data-lucide="download"></i>Download template</button></div>
+  </div>
+  <div class="pfoot"><span class="meta">Row ${bad[0].row} will be skipped until it has a phone number</span><button class="btn human"><i data-lucide="phone-outgoing"></i>Place ${c.ready} calls</button></div>`;
+TT.icons();
 </script>
 </body>
 </html>

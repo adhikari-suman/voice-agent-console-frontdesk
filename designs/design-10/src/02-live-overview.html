@@ -2,141 +2,141 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kiku · Live board</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,300..800;1,400..500&display=block">
-<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Shippori+Mincho+B1:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="styles.css">
-<script src="app.js"></script>
 <style>
-  .chart-wrap { position: relative; flex: 1; min-height: 0; }
-  .chart-wrap .phyllo { position: absolute; inset: var(--s8) var(--s21) var(--s8); }
-  .chart-key { position: absolute; left: var(--s21); top: var(--s13); width: 233px; z-index: 1; }
-  .chart-key h2 { font: 600 var(--f21)/34px var(--font); letter-spacing: -0.01em; }
-  .chart-key p { font-size: var(--f13); line-height: 21px; color: var(--text-2); margin-top: var(--s3); }
-  .totals { padding: var(--s13) var(--s21); border-top: 1px solid var(--line); font-size: var(--f13); line-height: 21px; color: var(--text-2); }
-  .totals b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
-  .totals .status { vertical-align: top; }
+  .board { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0,1fr) 380px; gap: 24px; padding: 18px 28px 0; }
+  .left { min-height: 0; display: flex; flex-direction: column; gap: 14px; padding-bottom: 18px; }
+  .ttl { display: flex; align-items: baseline; gap: 14px; }
+  .ttl h1 { font-size: 26px; }
 
-  .q-hot { background: var(--pink-wash); border-top: 1px solid rgba(255, 111, 158, 0.35); border-bottom: 1px solid rgba(255, 111, 158, 0.35); padding: var(--s13) var(--s21) var(--s21); display: flex; flex-direction: column; gap: var(--s8); }
-  .q-top { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s13); }
-  .q-meta { display: flex; align-items: center; gap: var(--s8); font-size: var(--f13); line-height: 21px; color: var(--text-2); }
-  .q-name { font: 650 var(--f21)/34px var(--font); letter-spacing: -0.01em; }
-  .q-wait { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
-  .q-wait span { font-size: var(--f13); line-height: 21px; color: var(--pink); }
-  .q-wait b { font: 600 var(--f34)/1 var(--font); color: var(--pink); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
-  .q-purpose { font-size: var(--f16); line-height: 1.5; }
-  .q-reason { display: flex; align-items: center; gap: var(--s8); font-size: var(--f13); line-height: 21px; color: var(--text); }
-  .q-reason .ic { color: var(--pink); }
-  .q-actions { display: flex; gap: var(--s8); margin-top: var(--s5); }
-  .q-actions .primary { flex: 1.618; }
-  .q-actions .btn:not(.primary) { flex: 1; }
-  .q-mine { padding: var(--s13) var(--s21); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s3) var(--s13); align-items: center; }
-  .q-mine .nm { font: 600 var(--f16)/21px var(--font); display: flex; align-items: baseline; gap: var(--s8); }
-  .q-mine .sub { font-size: var(--f13); line-height: 21px; color: var(--text-2); }
+  .needs { position: relative; background: var(--sheet); border: 1px solid #DCC08F; border-radius: 4px; display: grid; grid-template-columns: 196px 1fr auto; overflow: hidden; }
+  .wait { padding: 20px 20px 20px 24px; background: var(--esc-soft); display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+  .wait .lbl { font-size: 12.5px; font-weight: 700; color: #6B4206; }
+  .wait .clock { font-family: var(--serif); font-weight: 800; font-size: 46px; line-height: 1; color: #4A2F05; font-variant-numeric: tabular-nums; }
+  .wait .sub { font-size: 12px; color: #6B4206; }
+  .needs .body { padding: 18px 22px; display: flex; flex-direction: column; gap: 6px; }
+  .needs .top { display: flex; align-items: center; gap: 12px; }
+  .needs .top .tag { font-size: 12.5px; font-weight: 700; color: #6B4206; }
+  .needs h2 { font-family: var(--serif); font-size: 26px; font-weight: 700; line-height: 1.15; }
+  .needs .purpose { font-size: 15px; }
+  .needs .reason { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink-2); margin-top: 2px; }
+  .needs .acts { padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; justify-content: center; border-left: 1px solid var(--line-2); min-width: 220px; }
 
-  .rows .row { display: grid; align-items: center; column-gap: var(--s13); padding: var(--s5) var(--s21); min-height: var(--row); border-top: 1px solid var(--line); }
-  .rows .row:hover { background: rgba(32, 36, 74, 0.6); }
-  .rows .l1 { display: flex; align-items: baseline; gap: var(--s8); font-size: var(--f13); line-height: 21px; min-width: 0; }
-  .rows .l1 b { font-weight: 600; white-space: nowrap; }
-  .rows .l2 { font-size: var(--f13); line-height: 21px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .live-row { grid-template-columns: minmax(0, 1fr) auto; }
-  .fin-row { grid-template-columns: 44px minmax(0, 1fr) 104px 44px 16px; }
-  .fin-row .tm, .fin-row .du { font-size: var(--f13); color: var(--text-2); font-variant-numeric: tabular-nums; }
-  .fin-row .du { color: var(--text); text-align: right; }
-  .fin-row > .ic { color: var(--text-2); }
+  .livelist { flex: none; display: flex; flex-direction: column; }
+  .lhead { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px 10px; border-bottom: 1px solid var(--line); }
+  .lrow { display: grid; grid-template-columns: 180px minmax(0,1fr) 62px 142px 168px; gap: 16px; align-items: center; padding: 10px 18px; border-bottom: 1px solid var(--line-2); }
+  .lrow:last-child { border-bottom: 0; }
+  .lrow.mine { background: var(--human-wash); }
+  .g b { display: block; font-weight: 700; }
+  .g span { font-size: 12.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .p { font-size: 13.5px; }
+  .p .ty { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+  .dur { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .dur small { display: block; font-weight: 400; color: var(--ink-3); font-size: 11.5px; }
+  .onit { display: flex; align-items: center; gap: 10px; font-size: 12.5px; line-height: 1.3; }
+  .oi { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--kiku-wash); color: var(--kiku); }
+  .oi.mic { background: var(--human); color: #fff; } .oi.headphones { background: var(--human-soft); color: var(--human-deep); }
+  .oi svg { width: 15px; height: 15px; }
+  .acts2 { display: flex; gap: 8px; justify-content: flex-end; }
+  .you { font-size: 11.5px; font-weight: 700; color: var(--human); }
+
+  .right { min-height: 0; display: flex; flex-direction: column; gap: 14px; padding-bottom: 18px; padding-top: 0; }
+  .today { padding: 14px 20px 16px; flex: 1; min-height: 0; }
+  .today p { font-size: 17px; line-height: 1.75; max-width: 900px; color: var(--ink-2); margin-top: 8px; }
+  .today p b { font-family: var(--serif); font-weight: 800; font-size: 22px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .today p .k { color: var(--kiku); } .today p .h { color: var(--human); }
+  .recent { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .recent .lhead { padding: 14px 20px 10px; }
+  .rlist { flex: 1; min-height: 0; padding: 0 20px 10px; }
+  .rrow { display: grid; grid-template-columns: 42px 1fr; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--line-2); }
+  .rrow .t { font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; padding-top: 2px; }
+  .rrow .n { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+  .rrow .n b { font-weight: 700; }
+  .rrow .o { font-size: 12.5px; color: var(--ink-2); margin-top: 2px; }
+  .rrow .o .sp { color: var(--human); font-weight: 500; }
 </style>
 </head>
 <body>
+<div class="app">
+  <div id="shell"></div>
+  <main class="main">
+    <section class="board">
+      <div class="left">
+        <div class="ttl"><h1 class="h-serif">On the line now</h1><span class="meta" id="count"></span></div>
+        <div class="needs" id="needs"></div>
+        <div class="panel livelist">
+          <div class="lhead"><div class="sec-title">Also live <span class="aside">Who is speaking on each call</span></div></div>
+          <div id="live"></div>
+        </div>
+        <div class="panel today" id="today"></div>
+      </div>
+      <aside class="right">
+        <div class="panel recent">
+          <div class="lhead"><div class="sec-title">Recently finished</div><a class="meta" href="03-call-logs.html" style="color:var(--human);font-weight:700;text-decoration:none">All call logs</a></div>
+          <div class="rlist scroll fade-end" id="recent"></div>
+        </div>
+      </aside>
+    </section>
+  </main>
+</div>
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
 <script>
-  const { K, esc, ic, status, direction, shell } = Kiku;
-  const waiting = K.calls.find((c) => c.status === 'escalated' && !c.specialist);
-  const mine = K.calls.find((c) => c.status === 'escalated' && c.specialist);
-  const live = K.calls.filter((c) => c.status === 'in_progress');
-  const finished = K.calls.filter((c) => c.status === 'completed' || c.status === 'failed');
-  const s = K.stats;
-  const liveCount = live.length + K.calls.filter((c) => c.status === 'escalated').length;
+const { K, esc, status } = TT;
+TT.shell({ role: "specialist", active: "02-live-overview.html" });
+const live = K.calls.filter(c => c.status === "in_progress" || c.status === "escalated");
+const owen = live.find(c => c.status === "escalated" && !c.specialist);
+document.getElementById("count").textContent = `${live.length} calls live at ${K.hotel.now}. One is waiting for a person.`;
 
-  const kind = (c) => (c.direction === 'outbound' ? `Outbound · ${c.type}${c.promo ? ' ' + c.promo : ''}` : 'Inbound');
+document.getElementById("needs").innerHTML = `
+  <div class="wait"><span class="lbl">Waiting for a specialist</span><span class="clock">${owen.waiting}</span><span class="sub">Kiku is holding the guest</span></div>
+  <div class="body">
+    <div class="top">${status(owen.status, true)}<span class="tag">Needs a specialist</span><span class="meta num">${owen.id}, started ${owen.started}</span></div>
+    <h2>${owen.guest}</h2>
+    <div class="purpose">${owen.purpose}</div>
+    <div class="reason"><i data-lucide="shield-alert" style="color:var(--esc)"></i>${owen.escalationReason}</div>
+    <div class="meta num" style="display:flex;gap:6px;align-items:center"><i data-lucide="phone-incoming" style="width:14px;height:14px"></i>Inbound from ${owen.phone}</div>
+  </div>
+  <div class="acts">
+    <a class="btn lg human" href="06-takeover-karaoke.html"><i data-lucide="mic"></i>Take over</a>
+    <button class="btn"><i data-lucide="headphones"></i>Listen first</button>
+    <span class="meta" style="text-align:center">You'll speak with Kiku's script</span>
+  </div>`;
 
-  const liveRow = (c) => {
-    const listening = String(c.specialist || '').includes('listening');
-    return `<div class="row live-row" data-item>
-      <div style="min-width:0">
-        <div class="l1"><b>${esc(c.guest)}</b>${status(c.status)}<span class="num muted">${c.duration}</span></div>
-        <div class="l2">${esc(c.direction === 'outbound' ? 'Outbound · ' + c.type : 'Inbound')} · ${esc(c.purpose)}</div>
-      </div>
-      ${listening
-        ? `<a class="btn pressed" href="05-live-call-listening.html">${ic('headphones')}Listening</a>`
-        : `<a class="btn" href="05-live-call-listening.html">${ic('headphones')}Listen</a>`}
-    </div>`;
-  };
+const who = c => {
+  if (c.specialist === "Priya Raman") return { mine: true, ic: "mic", txt: `<span class="you">You took over</span><br><span class="meta">Kiku is writing</span>`, act: `<a class="btn sm human" href="06-takeover-karaoke.html"><i data-lucide="corner-down-right"></i>Back to call</a>` };
+  if (c.specialist && c.specialist.includes("listening")) return { mine: true, ic: "headphones", txt: `<span class="you">You're listening</span><br><span class="meta">Kiku is speaking</span>`, act: `<a class="btn sm" href="05-live-call-listening.html"><i data-lucide="headphones"></i>Open</a><button class="btn sm ghost"><i data-lucide="log-out"></i>Leave</button>` };
+  return { mine: false, ic: "audio-lines", txt: `Kiku alone`, act: `<a class="btn sm" href="05-live-call-listening.html"><i data-lucide="headphones"></i>Listen</a><button class="btn sm"><i data-lucide="user-plus"></i>Join</button>` };
+};
+document.getElementById("live").innerHTML = live.filter(c => c !== owen).map(c => {
+  const w = who(c);
+  const ty = c.direction === "inbound" ? "Inbound" : `Outbound ${c.type}`;
+  return `<div class="lrow${w.mine ? " mine" : ""}">
+    <div class="g">${status(c.status)}<b style="margin-top:3px">${c.guest}</b><span>${c.phone}</span></div>
+    <div class="p">${esc(c.purpose)}<div class="ty"><i data-lucide="${TT.dirIcon(c.direction)}" style="width:13px;height:13px"></i>${ty}</div></div>
+    <div class="dur">${c.duration}<small>since ${c.started}</small></div>
+    <div class="onit"><span class="oi ${w.ic}"><i data-lucide="${w.ic}"></i></span><span>${w.txt}</span></div>
+    <div class="acts2">${w.act}</div>
+  </div>`;
+}).join("");
 
-  const finRow = (c) => `<a class="row fin-row" data-item href="${c.id === K.audit.id ? '04-call-audit.html' : '03-call-logs.html'}">
-      <span class="tm">${c.started}</span>
-      <div style="min-width:0"><div class="l1"><b>${esc(c.guest)}</b><span class="muted">${esc(kind(c))}</span></div><div class="l2">${esc(c.outcome || c.purpose)}</div></div>
-      ${status(c.status)}
-      <span class="du">${c.duration}</span>${ic('chevron-right')}
-    </a>`;
+const s = K.stats;
+document.getElementById("today").innerHTML = `
+  <div class="sec-title">Today so far <span class="aside">${K.hotel.today}</span></div>
+  <p><b>${s.callsToday}</b> calls on the line, <b>${s.inbound}</b> in and <b>${s.outbound}</b> out. <b>${s.completed}</b> completed, <b class="k">${s.inProgress}</b> in progress, <b style="color:var(--esc)">${s.escalated}</b> escalated and <b style="color:var(--fail)">${s.failed}</b> failed. Specialists took over <b class="h">${s.takeoversToday}</b> times. Average handle time <b>${s.avgHandle}</b>, and upsells added <b>${s.upsellValueToday}</b>.</p>`;
 
-  shell({
-    role: 'specialist', active: 'live', title: 'Live board',
-    sub: `${K.hotel.name} line ${K.hotel.line} · ${liveCount} calls live`,
-    content: `
-    <div class="split">
-      <div class="golden-rows">
-        <section class="panel">
-          <div class="chart-wrap">
-            <div class="chart-key"><h2>Today</h2><p>Each petal is one call, newest at the centre. A longer petal is a longer call. Crosses are failed calls.</p></div>
-            <div class="phyllo" id="phyllo"></div>
-          </div>
-          <p class="totals"><b>${s.callsToday}</b> calls today: <b>${s.inbound}</b> inbound, <b>${s.outbound}</b> outbound:
-            ${status('completed', s.completed + ' completed')}, ${status('in_progress', s.inProgress + ' in progress')}, ${status('escalated', s.escalated + ' escalated')}, ${status('failed', s.failed + ' failed')}.<br><b>${s.takeoversToday}</b> takeovers, <b>${s.avgHandle}</b> average handle, <b>${s.upsellValueToday}</b> added by upsell calls.</p>
-        </section>
-        <section class="panel">
-          <div class="panel-head"><h2>Recently finished</h2><a class="link t13" href="03-call-logs.html">All call logs</a></div>
-          <div class="pane rows" id="fin">${finished.map(finRow).join('')}</div>
-        </section>
-      </div>
-      <div class="golden-rows">
-        <section class="panel">
-          <div class="panel-head"><h2 class="lg">Needs a specialist <span class="count">${K.calls.filter((c) => c.status === 'escalated').length}</span></h2></div>
-          <article class="q-hot">
-            <div class="q-top">
-              <div>
-                <div class="q-meta">${status('escalated')}<span>${direction(waiting)}</span><span class="num">${waiting.started}</span></div>
-                <h3 class="q-name">${esc(waiting.guest)}</h3>
-                <p class="q-meta num">${esc(waiting.phone)} · ${waiting.duration} on the line</p>
-              </div>
-              <div class="q-wait"><span>Waiting for you</span><b>${waiting.waiting}</b></div>
-            </div>
-            <p class="q-purpose">${esc(waiting.purpose)}</p>
-            <p class="q-reason">${ic('hand')}${esc(waiting.escalationReason)}</p>
-            <div class="q-actions">
-              <a class="btn primary lg" href="06-takeover-karaoke.html">${ic('mic')}Take over</a>
-              <a class="btn lg" href="05-live-call-listening.html">${ic('headphones')}Listen first</a>
-            </div>
-          </article>
-          <div class="q-mine">
-            <div>
-              <p class="nm">${esc(mine.guest)} ${status('escalated')}</p>
-              <p class="sub">${esc(mine.purpose)}. You took over at ${K.takeover.takeoverAt}.</p>
-              <p class="sub">${esc(mine.escalationReason)}</p>
-            </div>
-            <a class="btn" href="06-takeover-karaoke.html">${ic('mic')}Back to call</a>
-          </div>
-        </section>
-        <section class="panel">
-          <div class="panel-head"><h2>In progress <span class="count">${live.length}</span></h2></div>
-          <div class="pane rows">${live.map(liveRow).join('')}</div>
-        </section>
-      </div>
-    </div>`,
-  });
-  Kiku.done(() => Kiku.fitPane(document.getElementById('fin')), () => Kiku.phyllotaxis(document.getElementById('phyllo')));
+const done = K.calls.filter(c => c.status === "completed" || c.status === "failed");
+document.getElementById("recent").innerHTML = done.map(c => `
+  <div class="rrow"><span class="t">${c.started}</span><div>
+    <div class="n"><b>${c.guest}</b>${status(c.status)}</div>
+    <div class="o">${esc(c.outcome || "")}${c.specialist ? ` <span class="sp">with ${c.specialist}</span>` : ""}</div>
+  </div></div>`).join("");
+TT.icons();
 </script>
 </body>
 </html>

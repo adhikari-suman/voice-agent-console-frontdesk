@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku · Listening to KK-24031</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="icons.js"></script>
+<script src="app.js"></script>
+<style>
+  .strip { background: var(--paper); border-bottom: 1px solid var(--rule); padding: 14px 24px; display: flex; align-items: center; gap: 22px; }
+  .strip h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+  .strip .sub { font-size: 13px; color: var(--ink-2); margin-top: 3px; display: flex; gap: 10px; align-items: center; }
+  .clock { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; }
+  .clock small { display: block; font-size: 12px; font-weight: 500; color: var(--ink-3); letter-spacing: 0; }
+  .you { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border: 1px dashed var(--human); border-radius: 3px; color: var(--human-deep); font-weight: 600; font-size: 13px; background: var(--human-wash); }
+  .ctrls { display: flex; gap: 8px; align-items: center; }
+  .grow { flex: 1; }
+  .body { grid-template-columns: 1fr 380px; padding-top: 16px; }
+
+  .m { display: grid; grid-template-columns: 58px 92px 1fr; gap: 0 12px; padding: 10px 20px; align-items: baseline; }
+  .m .t { font-family: var(--machine); font-size: 11.5px; color: var(--ink-3); }
+  .m .who { font-size: 12.5px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+  .m.agent .who { color: var(--kiku-deep); }
+  .m.agent .tx { font-family: var(--machine); font-size: 13px; line-height: 1.55; max-width: 720px; }
+  .m.guest .who { color: var(--ink-2); }
+  .m.guest .who .mark { background: var(--ink-3); transform: rotate(45deg) scale(.8); }
+  .m.guest .tx { font-size: 14.5px; line-height: 1.5; max-width: 720px; }
+  .m.latest { background: #fff; border-top: 1px solid var(--rule-2); padding: 16px 20px 18px; }
+  .m.latest .tx { font-size: 19px; line-height: 1.4; font-weight: 500; }
+  .m.latest .t::after { content: "Latest"; display: block; font-family: var(--ui); font-size: 11px; color: var(--ink); font-weight: 600; margin-top: 2px; }
+  .gapnote { padding: 6px 20px 6px 90px; font-size: 12px; color: var(--ink-3); display: flex; gap: 8px; align-items: center; }
+  .gapnote::before, .gapnote::after { content: ""; flex: 1; border-top: 1px dotted var(--rule); }
+
+  .draft { background: var(--kiku-wash); padding: 16px 20px 18px; display: grid; grid-template-columns: 162px 1fr; gap: 12px; border-top: 1px dashed var(--kiku); }
+  .draft .lab { font-size: 12.5px; font-weight: 600; color: var(--kiku-deep); display: flex; flex-direction: column; gap: 4px; }
+  .draft .lab span { display: inline-flex; gap: 6px; align-items: center; }
+  .draft .tx { font-family: var(--machine); font-size: 15px; line-height: 1.5; color: var(--kiku-deep); }
+  .caret { display: inline-block; width: 8px; height: 17px; background: var(--kiku-deep); vertical-align: -3px; margin-left: 2px; animation: blink 1s steps(1) infinite; }
+  .dots { display: inline-flex; gap: 3px; }
+  .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--kiku); }
+  .dots i:nth-child(2) { opacity: .6; } .dots i:nth-child(3) { opacity: .3; }
+
+  .col { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+  .levels { padding: 14px 16px; }
+  .lv { display: grid; grid-template-columns: 76px 1fr 56px; align-items: center; gap: 10px; margin-top: 10px; font-size: 12.5px; font-weight: 600; }
+  .meter { display: flex; gap: 2px; height: 16px; align-items: flex-end; }
+  .meter i { flex: 1; height: 100%; background: #E1E4DE; border-radius: 1px; }
+  .lv .db { font-family: var(--machine); font-size: 11px; color: var(--ink-3); font-weight: 400; text-align: right; }
+  .facts { padding: 4px 0 6px; }
+  .fr { display: grid; grid-template-columns: 88px 1fr; gap: 10px; padding: 9px 16px; font-size: 13px; border-bottom: 1px solid var(--rule-2); }
+  .fr:last-child { border-bottom: 0; }
+  .fr span:first-child { color: var(--ink-3); }
+  .acts { padding: 6px 16px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .act { display: grid; grid-template-columns: 18px 1fr; gap: 10px; font-size: 13px; line-height: 1.4; }
+  .act svg.lucide { color: var(--kiku-deep); margin-top: 1px; }
+</style></head>
+<body>
+<main class="page">
+  <section class="strip" id="strip"></section>
+  <div class="body">
+    <section class="panel">
+      <div class="ph"><h2>Live transcript</h2><span class="note">Kiku and the guest are talking. The guest can't hear you.</span></div>
+      <div class="scroll" id="scroll" style="display:flex;flex-direction:column"><div id="msgs" style="padding:6px 0 0;margin-top:auto"></div><div class="draft" id="draft"></div></div>
+    </section>
+    <div class="col">
+      <section class="panel levels" id="levels"></section>
+      <section class="panel" id="facts" style="flex:1"></section>
+    </div>
+  </div>
+</main>
+<script>
+  shell('specialist', 'live');
+  const L = K.liveCall;
+  document.getElementById('strip').innerHTML = `
+    <a class="btn sm quiet" href="02-live-overview.html">${ic('arrow-left')}Live board</a>
+    <div><h1>${L.guest}</h1><div class="sub">${status(L.status, true)}<span class="tag">${ic('phone-incoming')}Inbound to the hotel line</span><span class="code">${L.id}</span><span>${L.phone}</span></div></div>
+    <div class="grow"></div>
+    <div class="clock">${L.duration}<small>Started ${L.started}</small></div>
+    <span class="you">${ic('headphones')}You are listening</span>
+    <div class="ctrls">
+      <button class="btn lg">${ic('mic-off')}Muted</button>
+      <button class="btn lg">${ic('log-out')}Leave</button>
+      <button class="btn lg human">${ic('mic')}Take over</button>
+    </div>`;
+
+  const tr = L.transcript;
+  document.getElementById('msgs').innerHTML = tr.map((m, i) => {
+    const last = i === tr.length - 1;
+    const who = m.speaker === 'agent' ? '<i class="mark k"></i>Kiku' : '<i class="mark"></i>Rashid';
+    const gap = last ? `<div class="gapnote">1 min 45 s between lines</div>` : '';
+    return gap + `<div class="m ${m.speaker} ${last ? 'latest' : ''}"><span class="t">${m.t}</span><span class="who">${who}</span><span class="tx">${m.text}</span></div>`;
+  }).join('');
+  const sc = document.getElementById('scroll');
+
+  document.getElementById('draft').innerHTML = `
+    <div class="lab"><span>${mark(16, false)}Kiku is drafting</span><span class="dots"><i></i><i></i><i></i></span></div>
+    <div class="tx">${L.agentDraft}<span class="caret"></span></div>`;
+
+  const lvl = (n, col, on) => Array.from({ length: 28 }, (_, i) => `<i style="${i < n ? `background:${col}` : ''}; height:${40 + (i / 28) * 60}%"></i>`).join('');
+  document.getElementById('levels').innerHTML = `
+    <div style="display:flex;align-items:baseline;justify-content:space-between"><h3 class="lbl" style="margin:0">Audio on the line</h3><span class="muted" style="font-size:12px">Live</span></div>
+    <div class="lv"><span style="display:flex;gap:6px;align-items:center"><i class="mark" style="background:var(--ink-3);transform:rotate(45deg) scale(.8)"></i>Guest</span><div class="meter">${lvl(19, 'var(--ink-2)')}</div><span class="db">speaking</span></div>
+    <div class="lv"><span style="display:flex;gap:6px;align-items:center;color:var(--kiku-deep)"><i class="mark k"></i>Kiku</span><div class="meter">${lvl(3, 'var(--kiku)')}</div><span class="db">quiet</span></div>
+    <div class="lv"><span style="display:flex;gap:6px;align-items:center;color:var(--human-deep)"><i class="mark h"></i>You</span><div class="meter">${lvl(0, 'var(--human)')}</div><span class="db">muted</span></div>`;
+
+  document.getElementById('facts').innerHTML = `
+    <div class="ph"><h2>Call facts</h2></div>
+    <div class="facts">
+      <div class="fr"><span>Booking</span><span class="code">${L.booking}</span></div>
+      <div class="fr"><span>Stay</span><span>${L.stay}</span></div>
+      <div class="fr"><span>Purpose</span><span>${L.purpose}</span></div>
+      <div class="fr"><span>On the line</span><span>${L.guest}, Kiku, and you (listening)</span></div>
+    </div>
+    <div class="ph" style="border-top:1px solid var(--rule-2)"><h2>Kiku already did</h2></div>
+    <div class="acts" style="padding-top:12px">${L.actionsTaken.map(a => `<div class="act">${ic('circle-check')}<span>${a}</span></div>`).join('')}</div>`;
+  icons();
+  sc.scrollTop = sc.scrollHeight;
+</script>
+</body></html>

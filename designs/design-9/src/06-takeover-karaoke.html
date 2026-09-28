@@ -2,132 +2,177 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Kiku · On the line, KK-24030</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&display=block">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
-<script src="../../_shared/data.js"></script>
+<title>Kiku · On the line with Margaret Doyle</title>
 <link rel="stylesheet" href="styles.css">
-<script src="app.js"></script>
 <style>
-  .ttl { display: flex; align-items: center; gap: 16px; }
-  .body { padding-top: 18px; }
-  .side { width: 318px; flex: none; gap: 20px; }
-  .hist { flex: 1; min-height: 0; overflow: auto; }
+  .onair {
+    flex: none; height: 64px; background: var(--human); color: var(--ink);
+    display: flex; align-items: center; gap: 18px; padding: 0 24px;
+    border-bottom: 3px double var(--ink);
+  }
+  .onair .mic { width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: var(--human); display: grid; place-items: center; position: relative; }
+  .onair .mic svg { width: 20px; height: 20px; }
+  .onair .mic::after { content: ""; position: absolute; inset: -5px; border: 2px solid var(--ink); border-radius: 50%; opacity: .35; }
+  .onair h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; }
+  .onair p { font-size: 13px; }
+  .onair .clock2 { margin-left: 28px; padding-left: 20px; border-left: 1px solid rgba(21,33,44,.3); font-size: 12px; line-height: 1.2; }
+  .onair .clock2 b { font-size: 22px; display: block; font-weight: 600; }
+  .onair .ctl { margin-left: auto; display: flex; gap: 8px; }
+  .onair .btn { height: 40px; border-color: rgba(21,33,44,.35); background: rgba(255,255,255,.55); font-weight: 600; }
+  .onair .btn.kiku { background: var(--white); }
+  .onair .btn.danger { background: var(--esc); color: #fff; border-color: var(--esc); }
 
-  .prompter { flex: none; margin-top: 16px; padding: 18px 24px 20px; }
-  .pr-h { display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 600; color: var(--ivory-2); margin-bottom: 6px; }
-  .pr-h .lg-t { color: var(--brass); }
-  .pr-h i { font-size: 15px; color: var(--brass); }
-  .pr-h .r { margin-left: auto; font-weight: 500; }
-  .pr-wrote { font-size: 17px; line-height: 1.5; color: var(--ivory-2); max-width: 64ch; }
-  .pr-wrote .m { color: var(--ivory); }
-  .prompter .hair { margin: 14px 0 12px; }
-  .pr-said { font-size: 27px; line-height: 1.35; color: var(--ivory); font-weight: 500; letter-spacing: -0.005em; }
-  .pr-said ins { text-decoration: underline; text-decoration-color: var(--brass); text-decoration-thickness: 2px; text-underline-offset: 6px; }
-  .caret { display: inline-block; width: 2px; height: 28px; background: var(--brass); vertical-align: -5px; margin-left: 4px; }
-  .prompter .dbl { margin: 16px 0 12px; }
-  .pr-next { font-size: 24px; line-height: 1.35; color: var(--brass-dim); }
+  .grid { flex: 1; min-height: 0; display: grid; grid-template-columns: 440px 1fr 300px; gap: 16px; }
+  .col { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+
+  .hist .turns { flex: 1; }
+  .ht { padding: 9px 16px; display: grid; grid-template-columns: 40px 1fr; border-bottom: 1px solid var(--line-2); }
+  .ht .t { font-size: 11.5px; color: var(--ink-3); padding-top: 1px; }
+  .ht .voice { font-size: 14px; line-height: 1.42; }
+  .ht.a .voice { color: var(--kiku-deep); }
+  .ht .spk { margin-bottom: 2px; font-size: 11.5px; }
+  .ht.s { padding: 6px 16px; }
+  .ht.s .sys { font-size: 11.5px; }
+  .ht.kar { background: #FCF8F0; box-shadow: inset 3px 0 0 var(--human); }
+  .ht .il { font-size: 13.5px; row-gap: 6px; }
+  .ht .cell > b { line-height: 19px; min-height: 20px; padding: 0 2px; }
+  .ht .keys2 { display: flex; gap: 12px; font-size: 11px; font-weight: 600; margin: 2px 0 4px; }
+
+  .prompter { background: var(--ink); color: #E8EEF3; border-radius: var(--r); display: flex; flex-direction: column; min-height: 0; flex: 1; overflow: hidden; }
+  .prompter .bar { display: flex; align-items: center; gap: 12px; padding: 14px 24px; border-bottom: 1px solid #2B3947; font-size: 12px; color: #9FB0BE; }
+  .prompter .bar b { color: #fff; font-size: 14px; font-weight: 600; }
+  .prompter .bar .sp { margin-left: auto; display: flex; gap: 14px; align-items: center; }
+  .pr-body { padding: 20px 32px 20px; flex: 1; display: flex; flex-direction: column; }
+  .lane-h { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; margin-bottom: 10px; }
+  .lane-h.k { color: #8FC0DC; }
+  .lane-h.h { color: var(--human); }
+  .lane-h .ts { color: #7D8E9C; font-weight: 400; }
+  .heard { margin-bottom: 26px; padding-bottom: 18px; border-bottom: 1px solid #2B3947; }
+  .heard .lane-h { color: #C9D4DD; margin-bottom: 6px; }
+  .heard p { font-family: var(--voice); font-size: 19px; color: #C9D4DD; font-style: italic; }
+  .written { font-family: var(--voice); font-size: 29px; line-height: 1.32; color: #F3F6F8; max-width: 760px; }
+  .written .covered { color: #6F8697; text-decoration: line-through; text-decoration-color: #4E6678; text-decoration-thickness: 2px; }
+  .written .kept { color: #CFE3EF; box-shadow: inset 0 -2px 0 #4F87A8; }
+  .seam2 { height: 7px; border-top: 1px solid #3A4B5A; border-bottom: 1px solid #3A4B5A; margin: 22px 0 18px; position: relative; }
+  .seam2 span { position: absolute; left: 0; top: -9px; background: var(--ink); padding-right: 10px; font-size: 11px; color: #7D8E9C; }
+  .saying { font-family: var(--voice); font-size: 29px; line-height: 1.32; color: #fff; max-width: 760px; }
+  .saying .ins { color: var(--human); }
+  .saying .caret { display: inline-block; width: 3px; height: 30px; background: var(--human); vertical-align: -5px; margin-left: 4px; animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .saying .caret { animation: none; } }
+  .partial { font-family: var(--ui); font-size: 12px; color: #9FB0BE; margin-top: 10px; display: flex; gap: 10px; align-items: center; }
+  .vu { display: flex; gap: 2px; align-items: flex-end; height: 16px; }
+  .vu i { width: 3px; background: var(--human); border-radius: 1px; }
+  .next { margin-top: auto; border-top: 1px dashed #3A4B5A; padding-top: 14px; display: grid; grid-template-columns: 84px 1fr auto; gap: 16px; align-items: start; }
+  .next .lbl { font-size: 12px; font-weight: 600; color: #8FC0DC; padding-top: 3px; }
+  .next p { font-family: var(--voice); font-size: 18px; line-height: 1.4; color: #A9BAC7; }
+  .next .kbd { font-size: 11px; color: #7D8E9C; border: 1px solid #3A4B5A; border-radius: 2px; padding: 2px 6px; white-space: nowrap; }
+
+  .side .panel { padding: 0; }
+  .reason { padding: 12px 16px; display: flex; gap: 10px; font-size: 13px; }
+  .reason svg { width: 15px; height: 15px; color: var(--esc); margin-top: 2px; flex: none; }
+  .facts li { list-style: none; padding: 8px 16px; border-top: 1px solid var(--line-2); font-size: 13px; display: flex; gap: 10px; }
+  .facts li svg { width: 14px; height: 14px; color: var(--ink-3); margin-top: 3px; }
+  .party { padding: 8px 16px; display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--line-2); font-size: 13px; }
+  .party:first-of-type { border-top: 0; }
+  .party .av { width: 28px; height: 28px; font-size: 11px; }
+  .party small { display: block; font-size: 11.5px; color: var(--ink-3); }
+  .party .state { margin-left: auto; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
 </style>
 </head>
 <body>
+<header class="top" id="top"></header>
+<div class="onair" id="onair"></div>
+<main class="main" id="main" style="padding-top:16px"></main>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
 <script>
-  const { K, icon, status, dir, fob, avatar, ledger, meter, esc } = KK;
-  const T = K.takeover;
-  const live = T.transcript.find((e) => e.live);
-  const norm = (w) => w.toLowerCase().replace(/[^a-z0-9£-]/g, "");
-  const sameWords = new Set(live.diff.filter((d) => d.op === "same").flatMap((d) => d.text.split(" ").map(norm)));
-  const wroteLive = live.wrote.split(" ").map((w) => (sameWords.has(norm(w)) ? `<span class="m">${esc(w)}</span>` : esc(w))).join(" ");
-  const saidLive = live.diff.filter((d) => d.op !== "del").map((d) => (d.op === "same" ? esc(d.text) : `<ins>${esc(d.text)}</ins>`)).join(" ");
-  const esc0 = T.transcript.find((e) => e.kind === "escalation");
-  const join = T.transcript.find((e) => e.kind === "join");
-  const micLevels = [7, 11, 15, 12, 17, 14, 10, 13, 16, 9, 6, -3];
+shell("specialist", "live");
+const T = K.takeover;
+const me = K.people.specialist;
+const live = T.transcript[T.transcript.length - 1];
+const earlier = T.transcript.slice(0, -1);
+const lastGuest = earlier.filter(e => e.speaker === "guest").pop();
 
-  KK.mount("specialist", "live", `
-    <header class="ph">
-      <div class="ph-l">
-        <div class="ttl">
-          <h1 class="title guest">${T.guest}</h1>
-          ${status(T.status)}
-          <span class="muted small">${T.id} · started ${T.started}</span>
-        </div>
-        <div class="ph-line">
-          ${dir(T.direction)}<span>to ${K.hotel.line}</span><span class="sep"></span>
-          <span>${T.phone}</span><span class="sep"></span>
-          ${fob(T.booking)}<span>${T.stay}</span>
-        </div>
-      </div>
-      <div class="ph-r live"><small><span class="live-dot"></span>Live</small><span class="timer">${T.duration}</span></div>
-    </header>
-    <div class="dbl"></div>
+document.getElementById("onair").innerHTML = `
+  <span class="mic">${icon("mic")}</span>
+  <div><h1>You are on the line with ${esc(T.guest)}</h1><p>Kiku's voice is off. It keeps writing lines for you to read or rephrase.</p></div>
+  <div class="clock2">Call<b>${T.duration}</b></div>
+  <div class="clock2" style="margin-left:0">You took over<b>${T.takeoverAt}</b></div>
+  <div class="ctl">
+    <button class="btn">${icon("mic-off")}Mute</button>
+    <button class="btn kiku">${icon("undo-2")}Hand back to Kiku</button>
+    <button class="btn danger">${icon("phone-off")}End call</button>
+  </div>`;
 
-    <div class="band on">
-      <div class="band-who"><span class="band-ic">${icon("microphone")}</span><div><b>You're on the line with ${T.guest}</b><span>${T.specialist} · took over at ${T.takeoverAt} · Kiku writes each line, you speak it</span></div></div>
-      <div class="band-meters"><span class="meter-l">Your mic ${meter(micLevels)}</span></div>
-      <div class="band-act">
-        <button class="btn">${icon("microphone-slash")}Mute</button>
-        <button class="btn">${icon("arrow-u-up-left")}Hand back to Kiku</button>
-        <button class="btn btn-danger">${icon("phone-x")}End call</button>
-      </div>
+const hist = earlier.map(e => {
+  if (e.speaker === "system") {
+    const ic = { escalation: STATUS.escalated.svg, join: icon("headphones"), takeover: icon("mic") }[e.kind];
+    return `<div class="ht s"><span class="t">${e.t}</span><div class="sys ${e.kind}">${ic}${esc(e.text)}</div></div>`;
+  }
+  if (e.karaoke) {
+    return `<div class="ht kar"><span class="t">${e.t}</span><div>
+      <div class="keys2"><span class="who-k">Kiku wrote</span><span class="faint">over</span><span class="who-h">you said</span><span style="margin-left:auto;font-weight:400">${matchBar(e.match)}</span></div>
+      ${interlinear(e.diff)}</div></div>`;
+  }
+  const g = e.speaker === "guest";
+  return `<div class="ht ${g ? "g" : "a"}"><span class="t">${e.t}</span><div><div class="spk ${g ? "g" : "k"}"><span class="dot"></span>${g ? esc(T.guest) : "Kiku"}</div><p class="voice">${esc(e.text)}</p></div></div>`;
+}).join("");
+
+// Written line: show which of Kiku's words are kept (same) vs passed over (del)
+const writtenHtml = live.diff.filter(d => d.op !== "ins").map(d => `<span class="${d.op === "same" ? "kept" : "covered"}">${esc(d.text)}</span>`).join(" ");
+const sayingHtml = live.diff.filter(d => d.op !== "del").map(d => d.op === "ins" ? `<span class="ins">${esc(d.text)}</span>` : esc(d.text)).join(" ");
+const vu = [5, 9, 14, 11, 16, 8, 12, 15, 6, 10, 13, 7].map(h => `<i style="height:${h}px"></i>`).join("");
+
+document.getElementById("main").innerHTML = `
+<div class="grid">
+  <section class="panel hist" style="display:flex;flex-direction:column">
+    <div class="ph">Conversation so far<span class="sp">${T.id} · from ${T.started}</span></div>
+    <div class="turns scroll" id="hist">${hist}</div>
+  </section>
+
+  <section class="prompter">
+    <div class="bar">${icon("scroll-text")}<b>Karaoke prompter</b><span>Line ${earlier.filter(e => e.karaoke).length + 1}</span>
+      <span class="sp"><span class="legend" style="color:#9FB0BE"><span><i style="background:#CFE3EF;height:3px;vertical-align:3px"></i>You kept it</span><span><i style="background:#6F8697;height:2px;vertical-align:4px"></i>You passed it over</span><span><i style="background:var(--human);height:3px;vertical-align:3px"></i>Your own words</span></span></span>
     </div>
+    <div class="pr-body">
+      <div class="heard"><span class="lane-h g"><span class="spk g"><span class="dot" style="background:#E8EEF3"></span></span>${esc(T.guest.split(" ")[0])} just said <span class="ts">${lastGuest.t}</span></span><p>${esc(lastGuest.text)}</p></div>
+      <div class="lane-h k"><span class="spk k"><span class="dot"></span></span>Kiku wrote <span class="ts">${live.t}</span></div>
+      <p class="written">${writtenHtml}</p>
+      <div class="seam2"></div>
+      <div class="lane-h h"><span class="spk h"><span class="dot"></span></span>You are saying <span class="ts">live</span></div>
+      <p class="saying">${sayingHtml}<span class="caret"></span></p>
+      <div class="partial"><span class="vu">${vu}</span>Transcribing as you speak · ${live.match}% of Kiku's line so far</div>
+      <div class="next"><span class="lbl">Up next</span><p>${esc(T.nextLine)}</p><span class="kbd">Kiku is writing</span></div>
+    </div>
+  </section>
 
-    <div class="body">
-      <section class="col grow">
-        <div class="h2-row" style="margin-bottom:4px"><h2 class="h2">Earlier in this call</h2>${KK.legend()}</div>
-        <div class="hist" id="hist">${ledger(T.transcript, { guest: T.guest, specialist: T.specialist, skipLive: true })}</div>
-        <section class="panel prompter" aria-live="polite">
-          <div class="pr-h"><span class="lg-t">${live.t}</span>Kiku wrote<span class="r">Line ${T.transcript.filter((e) => e.karaoke).length} of karaoke</span></div>
-          <p class="pr-wrote">${wroteLive}</p>
-          <div class="hair"></div>
-          <div class="pr-h">${icon("microphone")}You're saying<span class="r" style="display:inline-flex;align-items:center;gap:6px"><span class="live-dot"></span>Live</span></div>
-          <p class="pr-said">${saidLive}<span class="caret"></span></p>
-          <div class="dbl dim"></div>
-          <div class="pr-h">${icon("arrow-bend-down-right")}Next line</div>
-          <p class="pr-next">${T.nextLine}</p>
-        </section>
-      </section>
-
-      <aside class="col side">
-        <div class="side-sec">
-          <h2 class="h2">Why it was escalated</h2>
-          <p class="reason">${icon("bell")}<span>${T.escalationReason}</span></p>
-        </div>
-        <div class="dbl dim"></div>
-        <div class="side-sec">
-          <h2 class="h2">Purpose</h2>
-          <p style="font-size:13.5px">${T.purpose}</p>
-        </div>
-        <div class="side-sec">
-          <h2 class="h2">Booking facts ${fob(T.booking)}</h2>
-          <div class="facts-list">${T.facts.map((f) => `<div>${icon("key")}<span>${f}</span></div>`).join("")}</div>
-        </div>
-        <div class="dbl dim"></div>
-        <div class="side-sec">
-          <h2 class="h2">Handover</h2>
-          <dl class="kv" style="grid-template-columns:70px 1fr;font-size:13px">
-            <dt>${esc0.t}</dt><dd>Escalated by Kiku</dd>
-            <dt>${join.t}</dt><dd>You joined to listen</dd>
-            <dt>${T.takeoverAt}</dt><dd>You took over</dd>
-          </dl>
-        </div>
-      </aside>
-    </div>`, ["microphone", "On a call · KK-24030"]);
-  document.fonts.ready.then(() => {
-    const h = document.getElementById("hist");
-    const pr = document.querySelector(".prompter");
-    const col = h.parentElement;
-    const avail = 900 - 24 - h.getBoundingClientRect().top - pr.offsetHeight - 16;
-    const head = h.querySelector(".lg-head");
-    const rows = [...h.querySelectorAll(".lg-karaoke .lg-row")];
-    let used = head.offsetHeight;
-    for (let i = rows.length - 1; i >= 0; i--) {
-      if (used + rows[i].offsetHeight > avail) break;
-      used += rows[i].offsetHeight;
-    }
-    h.style.flex = "none";
-    h.style.height = used + "px";
-    h.scrollTop = h.scrollHeight;
-    pr.style.flex = "1 0 auto";
-  });
+  <div class="col side">
+    <section class="panel">
+      <div class="ph">Why it escalated</div>
+      <div class="reason">${STATUS.escalated.svg}<span>${esc(T.escalationReason)}</span></div>
+    </section>
+    <section class="panel">
+      <div class="ph">Booking ${T.booking}</div>
+      <dl class="kv" style="padding:12px 16px">
+        <dt>Guest</dt><dd>${esc(T.guest)}</dd>
+        <dt>Phone</dt><dd>${T.phone}</dd>
+        <dt>Stay</dt><dd>${esc(T.stay)}</dd>
+        <dt>Asked about</dt><dd>${esc(T.purpose)}</dd>
+      </dl>
+      <ul class="facts">${T.facts.map(f => `<li>${icon(f.startsWith("Card") ? "credit-card" : "receipt")}${esc(f)}</li>`).join("")}</ul>
+    </section>
+    <section class="panel">
+      <div class="ph">On this call</div>
+      <div class="party"><span class="av" style="background:var(--human);color:var(--ink)">${me.initials}</span><span>You<small>${me.name}</small></span><span class="state who-h">${icon("mic")}Speaking</span></div>
+      <div class="party"><span class="av" style="background:var(--kiku)">Ki</span><span>Kiku<small>Voice off</small></span><span class="state who-k">${icon("pen-line")}Writing</span></div>
+      <div class="party"><span class="av">MD</span><span>${esc(T.guest)}<small>Guest</small></span><span class="state faint">${icon("ear")}Listening</span></div>
+    </section>
+  </div>
+</div>`;
+const h = document.getElementById("hist"); h.scrollTop = h.scrollHeight;
 </script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>

@@ -2,66 +2,88 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=1440">
-<title>Call logs · Kiku</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400..700&family=Atkinson+Hyperlegible+Next:wght@400..800&display=block">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20,400,0..1,0&icon_names=add,add_call,admin_panel_settings,arrow_back,arrow_forward,back_hand,block,calendar_today,call,call_end,call_made,call_received,campaign,category,check,check_circle,chevron_right,close,credit_card,description,download,edit,edit_note,error,event_available,expand_more,forward_10,graphic_eq,group,headphones,headset_mic,help,hourglass_top,info,list_alt,lock_clock,login,logout,mail,mic,mic_off,more_horiz,pause,payments,person_add,play_arrow,record_voice_over,remove,replay_10,room_service,schedule,search,send,sensors,smart_toy,speed,sticky_note_2,subtitles,sync,table_rows,undo,upload_file,volume_off&display=block">
-<script src="../../_shared/data.js"></script>
+<title>Kiku, call logs</title>
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.453.0/dist/umd/lucide.min.js"></script>
 <script src="app.js"></script>
+<style>
+  .page { height: 100%; display: grid; grid-template-columns: 272px 1fr; }
+  .filters { background: var(--sheet); border-right: 1px solid var(--line); padding: 22px 20px; display: grid; gap: 20px; align-content: start; }
+  .filters h1 { font: 600 26px/1.1 var(--sans); letter-spacing: -0.025em; }
+  .fg h3 { font-size: 12px; font-weight: 500; color: var(--ink-3); margin-bottom: 6px; }
+  .opt { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 6px; font-size: 13px; }
+  .opt input { width: 15px; height: 15px; }
+  .opt .n { margin-left: auto; font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .opt.on { background: var(--sheet-2); }
+  .opt .st { font-size: 13px; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); background: #e9ebee; border-radius: 8px; padding: 3px; }
+  .seg button { border: 0; background: transparent; height: 28px; border-radius: 6px; font-size: 12.5px; font-weight: 500; color: var(--ink-2); }
+  .seg button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(20,24,30,.12); }
+  .date { display: flex; align-items: center; gap: 8px; }
+
+  .list { display: grid; grid-template-rows: auto auto 1fr; min-height: 0; padding: 18px 24px 16px; }
+  .bar { display: flex; gap: 12px; align-items: center; padding-bottom: 12px; }
+  .bar .input { width: 440px; }
+  .bar .cnt { margin-left: auto; }
+  .tr { display: grid; grid-template-columns: 50px 150px 142px 104px minmax(0,1fr) 112px 54px 168px; gap: 12px; align-items: center; padding: 0 14px; height: 40px; font-size: 13px; }
+  .th { font-size: 12px; color: var(--ink-3); height: 32px; }
+  .rows { background: #fff; border: 1px solid var(--line); border-radius: 10px; align-self: start; max-height: 100%; }
+  .rows .tr + .tr, .rows .tr + .xp, .rows .xp + .tr { border-top: 1px solid var(--line-2); }
+  .tr .g { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tr .pn, .tr .tm, .tr .du { color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .tr .du { text-align: right; }
+  .tr .pu { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-2); }
+  .tr .sp { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; }
+  .tr.sel { background: var(--kiku-soft); }
+  .tr.sel .pu { color: var(--ink); }
+  .xp { background: var(--kiku-soft); padding: 0 14px 12px 76px; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 16px; align-items: center; }
+  .xp .o { font-size: 13px; color: var(--ink); }
+  .xp .kl > span:first-child { white-space: nowrap; }
+  .xp .kl { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-2); margin-top: 6px; }
+  .xp .kl .heats { display: flex; gap: 10px; overflow: hidden; }
+  .xp .heat i { width: 2px; height: 12px; }
+  .xp .heat { gap: 1px; flex-wrap: nowrap; }
+</style>
 </head>
 <body>
 <script>
-(() => {
-  const { K, ic, esc, st, key, av, ST, select, specName } = Kiku;
-  const calls = K.calls;
-  const desk = Kiku.shell({ role: 'Specialist', nav: 'logs', title: 'Call logs', after: `<span class="strip-id">Every call Kiku answered or placed today</span>` });
+const calls = K.calls;
+const cnt = f => calls.filter(f).length;
+const stOpts = ["completed", "in_progress", "escalated", "failed"].map(s => `<label class="opt"><input type="checkbox" checked>${status(s)}<span class="n">${cnt(c => c.status === s)}</span></label>`).join("");
+const tyOpts = ["Inbound", "Campaign", "Upsell", "Make a call"].map(t => `<label class="opt"><input type="checkbox" checked>${ic(TYPE_IC[t])}${t}<span class="n">${cnt(c => c.type === t)}</span></label>`).join("");
+const A = K.audit;
+const kLines = A.transcript.filter(x => x.karaoke);
 
-  const count = s => calls.filter(c => c.status === s).length;
-  const fkeys = [`<button class="fk is-on" aria-pressed="true"><span class="fk-l">All</span><span class="fk-n mono">${calls.length}</span></button>`]
-    .concat(Object.keys(ST).map(s => `<button class="fk" aria-pressed="false">${key(ST[s][1], ST[s][2])}<span class="fk-l">${ST[s][0]}</span><span class="fk-n mono">${count(s)}</span></button>`)).join('');
+const rows = calls.map(c => {
+  const sel = c.id === A.id;
+  const sp = c.specialist ? `<span class="who-h">${ic("mic")}${c.specialist.replace(" (listening)", "")}</span>${c.specialist.includes("listening") ? '<span class="muted"> listening</span>' : ""}` : `<span class="muted">Kiku only</span>`;
+  const row = `<div class="tr ${sel ? "sel" : ""}">
+    <span class="tm">${c.started}</span><span class="g">${c.guest}</span><span class="pn">${c.phone}</span>
+    <span>${c.direction === "inbound" ? dirChip(c) : typeChip(c)}</span>
+    <span class="pu">${c.purpose}</span>${status(c.status)}<span class="du">${c.duration}</span><span class="sp">${sp}</span></div>`;
+  if (!sel) return row;
+  return row + `<div class="xp"><div><div class="o">${c.outcome}</div>
+    <div class="kl"><span>${kLines.length} karaoke lines by ${c.specialist.split(" ")[0]}</span><span class="heats">${kLines.map(l => heat(l.diff)).join("")}</span></div></div>
+    <a class="btn primary sm" href="04-call-audit.html">${ic("file-search")}Open audit</a></div>`;
+}).join("");
 
-  const kikuAv = `<svg class="av av-sm" viewBox="0 0 24 24" aria-hidden="true" style="border:0"><rect width="24" height="24" rx="5" fill="#EEF2F9" stroke="#D9DFEA"/><rect x="5" y="8" width="14" height="3" rx="1" fill="#3D7BFF"/><rect x="5" y="13.5" width="8" height="3" rx="1" fill="#C3CADA"/></svg>`;
-  const spec = c => {
-    if (!c.specialist) return `<span class="who">${kikuAv}<span class="who-n muted" style="font-weight:600">Kiku only</span></span>`;
-    const n = specName(c); const listening = /listening/.test(c.specialist);
-    return `<span class="who">${av(n, 'av-sm')}<span><span class="who-n">${esc(n)}</span>${listening ? '<span class="who-s">Listening now</span>' : (c.status === 'escalated' ? '<span class="who-s">Took over</span>' : '')}</span></span>`;
-  };
-  const rows = calls.map(c => {
-    const sel = c.id === 'KK-24027';
-    return `<tr class="${sel ? 'is-sel' : ''}">
-      <td class="cell2"><b class="mono">${c.started}</b><span class="mono">${c.id}</span></td>
-      <td class="cell2"><b>${esc(c.guest)}</b><span class="mono">${esc(c.phone)}</span></td>
-      <td class="cell2"><b class="dir">${ic(c.direction === 'inbound' ? 'call_received' : 'call_made')}${c.direction === 'inbound' ? 'Inbound' : 'Outbound'}</b><span style="padding-left:24px">${c.direction === 'inbound' ? 'Hotel line' : esc(c.type)}</span></td>
-      <td><span class="purp">${esc(c.purpose)}</span></td>
-      <td>${st(c.status)}</td>
-      <td class="num mono">${c.duration}</td>
-      <td>${spec(c)}</td>
-      <td class="num">${sel ? `<a class="btn btn-pri btn-sm" href="04-call-audit.html">Open audit${ic('arrow_forward')}</a>` : `<a class="icb" href="#" aria-label="Open ${c.id}">${ic('chevron_right')}</a>`}</td>
-    </tr>`;
-  }).join('');
-
-  desk.innerHTML = `
-    <div class="logs">
-      <div class="filters" role="search">
-        <label class="search" style="flex:1;max-width:420px">${ic('search')}<input class="input" type="search" placeholder="Search guest, phone or call ID" aria-label="Search calls"></label>
-        <div class="seg" role="group" aria-label="Direction"><button class="is-on" aria-pressed="true">All</button><button aria-pressed="false">${ic('call_received')}Inbound</button><button aria-pressed="false">${ic('call_made')}Outbound</button></div>
-        ${select(['All types', 'Inbound', 'Campaign', 'Upsell', 'Make a call'], 'category', 'Call type')}
-        ${select(['Today', 'Yesterday', 'Last 7 days'], 'calendar_today', 'Date')}
-        <span class="filters-n"><b class="mono">${calls.length}</b> calls · ${esc(K.hotel.today)}</span>
-      </div>
-      <section class="panel tblp" aria-label="Calls">
-        <div class="tbl-bar" role="group" aria-label="Status">${fkeys}</div>
-        <table class="tbl logs-tbl">
-          <colgroup><col style="width:92px"><col style="width:176px"><col style="width:150px"><col><col style="width:132px"><col style="width:84px"><col style="width:156px"><col style="width:128px"></colgroup>
-          <thead><tr><th>Time · ID</th><th>Guest · phone</th><th>Direction · type</th><th>Purpose</th><th>Status</th><th class="num">Duration</th><th>Specialist</th><th><span class="sr-only">Open</span></th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </section>
-    </div>`;
-})();
+shell("specialist", "logs", `
+<div class="page">
+  <aside class="filters">
+    <h1>Call logs</h1>
+    <div class="fg"><h3>Date</h3><div class="input date">${ic("calendar")}<b style="font-weight:500">Today</b><span class="muted" style="font-size:12.5px">Sun 27 Sep</span><span style="margin-left:auto">${ic("chevron-down")}</span></div></div>
+    <div class="fg"><h3>Status</h3>${stOpts}</div>
+    <div class="fg"><h3>Direction</h3><div class="seg"><button class="on">Both</button><button>In ${cnt(c => c.direction === "inbound")}</button><button>Out ${cnt(c => c.direction === "outbound")}</button></div></div>
+    <div class="fg"><h3>Type</h3>${tyOpts}</div>
+  </aside>
+  <section class="list">
+    <div class="bar"><label class="input">${ic("search")}<input placeholder="Search guest, phone, booking or purpose"></label><span class="sub cnt">${calls.length} calls, newest first</span></div>
+    <div class="tr th"><span>Time</span><span>Guest</span><span>Phone</span><span>Type</span><span>What the call was for</span><span>Status</span><span style="text-align:right">Length</span><span>Specialist</span></div>
+    <div class="rows scroll">${rows}</div>
+  </section>
+</div>`);
+finish();
 </script>
 </body>
 </html>

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku · On the line, KK-24030</title>
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="styles.css">
+<script src="vendor/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script><script src="app.js"></script>
+<style>
+.onair{flex:none;background:var(--saffron);color:var(--rail);display:grid;grid-template-columns:auto 1fr auto auto;gap:22px;align-items:center;padding:14px 28px;border-bottom:1px solid #D98E12}
+.onair .mic{width:46px;height:46px;border-radius:50%;background:var(--rail);color:var(--saffron);display:grid;place-items:center;position:relative}
+.onair .mic::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--rail);opacity:.35;animation:ring 1.6s ease-out infinite}
+@keyframes ring{from{transform:scale(.9);opacity:.5}to{transform:scale(1.25);opacity:0}}
+.onair .mic [data-lucide],.onair .mic svg{width:22px;height:22px}
+.onair h1{font-size:23px}
+.onair .sub{font-size:13px;margin-top:3px;display:flex;gap:14px;align-items:center}
+.onair .clock{text-align:right;line-height:1.1}
+.onair .clock .num{font-size:30px;font-stretch:120%}
+.onair .clock small{display:block;font-size:12px}
+.onair .ctrl{display:flex;gap:8px}
+.onair .btn{border-color:rgba(34,24,50,.35);background:rgba(255,255,255,.55)}
+.onair .btn.end{background:var(--rail);color:#fff;border-color:var(--rail)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;flex:1;min-height:0}
+.left{display:flex;flex-direction:column;gap:14px;min-height:0}
+.prompter{flex:none;background:var(--rail);color:#fff;border-radius:6px;padding:20px 26px 18px;display:grid;gap:14px}
+.pr-lab{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--rail-dim);font-weight:600}
+.pr-lab .kd{width:8px;height:8px;background:var(--orchid);transform:rotate(45deg)}
+.pr-lab .hd{width:9px;height:9px;background:var(--saffron);border-radius:50%}
+.pr-lab .r{margin-left:auto;font-weight:500}
+.script{font-family:var(--display);font-stretch:95%;font-weight:500;font-size:25px;line-height:1.35;letter-spacing:-.005em;color:#8D82A3}
+.script .sung{color:#fff;background:linear-gradient(transparent 88%,var(--orchid) 88%)}
+.script .skip{color:#8D82A3;text-decoration:line-through;text-decoration-color:rgba(189,85,230,.7);text-decoration-thickness:2px}
+.script .ahead{color:#7A6F92;border-bottom:1px dashed #5A4E72}
+.said{font-size:20px;line-height:1.45;font-weight:500;color:#F5EEFF;border-top:1px solid var(--rail-line);padding-top:14px}
+.said .ins{color:var(--saffron)}
+.said .caret{display:inline-block;width:3px;height:22px;background:var(--saffron);vertical-align:-4px;margin-left:3px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.next{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;border-top:1px dashed var(--rail-line);padding-top:12px;color:var(--rail-ink);font-size:14px}
+.next .k{font-size:12px;color:var(--rail-dim);font-weight:600;white-space:nowrap}
+.hist{padding:4px 20px 14px}
+.row{display:grid;grid-template-columns:44px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .t{font-size:12px;color:var(--ink-3);padding-top:2px}
+.row p{font-size:13.5px;margin-top:2px}
+.row.guest p{color:var(--ink-2)}
+.sys{font-size:12.5px;font-weight:600;display:flex;gap:8px;align-items:center;color:var(--saffron-deep)}
+.side{display:flex;flex-direction:column;gap:14px;min-height:0}
+.side .panel{flex:none}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:13px}
+dl.kv dt{color:var(--ink-3)}
+.facts li{list-style:none;display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
+.facts li:first-child{border-top:0}
+.reason{background:var(--saffron-wash);border:1px solid var(--saffron-mid);border-radius:6px;padding:14px 16px}
+</style></head>
+<body>
+<div class="app"><nav class="rail" id="rail"></nav>
+<main id="main"></main></div>
+<script>
+rail("specialist", "live");
+const T = K.takeover;
+const turns = T.transcript.filter(t => t.karaoke);
+const live = turns.find(t => t.live);
+const done = turns.filter(t => !t.live);
+// prompter: Kiku's line, with the parts Priya has covered lit up
+const cols = columns(live.diff);
+const script = cols.map((c, i) => c.w == null ? "" : c.t === "same" ? `<span class="sung">${esc(c.w)}</span>` : i === cols.length - 1 ? `<span class="ahead">${esc(c.w)}</span>` : `<span class="skip">${esc(c.w)}</span>`).join(" ");
+const said = cols.map(c => c.s == null ? "" : c.t === "same" ? esc(c.s) : `<span class="ins">${esc(c.s)}</span>`).filter(Boolean).join(" ");
+
+const hist = T.transcript.filter(t => !t.live).map(t => {
+  if (t.speaker === "system") return `<div class="row"><span class="t">${t.t}</span><div class="sys">${t.kind === "escalation" ? `<span class="st escalated">${SHAPES.escalated}</span>` : `<i data-lucide="${t.kind === "join" ? "headphones" : "mic"}"></i>`}${esc(t.text)}</div></div>`;
+  if (t.karaoke) return `<div class="row"><span class="t">${t.t}</span><div>${ribbon(t, { name: "You said" })}</div></div>`;
+  const who = t.speaker === "agent" ? `<span class="who kiku"><span class="dot"></span>Kiku</span>` : `<span class="who guest"><span class="dot"></span>Margaret Doyle</span>`;
+  return `<div class="row ${t.speaker}"><span class="t">${t.t}</span><div>${who}<p>${esc(t.text)}</p></div></div>`;
+}).join("");
+
+document.getElementById("main").innerHTML = topbar(`Live board <span class="dim">/</span> <b>${T.id}</b>`) + `
+<div class="onair">
+  <span class="mic"><i data-lucide="mic"></i></span>
+  <div><h1>You're on the line with ${esc(T.guest)}</h1>
+    <div class="sub"><span class="st escalated" style="color:var(--rail)">${SHAPES.escalated}Escalated</span><span>You took over from Kiku at ${T.takeoverAt}</span><span>Kiku is writing your lines</span>${meter(26, 3001, "var(--rail)", 20)}</div></div>
+  <div class="clock"><span class="num">${T.duration}</span><small>call time</small></div>
+  <div class="ctrl">
+    <button class="btn"><i data-lucide="mic-off"></i>Mute</button>
+    <button class="btn"><i data-lucide="bot"></i>Hand back to Kiku</button>
+    <button class="btn end"><i data-lucide="phone-off"></i>End call</button>
+  </div>
+</div>
+<div class="page">
+  <div class="grid">
+    <div class="left">
+      <section class="prompter" aria-label="Karaoke prompter">
+        <div class="pr-lab"><i class="kd"></i>Kiku wrote · ${live.t}<span class="r">Lit: said as written · struck: skipped · dashed: not reached yet</span></div>
+        <div class="script">${script}</div>
+        <div>
+          <div class="pr-lab" style="margin-bottom:6px"><i class="hd"></i>You're saying, live<span class="r">${meter(18, 77, "var(--saffron)", 16)}</span></div>
+          <div class="said">${said}<span class="caret"></span></div>
+        </div>
+        <div class="next"><span class="k">Up next</span><span>${esc(T.nextLine)}</span><span class="k">Kiku, queued</span></div>
+      </section>
+      <section class="panel" style="flex:1">
+        <div class="panel-h"><h2>Earlier in this call</h2><span class="dim small">karaoke lines show what Kiku wrote and what you said</span></div>
+        <div class="scroll hist" id="hist">${hist}</div>
+      </section>
+    </div>
+    <aside class="side scroll">
+      <div class="reason">
+        <div class="st escalated" style="margin-bottom:6px">${SHAPES.escalated}Why Kiku escalated</div>
+        <p style="font-size:13.5px">${esc(T.escalationReason)}</p>
+      </div>
+      <section class="panel"><div class="panel-b">
+        <h2 style="margin-bottom:12px">${esc(T.purpose)}</h2>
+        <dl class="kv">
+          <dt>Phone</dt><dd>${T.phone}</dd>
+          <dt>Booking</dt><dd>${T.booking}</dd>
+          <dt>Stay</dt><dd>${esc(T.stay)}</dd>
+          <dt>Direction</dt><dd>${dirTag(T.direction)}</dd>
+          <dt>Started</dt><dd>${T.started}</dd>
+        </dl>
+      </div></section>
+      <section class="panel"><div class="panel-b">
+        <h3 style="margin-bottom:4px">Booking facts</h3>
+        <ul class="facts">${T.facts.map(f => `<li><i data-lucide="receipt" style="color:var(--ink-3)"></i>${esc(f)}</li>`).join("")}</ul>
+      </div></section>
+      <section class="panel"><div class="panel-b" style="display:flex;gap:10px;align-items:center">
+        <span class="av" style="background:var(--saffron);color:var(--rail);border:0">PR</span>
+        <div><b>${esc(T.specialist)}</b><div class="small muted">On the line · karaoke mode</div></div>
+        <span class="who kiku" style="margin-left:auto"><span class="dot"></span>Kiku writing</span>
+      </div></section>
+    </aside>
+  </div>
+</div>`;
+icons();
+drawRibbons();
+const h = document.getElementById("hist"); const rows = [...h.querySelectorAll(".row")]; const tk = rows.find(r => r.textContent.includes("took over")); h.scrollTop = Math.min(h.scrollHeight, tk.offsetTop - h.offsetTop);
+</script>
+</body></html>

@@ -1,180 +1,125 @@
+/* Shared helpers for design 7 */
 (function () {
   const K = window.KIKU;
-
-  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const icon = (n, cls) => `<i class="bi bi-${n}${cls ? " " + cls : ""}" aria-hidden="true"></i>`;
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
   const STATUS = {
-    completed: { label: "Completed", cls: "ok", icon: "check-lg" },
-    in_progress: { label: "In progress", cls: "run", icon: "play-fill" },
-    escalated: { label: "Escalated", cls: "esc", icon: "arrow-up" },
-    failed: { label: "Failed", cls: "fail", icon: "x-lg" },
+    completed: { label: "Completed", cls: "st-done" },
+    in_progress: { label: "In progress", cls: "st-prog" },
+    escalated: { label: "Escalated", cls: "st-esc" },
+    failed: { label: "Failed", cls: "st-fail" },
   };
-  const status = (s) => {
-    const m = STATUS[s];
-    return `<span class="st st-${m.cls}"><span class="st-i">${icon(m.icon)}</span>${m.label}</span>`;
+  const SHAPE = {
+    completed: '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="6.2" fill="currentColor"/><path d="M4.2 7.2l1.9 1.9 3.8-4" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    in_progress: '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 1.4a5.6 5.6 0 0 1 0 11.2z" fill="currentColor"/></svg>',
+    escalated: '<svg viewBox="0 0 14 14"><path d="M7 .9l6.3 11.4H.7z" fill="currentColor"/><path d="M7 5v3.4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="7" cy="10.3" r=".9" fill="#fff"/></svg>',
+    failed: '<svg viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="1.5" fill="currentColor"/><path d="M4.6 4.6l4.8 4.8M9.4 4.6l-4.8 4.8" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>',
   };
-  const tile = (s) => {
-    const m = STATUS[s];
-    return `<span class="tile ${m.cls}">${icon(m.icon)}</span>`;
+  const status = (key, bare) => {
+    const s = STATUS[key];
+    return `<span class="status ${s.cls}${bare ? " bare" : ""}">${SHAPE[key]}${s.label}</span>`;
   };
 
-  const live = K.calls.filter((c) => c.status === "in_progress" || c.status === "escalated");
-  const NAV = {
-    specialist: [
-      { id: "live", t: "Live", n: `<span class="live-dot"></span>${live.length} calls on air`, href: "02-live-overview.html" },
-      { id: "logs", t: "Call logs", n: `${K.stats.callsToday} calls today`, href: "03-call-logs.html" },
-      { id: "out", t: "Outbound", n: "Campaign · Upsell · Call", href: "07-outbound-campaign.html" },
-    ],
-    admin: [
-      { id: "logs", t: "Call logs", n: `${K.stats.callsToday} calls today`, href: "03-call-logs.html" },
-      { id: "out", t: "Outbound", n: "Campaign · Upsell · Call", href: "07-outbound-campaign.html" },
-      { id: "users", t: "Users", n: `${K.users.length} people`, href: "10-users.html" },
-    ],
-  };
-  const LETTERS = "ABCD";
+  // The mark: three lanes of a stave, the middle one full length
+  const mark = (size = 34, light = true) => `<svg width="${size}" height="${size}" viewBox="0 0 34 34" aria-hidden="true">
+    <path d="M9 6h19l-3 5H9z" fill="#FF9966"/>
+    <path d="M4 14.5h26l-3 5H4z" fill="${light ? "#fff" : "#2B1E27"}"/>
+    <path d="M9 23h15l-3 5H9z" fill="#846E77"/></svg>`;
 
-  function band(role, active, hover) {
-    const p = role === "admin" ? K.people.admin : K.people.specialist;
-    const keys = NAV[role]
-      .map((k, i) => `<a class="key${k.id === active ? " is-on" : ""}${k.id === hover ? " is-hover" : ""}" href="${k.href}"${k.id === active ? ' aria-current="page"' : ""}>
-        <span class="key-l">${LETTERS[i]}</span><span class="key-t">${k.t}</span><span class="key-n">${k.n}</span></a>`)
-      .join("");
-    const day = K.hotel.today.split(" ").slice(0, 3).join(" ").replace("Sunday", "Sun").replace("September", "Sep");
-    return `<div class="brand"><a class="wordmark" href="02-live-overview.html">${K.product.name}</a><div class="brand-sub">${K.hotel.name}, ${K.hotel.city}</div></div>
-      <nav class="keys" aria-label="Main">${keys}</nav>
-      <div class="me"><div class="me-meta"><div class="me-name">${p.name}</div><div class="me-role">${p.role} · ${p.title}</div><div class="me-clock num">${day} · ${K.hotel.now} ${K.hotel.tz}</div></div>
-      <span class="av">${p.initials}</span></div>`;
+  const ic = n => `<i data-lucide="${n}"></i>`;
+
+  const live = K.calls.filter(c => c.status === "in_progress" || c.status === "escalated");
+
+  function rail(role, active) {
+    const person = role === "admin" ? K.people.admin : K.people.specialist;
+    const item = (id, icon, label, extra = "") =>
+      `<a class="${active === id ? "on" : ""}" href="#"><span class="ri">${ic(icon)}</span>${extra}<span class="rl">${label}</span></a>`;
+    const waiting = live.filter(c => c.status === "escalated" && !c.specialist).length;
+    let nav = "";
+    if (role !== "admin") nav += item("live", "radio-tower", "Live", `<span class="count">${waiting}</span>`);
+    nav += item("logs", "list", "Call logs");
+    nav += `<span class="rsep" title="Outbound calls"></span>`;
+    nav += item("campaign", "megaphone", "Campaign");
+    nav += item("upsell", "concierge-bell", "Upsell");
+    nav += item("make", "phone-outgoing", "Make a call");
+    if (role === "admin") { nav += `<span class="rsep"></span>`; nav += item("users", "users", "Users"); }
+    const dots = live.map(c => `<i class="${c.status === "escalated" ? (c.specialist ? "h" : "w") : ""}" title="${esc_(c.guest)}"></i>`).join("");
+    return `
+      <div class="rbrand">${mark(32)}</div>
+      <nav class="nav">${nav}</nav>
+      <div class="rail-foot">
+        <div class="livedots" title="Calls on the line now"><span class="ld">${dots}</span><span class="rl">${live.length} live</span></div>
+        <span class="avatar me-av" title="${esc_(person.name)}, ${person.role}">${person.initials}</span>
+      </div>`;
   }
+  const esc_ = esc;
 
-  function mountBand(role, active, hover) {
-    const el = document.querySelector(".band");
-    if (el) el.innerHTML = band(role, active, hover);
-  }
-
-  function record({ size = 160, top = "", main = "", cap = "", play = false, labelFill = "#DC45FE", disc = "#2A0B38", ring = "" } = {}) {
-    let g = "";
-    for (let i = 0; i < 14; i++) {
-      const r = 95 - i * 3.3;
-      g += `<circle cx="100" cy="100" r="${r.toFixed(1)}" fill="none" stroke="#FFFFFF" stroke-opacity="${i % 4 === 0 ? 0.16 : 0.07}" stroke-width="${i % 4 === 0 ? 1.1 : 0.8}"/>`;
+  // Interlinear gloss: the spoken line is the main text; what Kiku wrote sits above
+  // each improvised span in small struck type. Dropped words stay inline, struck.
+  function gloss(diff, opts = {}) {
+    const words = t => t.split(/\s+/).filter(Boolean);
+    const out = [];
+    for (let i = 0; i < diff.length; i++) {
+      const seg = diff[i], nx = diff[i + 1];
+      if (seg.op === "same") { words(seg.text).forEach(w => out.push(`<span class="u">${esc(w)}</span>`)); continue; }
+      if (nx && nx.op !== "same" && nx.op !== seg.op) {
+        const ins = seg.op === "ins" ? seg : nx, del = seg.op === "del" ? seg : nx;
+        out.push(`<span class="u pair"><span class="g">${esc(del.text)}</span><span class="m">${esc(ins.text)}</span></span>`);
+        i++; continue;
+      }
+      if (seg.op === "ins") words(seg.text).forEach(w => out.push(`<span class="u add">${esc(w)}</span>`));
+      else words(seg.text).forEach(w => out.push(`<span class="u drop">${esc(w)}</span>`));
     }
-    const center = play
-      ? `<path d="M92 112 L92 136 L113 124 Z" fill="#2A0B38"/>`
-      : `<text x="100" y="137" text-anchor="middle" class="r-main">${esc(main)}</text>`;
-    return `<svg class="rec" width="${size}" height="${size}" viewBox="0 0 200 200" aria-hidden="true">
-      <circle cx="100" cy="100" r="99" fill="${disc}"/>${ring ? `<circle cx="100" cy="100" r="98.2" fill="none" stroke="${ring}" stroke-width="1.6"/>` : ""}${g}
-      <path d="M 38 64 A 72 72 0 0 1 66 36" stroke="#FFFFFF" stroke-opacity=".28" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-      <path d="M 162 136 A 72 72 0 0 1 134 164" stroke="#FFFFFF" stroke-opacity=".18" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-      <circle cx="100" cy="100" r="50" fill="${labelFill}"/>
-      <line x1="58" y1="91" x2="142" y2="91" stroke="#E8313B" stroke-width="2"/>
-      <line x1="58" y1="109" x2="142" y2="109" stroke="#2457F5" stroke-width="2"/>
-      <line x1="64" y1="100" x2="94" y2="100" stroke="#2A0B38" stroke-width="1.2" stroke-dasharray="1.2 2.6" stroke-linecap="round"/>
-      <line x1="106" y1="100" x2="136" y2="100" stroke="#2A0B38" stroke-width="1.2" stroke-dasharray="1.2 2.6" stroke-linecap="round"/>
-      <circle cx="100" cy="100" r="3.6" fill="#F6F0FA"/>
-      <text x="100" y="80" text-anchor="middle" class="r-top">${esc(top)}</text>
-      ${center}
-      ${cap ? `<text x="100" y="66" text-anchor="middle" class="r-bot">${esc(cap)}</text>` : ""}
-    </svg>`;
+    if (opts.caret) out.push(`<span class="u"><span class="livecaret"></span></span>`);
+    const verbatim = diff.every(s => s.op === "same");
+    return `<div class="il${verbatim ? " verbatim" : ""}${opts.lg ? " lg" : ""}">${out.join(" ")}</div>`;
   }
 
-  function diffSide(diff, side, live) {
-    const keep = diff.filter((s) => s.op === "same" || (side === "a" ? s.op === "del" : s.op === "ins"));
-    return keep
-      .map((s, i) => {
-        if (s.op === "same") return esc(s.text);
-        if (side === "a") {
-          if (live && i === keep.length - 1) return `<span class="ahead">${esc(s.text)}</span>`;
-          return `<del>${esc(s.text)}</del>`;
-        }
-        return `<ins>${esc(s.text)}</ins>`;
-      })
-      .join(" ");
-  }
-
-  function karaoke(turn, who, opts = {}) {
-    const tag = turn.asWritten
-      ? `<span class="tile ok">${icon("check-lg")}</span>Spoken as written · <span class="match">${turn.match}%</span> match`
-      : `Improvised · <span class="match">${turn.match}%</span> match`;
-    return `<article class="strip kst${turn.asWritten ? " as-written" : ""}">
-      <div class="half a"><span class="t num">${turn.t}</span><span class="k-lab"><span class="k-key a">A</span>Kiku wrote</span><p class="k-txt">${diffSide(turn.diff, "a", opts.live)}</p></div>
-      <div class="tear"><span class="tear-tag">${tag}</span></div>
-      <div class="half b"><span class="t"></span><span class="k-lab"><span class="k-key b">B</span>${esc(who)} said</span><p class="k-txt">${diffSide(turn.diff, "b")}</p></div>
-    </article>`;
-  }
-
-  const WHO = {
-    agent: { label: "Kiku", icon: "robot" },
-    guest: { label: "", icon: "person-fill" },
+  const ring = (m, size = 30) => {
+    const r = 12, c = 2 * Math.PI * r;
+    return `<svg class="ring" width="${size}" height="${size}" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="${r}" fill="none" stroke="var(--apricot-t)" stroke-width="4"/><circle cx="15" cy="15" r="${r}" fill="none" stroke="${m === 100 ? "var(--done)" : "var(--mauve)"}" stroke-width="4" stroke-dasharray="${(m / 100 * c).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 15 15)"/></svg>`;
   };
-  function line(item, guestName, cls = "") {
-    const w = item.speaker === "agent" ? WHO.agent : { label: guestName, icon: "person-fill" };
-    return `<div class="ln ${item.speaker}${cls ? " " + cls : ""}"><span class="t num">${item.t}</span><span class="who">${icon(w.icon)}${esc(w.label)}</span><p>${esc(item.text)}</p></div>`;
+  const matchGauge = m => `<span class="match">${ring(m, 22)}<span><b>${m}%</b> of Kiku's words kept</span></span>`;
+
+  const sysIcon = { escalation: "triangle-alert", join: "headphones", takeover: "hand", end: "phone-off" };
+
+  function transcript(list, specialistName) {
+    const first = (specialistName || "").split(" ")[0];
+    return list.map(r => {
+      if (r.speaker === "system") {
+        return `<div class="turn sys"><div class="t num">${r.t}</div><div class="sysline ${r.kind}">${ic(sysIcon[r.kind] || "info")}${esc(r.text)}</div></div>`;
+      }
+      if (r.karaoke) {
+        return `<div class="turn karaoke${r.asWritten ? " aswritten" : ""}"><div class="t num">${r.t}</div><div class="kbox">
+          <div class="k-head"><span class="spk h">${esc(first)} said</span>
+          ${r.asWritten ? `<span class="seal">${ic("badge-check")}Spoken as written</span>` : `<span class="impro">${ic("pen-line")}Improvised</span>`}
+          <span style="margin-left:auto">${matchGauge(r.match)}</span></div>
+          ${gloss(r.diff, { caret: r.live })}
+          ${r.asWritten ? "" : `<div class="kline"><span>Kiku wrote</span>${esc(r.wrote)}</div>`}</div></div>`;
+      }
+      const cls = r.speaker === "agent" ? "agent" : "guest";
+      const label = r.speaker === "agent" ? `<div class="spk k">Kiku</div>` : `<div class="spk g">Guest</div>`;
+      return `<div class="turn ${cls}"><div class="t num">${r.t}</div><div>${label}<div class="tx">${esc(r.text)}</div></div></div>`;
+    }).join("");
   }
 
-  const EVT = {
-    escalation: { tile: "esc", icon: "arrow-up", label: "Escalated" },
-    join: { tile: "plum", icon: "headphones", label: "Joined" },
-    takeover: { tile: "run", icon: "mic-fill", label: "Took over" },
-    end: { tile: "plum", icon: "telephone-x-fill", label: "Ended" },
-  };
-  function event(item) {
-    const e = EVT[item.kind];
-    return `<div class="evt"><span class="evt-tag"><span class="tile ${e.tile}">${icon(e.icon)}</span><span class="lbl">${e.label} · <span class="num">${item.t}</span></span><span>${esc(item.text)}</span></span></div>`;
+  function topbar(title, extra = "") {
+    return `<header class="top">${title}<div class="right">${extra}<span class="clock">${ic("clock")}${K.hotel.today}, ${K.hotel.now} ${K.hotel.tz}</span></div></header>`;
   }
 
-  function transcript(items, guestName, specialistFirst, opts = {}) {
-    return items
-      .map((it) => {
-        if (it.speaker === "system") return event(it);
-        if (it.karaoke) return karaoke(it, specialistFirst, { live: it.live });
-        return line(it, guestName, opts.latest === it ? "is-latest" : "");
-      })
-      .join("");
+  function meter(n = 16, human = false, seed = 1) {
+    let h = "";
+    for (let i = 0; i < n; i++) {
+      const v = 6 + ((i * 7 + seed * 5) % 13) * 1.2;
+      h += `<i style="height:${v}px;animation-delay:${((i * 3 + seed) % 7) * 0.12}s"></i>`;
+    }
+    return `<span class="meter${human ? " h" : ""}">${h}</span>`;
   }
 
-  function meter(n, lit, hot = 0) {
-    let s = "";
-    for (let i = 0; i < n; i++) s += `<i class="${i < lit - hot ? "on" : i < lit ? "hot" : ""}"></i>`;
-    return `<div class="meter">${s}</div>`;
+  function mount(role, active, html) {
+    document.body.innerHTML = `<div class="app"><aside class="rail">${rail(role, active)}</aside><main class="main">${html}</main></div>`;
+    if (window.lucide) window.lucide.createIcons();
   }
 
-  const first = (name) => String(name).split(" ")[0];
-
-  const SUB = [["B1", "Campaign", "07-outbound-campaign.html"], ["B2", "Upsell", "08-outbound-upsell.html"], ["B3", "Make a call", "09-outbound-make-a-call.html"]];
-  const outSub = (on) => SUB.map(([k, t, h]) => `<a class="sel${t === on ? " is-on" : ""}" href="${h}"${t === on ? ' aria-current="page"' : ""}><b>${k}</b>${t}</a>`).join("");
-
-  function fileRow(f, extra) {
-    return `<div class="filerow"><span class="fileico">CSV</span>
-      <div class="grow"><div class="fn">${esc(f.file)}</div><div class="fm num">${f.size ? f.size + " · " : ""}${f.rows} rows</div></div>
-      ${extra || ""}</div>`;
-  }
-
-  function alignEnd(pane) {
-    const list = pane.firstElementChild;
-    if (!list) return;
-    if (list.dataset.pb == null) list.dataset.pb = parseFloat(getComputedStyle(list).paddingBottom) || 0;
-    list.style.paddingBottom = list.dataset.pb + "px";
-    const max = pane.scrollHeight - pane.clientHeight;
-    if (max <= 0) return;
-    const top0 = pane.getBoundingClientRect().top - pane.scrollTop;
-    const t = [...list.children].map((k) => k.getBoundingClientRect().top - top0).find((v) => v >= max - 1);
-    if (t == null) { pane.scrollTop = max; return; }
-    list.style.paddingBottom = Number(list.dataset.pb) + (t - max) + "px";
-    pane.scrollTop = t - 4;
-  }
-  function pinEnd(pane) {
-    afterFonts(() => {
-      alignEnd(pane);
-      let h = pane.clientHeight;
-      new ResizeObserver(() => { if (pane.clientHeight !== h) { h = pane.clientHeight; alignEnd(pane); } }).observe(pane);
-    });
-  }
-
-  function afterFonts(fn) {
-    const go = () => Promise.all([document.fonts.load('16px "bootstrap-icons"'), document.fonts.load('800 16px "Archivo"'), document.fonts.ready])
-      .then(() => setTimeout(fn, 250));
-    if (document.readyState === "complete") go(); else window.addEventListener("load", go);
-  }
-
-  window.UI = { pinEnd, afterFonts, alignEnd, outSub, fileRow, K, esc, icon, status, tile, STATUS, band, mountBand, record, diffSide, karaoke, line, event, transcript, meter, first };
+  window.UI = { K, esc, status, STATUS, mark, ic, gloss, ring, matchGauge, transcript, topbar, meter, mount, live };
 })();

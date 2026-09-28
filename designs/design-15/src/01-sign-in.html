@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Sign in</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .split { display: grid; grid-template-columns: 560px 1fr; height: 100vh; }
+  .brand { background: var(--rail); color: var(--rail-ink); padding: 48px 56px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+  .bars { position: absolute; left: 56px; right: -40px; top: 50%; transform: translateY(-50%) skewX(var(--skew)); display: grid; gap: 18px; }
+  .bars i { display: block; height: 64px; border-radius: 4px; }
+  .bars i:nth-child(1) { background: var(--teal); width: 78%; }
+  .bars i:nth-child(2) { background: var(--lime); width: 86%; margin-left: 92px; }
+  .brand .foot { margin-top: auto; font-size: 13px; color: var(--rail-dim); display: grid; gap: 4px; position: relative; }
+  .brand .foot b { color: #fff; font-weight: 600; font-size: 14px; }
+  .form-side { display: grid; place-items: center; }
+  form { width: 380px; display: grid; gap: 18px; }
+  .wm { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+  .wm .glyph i { height: 7px; }
+  .wm .glyph i:first-child { width: 28px; }
+  .wm .glyph i:last-child { width: 28px; margin-left: 10px; }
+  .wm b { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; }
+  .hotel { font-size: 15px; color: var(--ink-2); margin-top: -14px; margin-bottom: 10px; }
+  .pw { display: flex; justify-content: space-between; align-items: baseline; }
+  .pw a { font-size: 12.5px; color: var(--teal); font-weight: 600; text-decoration: none; }
+  .demo { position: absolute; bottom: 28px; right: 40px; font-size: 12px; color: var(--ink-3); display: flex; gap: 6px; align-items: center; }
+</style>
+</head>
+<body>
+<div class="split">
+  <aside class="brand">
+    <div class="bars" aria-hidden="true"><i></i><i></i></div>
+    <div class="foot"><b>Voice agent console</b><span>Kiku answers the hotel line. You step in when a guest needs a person.</span></div>
+  </aside>
+  <main class="form-side">
+    <form>
+      <div class="wm"><span class="glyph"><i></i><i></i></span><b>Kiku</b></div>
+      <p class="hotel">The Brenlow, Edinburgh</p>
+      <div class="field"><label for="e">Work email</label><div class="input focus" id="e">priya.raman@brenlow.example</div></div>
+      <div class="field"><div class="pw"><label for="p">Password</label><a href="#">Forgot password?</a></div><div class="input" id="p" style="letter-spacing:.2em">••••••••••••</div></div>
+      <button class="btn ink lg" type="button" style="width:100%;margin-top:6px">Sign in</button>
+    </form>
+    <p class="demo" id="demo"></p>
+  </main>
+</div>
+<script>
+$("#demo").innerHTML = ic("info") + esc(K.synthetic);
+boot();
+</script>
+</body>
+</html>

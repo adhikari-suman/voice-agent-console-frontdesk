@@ -1,150 +1,110 @@
 <!doctype html>
-<html lang="en">
-<head>
-<title>Kiku · Campaign calls</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&display=block">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css">
-<script src="../../_shared/data.js"></script>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku, campaign calls</title>
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script src="app.js"></script>
 <style>
-  .camp { height: 100%; display: grid; grid-template-columns: 452px minmax(0, 1fr); gap: 16px; }
-  .cr { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 0 12px; padding: 14px 14px 14px 12px; border-bottom: 1px solid var(--line); }
-  .cr:hover { background: var(--hover); }
-  .cr.is-sel { background: var(--sel); box-shadow: inset 0 0 0 1px var(--blue); }
-  .cr__n { font: 600 18px/1.2 var(--f-cond); color: var(--text-2); text-align: right; padding-top: 2px; }
-  .cr__head { display: flex; align-items: center; gap: 10px; }
-  .cr__head b { font-weight: 600; font-size: 15px; }
-  .cr__status { margin-top: 8px; }
-  .cr__offer { font-size: 13.5px; color: var(--text-2); margin-top: 6px; line-height: 1.4; }
-  .cr__prog { margin-top: 12px; display: flex; align-items: center; gap: 10px; }
-  .cr__bar { flex: 1; height: 8px; background: var(--bezel); border-radius: 1px; position: relative; overflow: hidden; }
-  .cr__bar span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--text); }
-  .cr__prog .v { font: 600 14px/1 var(--f-cond); letter-spacing: .03em; white-space: nowrap; }
-  .nums { display: flex; flex-wrap: wrap; gap: 4px 13px; margin-top: 10px; font-size: 13px; color: var(--text-2); }
-  .nums b { font: 600 16px/1 var(--f-cond); letter-spacing: .03em; color: var(--text); margin-right: 4px; }
-  .nums .fail b { color: var(--text); }
-  .nums .fail i { color: var(--fail); font-size: 14px; position: relative; top: 2px; margin-right: 3px; }
-  .cr__meta { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; font-size: 13px; color: var(--text-2); }
-  .cr__meta span { display: inline-flex; align-items: center; gap: 6px; }
-  .cr__meta i { font-size: 15px; }
-  .cr__keys { display: flex; gap: 6px; margin-top: 12px; }
-  .cst { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; white-space: nowrap; }
-  .cst i { font-size: 15px; color: var(--text-2); }
-  .cst--paused i { color: var(--amber); }
-  .cst--sched i { color: #3DA5FF; }
+.content { display: grid; grid-template-columns: 540px 1fr; }
+.camps { padding: 20px 24px 20px 28px; display: flex; flex-direction: column; gap: 12px; border-right: 1px solid var(--line); min-height: 0; }
+.camps .hh { display: flex; align-items: center; }
+.camps .hh h2 { font-size: 15px; font-weight: 700; }
+.camps .hh .btn { margin-left: auto; }
+.cp { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; }
+.cp.sel { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); background: #fff; }
+.cp .r1 { display: flex; align-items: center; gap: 10px; }
+.cp .code { font-size: 20px; letter-spacing: .07em; }
+.cp .nm { font-size: 13px; color: var(--muted); }
+.cp .state { margin-left: auto; display: inline-flex; gap: 6px; align-items: center; font-size: 12px; font-weight: 600; padding: 3px 9px 3px 7px; border-radius: 12px; }
+.cp .state svg.lucide { width: 13px; height: 13px; stroke-width: 2.2; }
+.state.paused { background: #FBEFD9; color: #7a5310; }
+.state.sched { background: var(--kiku-bg); color: var(--kiku); }
+.state.draft { background: var(--sunk); color: var(--ink); }
+.cp .offer { font-size: 13.5px; margin: 8px 0 10px; line-height: 1.4; }
+.cp .meta { display: flex; gap: 16px; font-size: 12px; color: var(--muted); }
+.cp .meta span { display: inline-flex; gap: 5px; align-items: center; }
+.cp .meta svg.lucide { width: 13px; height: 13px; }
+.funnel { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin-top: 12px; border-top: 1px solid var(--line-soft); padding-top: 10px; }
+.funnel div b { display: block; font: 700 24px/1 var(--f-count); letter-spacing: .02em; }
+.funnel div span { font-size: 11.5px; color: var(--muted); }
+.funnel .bk b { color: var(--ok); } .funnel .fl b { color: var(--fail); }
+.bar2 { display: flex; height: 8px; margin-top: 10px; border-radius: 2px; overflow: hidden; background: var(--sunk); }
+.bar2 i { height: 100%; }
 
-  .setup { display: flex; flex-direction: column; min-height: 0; }
-  .setup__body { flex: 1; min-height: 0; overflow: auto; padding: 16px 18px; display: grid; grid-template-columns: 200px minmax(0, 1fr) 190px; gap: 16px 16px; align-content: start; }
-  .setup__body .span2 { grid-column: 2 / -1; }
-  .setup__body .full { grid-column: 1 / -1; }
-  .aud { display: flex; flex-direction: column; gap: 10px; }
-  .vsum { justify-content: space-between; }
-  .window { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-  .window .times { display: flex; align-items: center; gap: 8px; color: var(--text-2); }
-  .window .sel { width: 104px; }
-  .opening { min-height: 132px; height: auto; padding: 10px 12px; line-height: 1.55; font-size: 15px; }
-  .opening .token { font-size: 14px; }
-  .setup__foot { flex: none; display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-top: 1px solid var(--line); }
-  .setup__foot .sum { font-size: 13.5px; color: var(--text-2); }
-  .setup__foot .sum b { color: var(--text); font-weight: 600; }
-  .setup__foot .end { margin-left: auto; display: flex; gap: 8px; }
-  .errlist { font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 8px; }
-  .errlist i { color: var(--fail); font-size: 15px; }
-</style>
-</head>
+.setup { display: flex; flex-direction: column; min-height: 0; background: var(--surface); }
+.setup .sh { padding: 18px 32px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 14px; }
+.setup .sh h2 { font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+.setup .body { flex: 1; padding: 18px 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; align-content: start; }
+.setup .full { grid-column: 1 / -1; }
+.opening { font-size: 15px; line-height: 1.55; padding: 12px 14px; }
+.tok { display: inline-block; background: var(--kiku-bg); color: var(--kiku); border: 1px solid var(--kiku-edge); border-radius: 3px; padding: 0 5px; font-weight: 600; font-size: 13.5px; line-height: 1.5; }
+.seg-ctl { display: flex; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; height: 38px; background: #fff; }
+.seg-ctl span { flex: 1; display: grid; place-items: center; font-weight: 600; font: 700 17px/1 var(--f-count); border-right: 1px solid var(--line); color: var(--muted); }
+.seg-ctl span:last-child { border: 0; }
+.seg-ctl span.on { background: var(--ink); color: #fff; }
+.days { display: flex; gap: 4px; }
+.days span { width: 34px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: var(--r); font-size: 12px; font-weight: 600; color: var(--muted); background: #fff; }
+.days span.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.checks { border-top: 1px dashed var(--line); padding-top: 14px; }
+.checks h3 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+.checks ul { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; font-size: 13px; }
+.checks li { display: flex; gap: 8px; align-items: center; }
+.checks svg.lucide { color: var(--ok); }
+.funnel div:not(:first-child) span::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 1px; }
+.funnel div:nth-child(2) span::before { background: var(--mist); } .funnel div:nth-child(3) span::before { background: var(--kiku); }
+.funnel div:nth-child(4) span::before { background: var(--ok); } .funnel div:nth-child(5) span::before { background: var(--fail); }
+.setup .foot { padding: 14px 32px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+.setup .foot .sp { flex: 1; }
+</style></head>
 <body>
+<div class="app">
+  <nav class="spine" id="spine"></nav>
+  <main class="main">
+    <header class="top" id="top"></header>
+    <div class="content">
+      <div class="camps scroll" id="camps"></div>
+      <div class="setup" id="setup"></div>
+    </div>
+  </main>
+</div>
 <script>
-  const { K, esc, ic, mount } = Kiku;
-  const D = K.campaignDraft;
-  const statusOf = (c) => c.status.startsWith("Paused") ? ["paused", "pause-circle-line"] : c.status.startsWith("Scheduled") ? ["sched", "calendar-schedule-line"] : ["draft", "draft-line"];
+const { K, esc, icon, shell } = TT; const D = K.campaignDraft;
+shell({ role: 'admin', active: 'out', title: 'Outbound', after: TT.outTabs('campaign') });
+const st = c => c.status.startsWith('Paused') ? ['paused', 'pause', c.status] : c.status.startsWith('Scheduled') ? ['sched', 'calendar-clock', c.status] : ['draft', 'pencil-line', c.status];
+document.getElementById('camps').innerHTML = `<div class="hh"><h2>Campaigns</h2><button class="btn sm">${icon('plus')}New campaign</button></div>` + K.campaigns.map(c => {
+  const [k, ic, label] = st(c); const pc = v => c.contacts ? (v / c.contacts * 100).toFixed(1) + '%' : '0';
+  return `<div class="cp ${c.code === 'BURNS27' ? 'sel' : ''}">
+    <div class="r1"><span class="code">${c.code}</span><span class="nm">${esc(c.name)}</span><span class="state ${k}">${icon(ic)}${esc(label)}</span></div>
+    <p class="offer">${esc(c.offer)}</p>
+    <div class="meta"><span>${icon('file-spreadsheet')}${esc(c.audience)}</span><span>${icon('clock')}${esc(c.window)}</span></div>
+    ${c.contacts ? `<div class="funnel"><div><b>${c.contacts}</b><span>contacts</span></div><div><b>${c.called}</b><span>called</span></div><div><b>${c.answered}</b><span>answered</span></div><div class="bk"><b>${c.booked}</b><span>booked</span></div><div class="fl"><b>${c.failed}</b><span>failed</span></div></div>
+      ${c.called ? `<div class="bar2"><i style="width:${pc(c.booked)};background:var(--ok)"></i><i style="width:${pc(c.answered - c.booked)};background:var(--kiku)"></i><i style="width:${pc(c.called - c.answered - c.failed)};background:var(--mist)"></i><i style="width:${pc(c.failed)};background:var(--fail)"></i></div><p class="help" style="margin-top:6px">${c.called} of ${c.contacts} called so far. Resumes Mon 10:00.</p>` : `<p class="help" style="margin-top:8px">Nobody called yet.</p>`}` : ''}
+  </div>`;
+}).join('');
 
-  const rows = K.campaigns.map((c, i) => {
-    const [k, icon] = statusOf(c);
-    const sel = c.code === D.code;
-    const pct = c.contacts ? (c.called / c.contacts) * 100 : 0;
-    const prog = c.contacts
-      ? `<div class="cr__prog"><div class="cr__bar" role="progressbar" aria-valuenow="${c.called}" aria-valuemax="${c.contacts}"><span style="width:${pct}%"></span></div><span class="v">${c.called} of ${c.contacts} called</span></div>`
-      : "";
-    const nums = c.called
-      ? `<div class="nums"><span><b>${c.contacts}</b>contacts</span><span><b>${c.called}</b>called</span><span><b>${c.answered}</b>answered</span><span><b>${c.booked}</b>booked</span><span class="fail">${ic("close-line")}<b>${c.failed}</b>failed</span></div>`
-      : c.contacts ? `<div class="nums"><span><b>${c.contacts}</b>contacts, none called yet</span></div>` : "";
-    const key = k === "paused" ? `<button class="key key--sm">${ic("play-line")}Resume now</button><button class="key key--sm key--ghost">Edit</button>`
-      : k === "sched" ? `<button class="key key--sm">${ic("edit-line")}Edit</button><button class="key key--sm key--ghost">Pause</button>`
-      : `<span class="cst" style="color:#6FBCFF">${ic("edit-line")}Editing in setup</span>`;
-    return `<article class="cr${sel ? " is-sel" : ""}"${sel ? ' aria-current="true"' : ""}>
-      <span class="cr__n">${i + 1}</span>
-      <div>
-        <div class="cr__head"><span class="umd-chip">${esc(c.code)}</span><b>${esc(c.name)}</b></div>
-        <div class="cr__status"><span class="cst cst--${k}">${ic(icon)}${esc(c.status)}</span></div>
-        <p class="cr__offer">${esc(c.offer)}</p>
-        ${prog}${nums}
-        <div class="cr__meta"><span>${ic("time-line")}${esc(c.window)}</span><span>${ic("file-text-line")}${esc(c.audience)}</span></div>
-        <div class="cr__keys">${key}</div>
-      </div>
-    </article>`;
-  }).join("");
-
-  const draftC = K.campaigns.find((c) => c.code === D.code);
-  const opening = esc(D.opening).replace("{first_name}", `<span class="token">{first_name}</span>`);
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => `<button class="${i < 5 ? "is-on" : ""}" aria-pressed="${i < 5}" aria-label="${d}">${d.slice(0, 2)}</button>`).join("");
-  const readyPct = (D.ready / D.rows) * 100;
-
-  const setup = `<section class="pane setup" aria-label="Campaign setup">
-    <div class="pane__head"><h2>Set up ${esc(D.code)}</h2><span class="muted">${esc(draftC.name)}</span><span class="end cst">${ic("draft-line")}Draft</span></div>
-    <div class="setup__body">
-      <div class="field"><label class="lbl" for="code">Promo code</label><input class="input input--code" id="code" value="${esc(D.code)}"></div>
-      <div class="field span2"><label class="lbl" for="name">Campaign name</label><input class="input" id="name" value="${esc(draftC.name)}"></div>
-      <div class="field full"><label class="lbl" for="offer">Offer Kiku describes</label><input class="input" id="offer" value="${esc(draftC.offer)}"></div>
-
-      <div class="field full"><span class="lbl">Audience <span class="end help">Needs a phone column. Other columns become fields like {first_name}.</span></span>
-        <div class="aud">
-          <div class="file"><span class="file__icon">${ic("file-text-line")}</span><div><div class="file__name">${esc(D.file)}</div><div class="file__meta">${D.rows} rows</div></div>
-            <div class="end"><button class="key key--sm">${ic("upload-2-line")}Replace</button><button class="key key--sm key--ghost">Remove</button></div></div>
-          <div class="vbar" aria-hidden="true"><span style="width:${readyPct}%"></span><span class="err" style="width:${100 - readyPct}%"></span></div>
-          <div class="vsum"><span class="st st--done">${ic("check-line")}<span><b>${D.ready}</b> ready to call</span></span>
-            <span class="errlist">${ic("close-circle-line")}<span><b style="color:var(--text)">${D.errors}</b> rows have errors and will be skipped</span><a class="link" href="#">Review ${D.errors} rows</a></span></div>
-        </div>
-      </div>
-
-      <div class="field span2" style="grid-column:1 / 3"><span class="lbl">Call window</span>
-        <div class="window"><div class="daykeys" role="group" aria-label="Days">${days}</div>
-          <div class="times"><label class="sel" aria-label="From"><select class="input"><option>10:00</option></select><i class="ri-arrow-down-s-line chev" aria-hidden="true"></i></label>to<label class="sel" aria-label="Until"><select class="input"><option>18:00</option></select><i class="ri-arrow-down-s-line chev" aria-hidden="true"></i></label></div></div>
-        <span class="help">${esc(D.window)}, hotel time (${esc(K.hotel.tz)})</span>
-      </div>
-      <div class="field"><span class="lbl">Max attempts</span>
-        <div class="stepper"><button aria-label="Fewer">${ic("subtract-line")}</button><output>${D.maxAttempts}</output><button aria-label="More">${ic("add-line")}</button></div>
-        <span class="help">per contact</span>
-      </div>
-
-      <div class="field full"><span class="lbl">Opening line <span class="end help">Kiku says this first, then follows the guest's lead.</span></span>
-        <div class="input opening" role="textbox" aria-multiline="true">${opening}</div>
-      </div>
-    </div>
-    <div class="setup__foot">
-      <p class="sum"><b>${D.ready}</b> contacts · ${esc(D.window)} · up to <b>${D.maxAttempts}</b> attempts</p>
-      <div class="end"><button class="key key--lg">Save draft</button><button class="key key--lg key--lit">${ic("calendar-schedule-line")}Schedule campaign</button></div>
-    </div>
-  </section>`;
-
-  mount({
-    role: "admin",
-    active: "campaign",
-    title: "Campaign calls",
-    meta: `Promotional calls tied to a promo code · <b>${K.campaigns.length}</b> campaigns`,
-    tools: `<button class="key">${ic("add-line")}New campaign</button>`,
-    body: `<div class="camp">
-      <section class="pane" aria-label="Campaigns">
-        <div class="pane__head"><h2>Campaigns</h2><span class="end muted">${K.campaigns.length}</span></div>
-        <div class="scroll">${rows}</div>
-      </section>
-      ${setup}
-    </div>`,
-  });
+document.getElementById('setup').innerHTML = `
+  <div class="sh"><span class="code" style="font-size:24px">${D.code}</span><h2>Set up campaign</h2><span class="state draft" style="display:inline-flex;gap:6px;align-items:center;font-size:12px;font-weight:600;padding:3px 9px;border-radius:12px;background:var(--sunk)">${icon('pencil-line')}Draft</span><span class="help" style="margin-left:auto">Burns Night supper</span></div>
+  <div class="body scroll">
+    <div class="field"><label>Promo code</label><div class="input" style="font:700 16px/1 var(--f-count);letter-spacing:.08em">${D.code}</div></div>
+    <div class="field"><label>Offer</label><div class="input">${esc(K.campaigns[2].offer)}</div></div>
+    <div class="field full"><label>Audience</label>
+      <div class="file"><span class="fi">${icon('file-spreadsheet')}</span><div><b>${D.file}</b><small>${D.rows} rows read</small>
+        <div class="ratio"><i style="width:${D.ready / D.rows * 100}%;background:var(--ok)"></i><i style="width:${D.errors / D.rows * 100}%;background:var(--human-hi)"></i></div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div class="tally"><span class="ok">${icon('check')}${D.ready} ready</span><span class="bad">${icon('x')}${D.errors} errors</span></div><button class="btn sm ghost">Review ${D.errors} rows</button></div></div>
+      <p class="help">Rows with errors are skipped. Fix them in the file and upload again to include them.</p></div>
+    <div class="field"><label>Call window</label><div class="days">${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d, i) => `<span class="${i < 5 ? 'on' : ''}">${d}</span>`).join('')}</div>
+      <div style="display:flex;gap:8px;align-items:center"><div class="input" style="width:96px">${icon('clock')}10:00</div><span class="help">to</span><div class="input" style="width:96px">${icon('clock')}18:00</div></div><span class="help">${D.window}, Edinburgh time</span></div>
+    <div class="field"><label>Max attempts per guest</label><div class="seg-ctl"><span>1</span><span>2</span><span class="on">${D.maxAttempts}</span><span>4</span><span>5</span></div><span class="help">Kiku stops after ${D.maxAttempts} unanswered calls.</span></div>
+    <div class="field full"><label>Opening line <small>What Kiku says first</small></label>
+      <div class="input area opening focus">${esc(D.opening).replace('{first_name}', '<span class="tok">{first_name}</span>')}</div>
+      <span class="help">${icon('info').replace('<i', '<i style="width:12px;height:12px;vertical-align:-2px"')} <span class="tok" style="font-size:11.5px">{first_name}</span> is filled from the audience file. Kiku carries on the conversation from here.</span></div>
+    <div class="full checks"><h3>Ready to schedule</h3><ul>
+      <li>${icon('circle-check')}Promo code ${D.code} and offer set</li>
+      <li>${icon('circle-check')}${D.ready} guests ready, ${D.errors} rows skipped</li>
+      <li>${icon('circle-check')}Calls ${D.window}, up to ${D.maxAttempts} attempts</li>
+      <li>${icon('circle-check')}Opening line uses {first_name}</li></ul></div>
+  </div>
+  <div class="foot"><span class="help">${D.ready} guests will be called, ${D.window}.</span><span class="sp"></span><button class="btn">Save draft</button><button class="btn ink lg">${icon('calendar-check')}Schedule campaign</button></div>`;
+TT.draw();
 </script>
-</body>
-</html>
+</body></html>

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku · Campaign calls</title>
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="styles.css">
+<script src="vendor/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script><script src="app.js"></script>
+<style>
+.hrow{display:flex;align-items:flex-end;gap:16px}
+.hrow p{color:var(--ink-2)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 560px;gap:18px;flex:1;min-height:0}
+.list{display:flex;flex-direction:column;gap:12px;min-height:0}
+.cp{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 18px;flex:none}
+.cp.open{border-color:var(--rail);box-shadow:0 0 0 1px var(--rail)}
+.cp .h{display:flex;align-items:center;gap:12px}
+.code{font-family:var(--display);font-weight:700;font-stretch:118%;font-size:17px;letter-spacing:.01em}
+.cstat{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600}
+.cstat svg{width:14px;height:14px}
+.cp .name{font-weight:600;margin-top:6px}
+.cp .offer{color:var(--ink-2);font-size:13px}
+.cp .meta{display:flex;gap:16px;margin-top:10px;font-size:12.5px;color:var(--ink-3);flex-wrap:wrap}
+.funnel{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.funnel div{padding-right:10px}
+.funnel .num{font-size:22px;display:block;line-height:1.1}
+.funnel small{font-size:12px;color:var(--ink-2)}
+.fbar{display:flex;height:10px;border-radius:2px;overflow:hidden;margin-top:12px;background:var(--line)}
+.fbar i{display:block;height:100%}
+.flegend{display:flex;gap:14px;margin-top:6px;font-size:11.5px;color:var(--ink-3)}
+.flegend span{display:inline-flex;gap:5px;align-items:center}
+.flegend b{display:inline-block;width:9px;height:9px;border-radius:2px}
+.setup{display:flex;flex-direction:column;min-height:0}
+.setup .panel-b{display:flex;flex-direction:column;gap:16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.file{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--sunk)}
+.file .ic{width:34px;height:34px;border-radius:4px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;color:var(--ink-2)}
+.rows{display:flex;gap:14px;font-size:12.5px;margin-top:3px}
+.err{font-size:12.5px;color:var(--brick);display:flex;gap:6px;align-items:center}
+.stepper{display:flex;align-items:center;height:38px;border:1px solid var(--line-2);border-radius:var(--r);width:130px;justify-content:space-between;padding:0 6px;background:var(--surface)}
+.stepper b{font-family:var(--display);font-size:16px}
+.stepper button{width:26px;height:26px;display:grid;place-items:center;border-radius:3px;color:var(--ink-2)}
+.opening{padding:12px 14px;border:1px solid var(--line-2);border-radius:var(--r);font-size:14px;line-height:1.55;background:var(--surface)}
+.var{background:var(--orchid-wash);color:var(--orchid-deep);border:1px solid var(--orchid-mid);border-radius:3px;padding:0 4px;font-weight:600;font-size:13px}
+.review{border:1px dashed var(--line-2);border-radius:6px;padding:14px 16px;background:var(--sunk)}
+.review ul{margin-top:8px}
+.review li{list-style:none;display:flex;gap:10px;align-items:flex-start;padding:4px 0;font-size:13px;color:var(--ink-2)}
+.review li b{color:var(--ink)}
+.review .st{padding-top:2px}
+.actions{display:flex;gap:8px;justify-content:flex-end;padding:14px 18px;border-top:1px solid var(--line);flex:none;align-items:center}
+</style></head>
+<body>
+<div class="app"><nav class="rail" id="rail"></nav>
+<main id="main"></main></div>
+<script>
+rail("admin", "campaign");
+const D = K.campaignDraft;
+const CS = {
+  paused: `<svg viewBox="0 0 14 14"><rect x=".7" y=".7" width="12.6" height="12.6" rx="6.3" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.3 4.5v5M8.7 4.5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+  scheduled: `<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M7 3.8V7l2.2 1.4" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>`,
+  draft: `<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.2 1.8"/></svg>`,
+};
+const kind = s => s.startsWith("Paused") ? ["paused", "var(--saffron-deep)"] : s.startsWith("Scheduled") ? ["scheduled", "var(--orchid-deep)"] : ["draft", "var(--ink-2)"];
+const card = c => {
+  const [k, col] = kind(c.status);
+  const live = c.contacts && c.called;
+  const pct = n => (n / c.contacts * 100).toFixed(1);
+  return `<article class="cp ${c.code === D.code ? "open" : ""}">
+    <div class="h"><span class="code">${c.code}</span><span class="dim small">${esc(c.name)}</span><span class="cstat" style="color:${col}">${CS[k]}${esc(c.status)}</span></div>
+    <p class="offer" style="margin-top:6px">${esc(c.offer)}</p>
+    <div class="meta"><span class="tag"><i data-lucide="file-spreadsheet"></i>${esc(c.audience)}</span><span class="tag"><i data-lucide="clock"></i>${esc(c.window)}</span>${c.contacts ? `<span class="tag"><i data-lucide="users"></i>${c.contacts} contacts</span>` : ""}</div>
+    ${live ? `<div class="funnel">
+        <div><span class="num">${c.contacts}</span><small>contacts</small></div>
+        <div><span class="num">${c.called}</span><small>called</small></div>
+        <div><span class="num">${c.answered}</span><small>answered</small></div>
+        <div><span class="num" style="color:var(--green)">${c.booked}</span><small>booked</small></div>
+        <div><span class="num" style="color:var(--brick)">${c.failed}</span><small>failed</small></div></div>
+      <div class="fbar"><i style="width:${pct(c.booked)}%;background:var(--green)"></i><i style="width:${pct(c.answered - c.booked)}%;background:var(--orchid)"></i><i style="width:${pct(c.called - c.answered - c.failed)}%;background:var(--orchid-mid)"></i><i style="width:${pct(c.failed)}%;background:var(--brick)"></i></div>
+      <div class="flegend"><span><b style="background:var(--green)"></b>Booked</span><span><b style="background:var(--orchid)"></b>Answered, no booking</span><span><b style="background:var(--orchid-mid)"></b>Not answered</span><span><b style="background:var(--brick)"></b>Failed</span><span><b style="background:var(--line)"></b>Not called yet (${c.contacts - c.called})</span></div>` : ""}
+    ${c.code === "AUTUMN26" ? `<div style="display:flex;gap:8px;margin-top:14px"><button class="btn sm"><i data-lucide="play"></i>Resume now</button><button class="btn sm ghost">View calls</button></div>` : ""}
+    ${c.code === "HOGMANAY26" ? `<div style="display:flex;gap:8px;margin-top:12px"><button class="btn sm ghost"><i data-lucide="pencil"></i>Edit schedule</button></div>` : ""}
+  </article>`;
+};
+const burns = K.campaigns.find(c => c.code === D.code);
+document.getElementById("main").innerHTML = topbar(`Outbound <span class="dim">/</span> <b>Campaign</b>`) + `
+<div class="page">
+  <div class="hrow"><h1>Campaign calls</h1><p>Kiku calls a list of guests about one promo code</p>
+    <button class="btn sm" style="margin-left:auto"><i data-lucide="plus"></i>New campaign</button></div>
+  <div class="grid">
+    <div class="list scroll">${K.campaigns.map(card).join("")}</div>
+    <section class="panel setup">
+      <div class="panel-h"><h2>Set up ${D.code}</h2><span class="cstat" style="color:var(--ink-2);margin-left:8px">${CS.draft}Draft</span><span class="act dim small">Autosaved</span></div>
+      <div class="panel-b scroll" style="flex:1">
+        <div class="two">
+          <div class="field"><label>Promo code</label><div class="input"><span class="code" style="font-size:15px">${D.code}</span></div></div>
+          <div class="field"><label>Offer</label><div class="input" style="font-size:13px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${esc(burns.offer)}</div></div>
+        </div>
+        <div class="field"><label>Audience</label>
+          <div class="file"><span class="ic"><i data-lucide="file-spreadsheet"></i></span>
+            <div><b>${D.file}</b><div class="rows"><span>${D.rows} rows</span><span class="st completed" style="font-weight:500">${SHAPES.completed}${D.ready} ready</span><span class="st failed" style="font-weight:500">${SHAPES.failed}${D.errors} errors</span></div></div>
+            <button class="btn sm ghost">Replace</button></div>
+          <div class="err">${SHAPES.failed.replace('fill="currentColor"', 'fill="#C13A31"').replace("<svg", '<svg width="13" height="13"')}${D.errors} rows will be skipped. <a href="#" style="color:var(--brick);font-weight:600">Review errors</a></div>
+        </div>
+        <div class="two">
+          <div class="field"><label>Call window</label><div class="input"><i data-lucide="clock" style="color:var(--ink-3)"></i>${D.window}<i data-lucide="chevron-down" style="margin-left:auto;color:var(--ink-3)"></i></div></div>
+          <div class="field"><label>Max attempts per guest</label><div class="stepper"><button aria-label="Fewer"><i data-lucide="minus"></i></button><b>${D.maxAttempts}</b><button aria-label="More"><i data-lucide="plus"></i></button></div></div>
+        </div>
+        <div class="field"><label>Opening line</label>
+          <div class="opening">${esc(D.opening).replace("{first_name}", '<span class="var">{first_name}</span>')}</div>
+          <span class="hint">Kiku says this first, then follows the conversation. <span class="var">{first_name}</span> comes from the CSV.</span></div>
+        <div class="review"><h3>Before you schedule</h3>
+          <ul>
+            <li><span class="st completed">${SHAPES.completed}</span><span><b>${D.ready}</b> guests from ${D.file} will be called; ${D.errors} rows are skipped</span></li>
+            <li><span class="st completed">${SHAPES.completed}</span><span>Up to <b>${D.maxAttempts}</b> attempts per guest, only during ${D.window}</span></li>
+            <li><span class="st completed">${SHAPES.completed}</span><span>Every call is logged in Call logs with the type Campaign and code ${D.code}</span></li>
+            <li><span class="st escalated">${SHAPES.escalated}</span><span>If a call escalates, it shows up on the specialists’ Live board</span></li>
+          </ul></div>
+      </div>
+      <div class="actions"><span class="small dim" style="margin-right:auto">${D.ready} guests will be called</span><button class="btn">Save draft</button><button class="btn primary"><i data-lucide="calendar-check"></i>Schedule campaign</button></div>
+    </section>
+  </div>
+</div>`;
+icons();
+</script>
+</body></html>

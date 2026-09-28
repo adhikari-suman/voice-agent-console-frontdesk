@@ -1,171 +1,119 @@
 <!doctype html>
-<html lang="en">
-<head>
-<title>Kiku · Live board</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&display=block">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css">
-<script src="../../_shared/data.js"></script>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku, live board</title>
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script src="app.js"></script>
 <style>
-  .board { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 296px; gap: 16px; }
-  .mv { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 236px 1fr 1fr; gap: 12px; min-height: 0; }
-  .mv .lead { grid-column: 1 / -1; }
-  .tile__screen { padding: 11px 14px 12px; display: flex; flex-direction: column; gap: 7px; }
-  .tile__row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-2); }
-  .tile__row .src-l { display: inline-flex; align-items: center; gap: 6px; }
-  .tile__row .src-l i { font-size: 15px; }
-  .tile__row .tc { margin-left: auto; font-size: 20px; }
-  .tile__row .st { color: var(--text); }
-  .tile__purpose { font-size: 15px; font-weight: 500; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .tile__line { font-size: 13px; line-height: 1.45; color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .tile__line .who { font: 600 12px/1 var(--f-cond); letter-spacing: .06em; text-transform: uppercase; color: var(--text); margin-right: 6px; }
-  .tile__foot { margin-top: auto; display: flex; align-items: flex-end; gap: 12px; }
-  .tile__foot .keys { margin-left: auto; display: flex; gap: 6px; }
-  .tile__phone { font-size: 13px; color: var(--text-2); }
+.content { display: grid; grid-template-columns: 1fr 392px; }
+.board { display: flex; flex-direction: column; min-height: 0; padding: 22px 28px 20px; gap: 18px; }
+.today { font-size: 15px; line-height: 1.75; color: var(--muted); max-width: 900px; }
+.today b { font: 700 24px/1 var(--f-count); color: var(--text); letter-spacing: .02em; margin: 0 2px; }
+.today b.h { color: var(--human); } .today b.f { color: var(--fail); } .today b.o { color: var(--ok); }
 
-  .lead .mon__screen { display: grid; grid-template-columns: 188px minmax(0, 1fr) 232px; }
-  .lead__wait { padding: 16px 18px; border-right: 1px solid #1F2227; display: flex; flex-direction: column; justify-content: center; }
-  .lead__wait .tc--xl { color: var(--amber); }
-  .lead__wait p { font-size: 13px; color: var(--text-2); margin-top: 8px; line-height: 1.35; }
-  .lead__info { padding: 12px 18px 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-  .lead__info .tile__purpose { font-size: 18px; -webkit-line-clamp: 2; }
-  .reason { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
-  .reason i { color: var(--amber); font-size: 16px; margin-top: 1px; }
-  .lead__foot { margin-top: auto; display: flex; align-items: flex-end; gap: 28px; }
-  .facts-inline { display: flex; gap: 18px; font-size: 13px; color: var(--text-2); }
-  .facts-inline b { color: var(--text); font-weight: 500; }
-  .lead__keys { padding: 16px 16px; border-left: 1px solid #1F2227; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
-  .lead__keys .key--take { height: 64px; font-size: 20px; }
-  .lead__keys .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.needs { display: grid; grid-template-columns: 1fr auto; background: #fff; border: 1px solid var(--human-edge); border-radius: var(--r); position: relative; overflow: hidden; }
+.needs::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 7px; border-top: 3px solid var(--human-hi); border-bottom: 1px solid var(--human-hi); z-index: 1; }
+.needs .l, .needs .r { padding-top: 22px !important; }
+.needs .l { padding: 18px 22px 18px 20px; }
+.needs .kick { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--human); margin-bottom: 10px; }
+.needs h2 { font-size: 26px; letter-spacing: -.02em; font-weight: 700; display: flex; align-items: baseline; gap: 12px; }
+.needs h2 .id { font-weight: 400; }
+.needs .pur { font: 400 18px/1.4 var(--f-voice); margin: 6px 0 12px; max-width: 60ch; }
+.needs .meta { display: flex; gap: 18px; font-size: 12.5px; color: var(--muted); align-items: center; }
+.needs .meta span { white-space: nowrap; display: inline-flex; gap: 6px; align-items: center; }
+.needs .reason { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 7px 11px; background: var(--human-bg); border-radius: var(--r); font-size: 13px; font-weight: 500; color: #8e2238; }
+.needs .r { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; padding: 18px 22px; background: var(--human-bg); background-image: var(--hatch); border-left: 1px solid var(--human-edge); min-width: 250px; }
+.needs .wait { text-align: right; }
+.needs .wait span { font-size: 12.5px; color: #8e2238; font-weight: 600; }
+.needs .wait b { display: block; font: 800 64px/0.9 var(--f-count); color: var(--human); letter-spacing: .01em; }
+.needs .btn.lg { height: 46px; font-size: 15px; padding: 0 22px; }
 
-  .asrun { min-height: 0; }
-  .ar { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding: 10px 14px; border-bottom: 1px solid #1F2227; }
-  .ar:hover { background: var(--hover); }
-  .ar__t { font: 600 14px/1.35 var(--f-cond); letter-spacing: .04em; color: var(--text-2); }
-  .ar__row { display: flex; align-items: center; gap: 8px; }
-  .ar__row b { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ar__row .st { margin-left: auto; font-size: 13px; }
-  .ar__meta { font-size: 12.5px; color: var(--text-2); margin-top: 1px; }
-  .ar__out { font-size: 13px; margin-top: 3px; line-height: 1.35; }
-  .asrun__foot { padding: 10px 14px; border-top: 1px solid var(--line); margin-top: auto; }
-</style>
-</head>
+.sec { display: flex; align-items: baseline; gap: 10px; }
+.sec h2 { font-size: 15px; font-weight: 700; }
+.sec span { color: var(--muted); font-size: 12.5px; }
+.live { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.lc { min-height: 84px; display: grid; grid-template-columns: 22px 178px 1fr 164px 56px 196px; gap: 16px; align-items: center; padding: 13px 4px 13px 0; border-bottom: 1px solid var(--line); }
+.lc .g b { display: block; font-size: 14.5px; font-weight: 600; }
+.lc .g small { color: var(--muted); font-size: 12px; }
+.lc .p { font-size: 13.5px; line-height: 1.4; }
+.lc .p small { display: flex; gap: 6px; align-items: center; color: var(--muted); font-size: 12px; margin-top: 3px; }
+.lc .on { font-size: 12.5px; display: flex; flex-direction: column; gap: 3px; }
+.lc .on span { display: flex; gap: 6px; align-items: center; }
+.lc .d { font: 700 20px/1 var(--f-count); letter-spacing: .03em; text-align: right; }
+.lc .a { display: flex; justify-content: flex-end; gap: 6px; }
+.tracks { display: flex; flex-direction: column; gap: 3px; }
+.tracks i { display: block; height: 3px; border-radius: 2px; width: 34px; }
+
+.recent { background: var(--surface); border-left: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+.recent .ph { padding: 20px 22px 12px; }
+.recent ol { list-style: none; padding: 0 22px; }
+.recent li { display: grid; grid-template-columns: 16px 1fr auto; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--line-soft); }
+.recent li .st { margin-top: 2px; }
+.recent li b { font-size: 13.5px; font-weight: 600; }
+.recent li p { font-size: 12.5px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+.recent li .tm { text-align: right; font: 600 14px/1.2 var(--f-count); letter-spacing: .04em; color: var(--muted); }
+.recent li .tm small { display: block; font: 400 11.5px var(--f-ui); color: var(--faint); letter-spacing: 0; margin-top: 3px; }
+.recent li.sel { background: linear-gradient(90deg, transparent, transparent); }
+</style></head>
 <body>
+<div class="app">
+  <nav class="spine" id="spine"></nav>
+  <main class="main">
+    <header class="top" id="top"></header>
+    <div class="content">
+      <div class="board">
+        <p class="today" id="today"></p>
+        <div class="needs" id="needs"></div>
+        <div class="sec"><h2>On the line now</h2><span>Kiku is handling these. Listen in, or join to be ready to take over.</span></div>
+        <div class="live" id="live"></div>
+      </div>
+      <aside class="recent"><div class="ph"><h2>Recently finished</h2><span class="aside"><a href="03-call-logs.html" style="color:var(--kiku);font-weight:600;text-decoration:none">All call logs</a></span></div><ol class="scroll" id="recent"></ol></aside>
+    </div>
+  </main>
+</div>
 <script>
-  const { K, esc, ic, st, lamp, meter, liveCalls, tallyOf, TYPE_ICON, mount } = Kiku;
-  const live = liveCalls();
-  const by = (id) => K.calls.find((c) => c.id === id);
-  const S = K.stats;
+const { K, esc, icon, status, shape, shell } = TT; const S = K.stats;
+shell({ role: 'specialist', active: 'live', title: 'Live board', after: `<span class="h3" style="font-weight:500">5 calls on the line</span>` });
 
-  const srcLabel = (c) => c.direction === "inbound"
-    ? `${ic("arrow-left-down-line")}Hotel line`
-    : `${ic(TYPE_ICON[c.type])}Outbound · ${esc(c.type)}${c.promo ? " · " + esc(c.promo) : ""}`;
+document.getElementById('today').innerHTML = `Today Kiku has handled <b>${S.callsToday}</b> calls, <b>${S.inbound}</b> in and <b>${S.outbound}</b> out.
+  <b class="o">${S.completed}</b> completed, <b>${S.inProgress}</b> in progress, <b class="h">${S.escalated}</b> escalated and <b class="f">${S.failed}</b> failed.
+  Specialists took over <b class="h">${S.takeoversToday}</b> times, calls averaged <b>${S.avgHandle}</b>, and upsells added <b>${S.upsellValueToday}</b> to bookings.`;
 
-  const levels = { "KK-24032": [0.5, 0.25], "KK-24031": [0.69, 0.06], "KK-24030": [0.31, 0], "KK-24029": [0.12, 0.62], "KK-24028": [0.44, 0.19] };
-  const meters = (c) => {
-    const [g, k] = levels[c.id];
-    const human = tallyOf(c) === "air";
-    return `<div class="meters"><span class="cap">Guest</span>${meter(g, "guest", 14)}<span class="cap">${human ? "Priya" : "Kiku"}</span>${meter(human ? 0.56 : k, human ? "air" : "kiku", 14)}</div>`;
-  };
+const c = id => K.calls.find(x => x.id === id);
+const o = c('KK-24032');
+document.getElementById('needs').innerHTML = `
+  <div class="l">
+    <div class="kick">${status('escalated', 'Escalated, needs a specialist')}</div>
+    <h2>${esc(o.guest)} <span class="id">${o.id}</span></h2>
+    <p class="pur">${esc(o.purpose)}</p>
+    <div class="meta"><span>${icon('phone-incoming')}Inbound</span><span class="num">${icon('phone')}${esc(o.phone)}</span><span>${icon('clock')}On the line ${o.duration}</span><span>${icon('bot')}Kiku is holding the guest</span></div>
+    <div class="reason">${icon('credit-card')}${esc(o.escalationReason)}</div>
+  </div>
+  <div class="r">
+    <div class="wait"><span>Waiting for a person</span><b class="tc">${o.waiting}</b></div>
+    <div style="display:flex;gap:8px"><button class="btn lg ghost" style="background:#fff">${icon('headphones')}Listen</button><button class="btn lg human">${icon('mic')}Take over</button></div>
+  </div>`;
 
-  const latest = {
-    "KK-24031": () => { const t = K.liveCall.transcript.at(-1); return `<span class="who">Guest</span>${esc(t.text)}`; },
-    "KK-24030": () => { const t = K.takeover.transcript.at(-1); return `<span class="who">You</span>${esc(t.said)}…`; },
-  };
+const rows = [
+  [c('KK-24030'), [['doth', 'You took over at 01:10']], ['btn sm human', 'mic', 'Back to call', '06-takeover-karaoke.html'], true],
+  [c('KK-24031'), [['dotk', 'Kiku talking'], ['headphones', 'You are listening']], ['btn sm ink', 'log-in', 'Join', '05-live-call-listening.html']],
+  [c('KK-24029'), [['dotk', 'Kiku alone']], ['btn sm', 'headphones', 'Listen'], null, ['btn sm', 'log-in', 'Join']],
+  [c('KK-24028'), [['dotk', 'Kiku alone']], ['btn sm', 'headphones', 'Listen'], null, ['btn sm', 'log-in', 'Join']],
+];
+document.getElementById('live').innerHTML = rows.map(([x, on, a, human, b]) => {
+  const human2 = human || on.some(p => p[0] === 'headphones');
+  return `<div class="lc">
+    ${shape(x.status)}
+    <div class="g"><b>${esc(x.guest)}</b><small>${TT.LABEL[x.status]}, ${x.id}</small></div>
+    <div class="p">${esc(x.purpose)}<small>${x.direction === 'inbound' ? icon('phone-incoming') + 'Inbound' : icon('phone-outgoing') + 'Outbound, ' + x.type}</small></div>
+    <div class="on">${on.map(([k, t]) => `<span>${k.startsWith('dot') ? `<span class="${k}"></span>` : icon(k)}${t}</span>`).join('')}</div>
+    <div class="d tc">${x.duration}</div>
+    <div class="a">${b ? `<button class="${b[0]}">${icon(b[1])}${b[2]}</button>` : ''}<a href="${a[3] || '#'}" class="${a[0]}" style="text-decoration:none">${icon(a[1])}${a[2]}</a></div>
+  </div>`;
+}).join('');
 
-  const tallyHTML = (c) => {
-    const t = tallyOf(c);
-    if (t === "esc") return `<div class="tally tally--esc">${ic("alert-line")}Needs a specialist<span class="tally__end">${c.id}</span></div>`;
-    if (t === "air") return `<div class="tally tally--air">${ic("mic-line")}On air · Priya Raman (you)<span class="tally__end">${c.id}</span></div>`;
-    const pfl = c.specialist && c.specialist.includes("listening");
-    return `<div class="tally tally--live">${ic("record-circle-line")}Kiku<span class="tally__end">${c.id}${pfl ? `<span class="tally__pfl">${ic("headphone-line")}PFL · you're listening</span>` : ""}</span></div>`;
-  };
-
-  function tile(c) {
-    const t = tallyOf(c);
-    const pfl = c.specialist && c.specialist.includes("listening");
-    let keys;
-    if (t === "air") keys = `<a class="key key--sm" href="06-takeover-karaoke.html">${ic("mic-line")}Back to call</a>`;
-    else if (pfl) keys = `<a class="key key--sm key--pfl" href="05-live-call-listening.html"><span class="key__tag">PFL</span>Listening</a><button class="key key--sm">${ic("login-box-line")}Join</button>`;
-    else keys = `<button class="key key--sm"><span class="key__tag">PFL</span>Listen</button><button class="key key--sm">${ic("login-box-line")}Join</button>`;
-    const line = latest[c.id] ? `<p class="tile__line">${latest[c.id]()}</p>` : `<p class="tile__phone">${esc(c.phone)} · started ${c.started}</p>`;
-    return `<article class="mon tile">
-      ${tallyHTML(c)}
-      <div class="mon__screen tile__screen">
-        <div class="tile__row"><span class="src-l">${srcLabel(c)}</span>${st(c.status)}<span class="tc">${c.duration}</span></div>
-        <p class="tile__purpose">${esc(c.purpose)}</p>
-        ${line}
-        <div class="tile__foot">${meters(c)}<div class="keys">${keys}</div></div>
-      </div>
-      <div class="umd">${esc(c.guest)}</div>
-    </article>`;
-  }
-
-  function lead(c) {
-    return `<article class="mon tile lead is-sel" aria-label="Needs a specialist">
-      ${tallyHTML(c)}
-      <div class="mon__screen">
-        <div class="lead__wait">
-          <span class="tc tc--xl">${c.waiting}</span>
-          <p>waiting for a specialist<br>call running ${c.duration}</p>
-        </div>
-        <div class="lead__info">
-          <div class="tile__row"><span class="src-l">${srcLabel(c)}</span>${st(c.status)}</div>
-          <p class="tile__purpose">${esc(c.purpose)}</p>
-          <p class="reason">${ic("alert-line")}<span>${esc(c.escalationReason)}</span></p>
-          <div class="lead__foot">${meters(c)}<div class="facts-inline"><span>Phone <b>${esc(c.phone)}</b></span><span>Started <b>${c.started}</b></span></div></div>
-        </div>
-        <div class="lead__keys">
-          <button class="key key--take">${ic("mic-line")}Take over</button>
-          <div class="row"><button class="key"><span class="key__tag">PFL</span>Listen</button><button class="key">${ic("login-box-line")}Join</button></div>
-        </div>
-      </div>
-      <div class="umd">${esc(c.guest)}</div>
-    </article>`;
-  }
-
-  const order = ["KK-24030", "KK-24031", "KK-24029", "KK-24028"];
-  const finished = K.calls.filter((c) => c.status === "completed" || c.status === "failed");
-  const asrun = finished.map((c) => `<li><a class="ar" href="${c.id === "KK-24027" ? "04-call-audit.html" : "03-call-logs.html"}">
-      <span class="ar__t">${c.started}</span>
-      <div>
-        <div class="ar__row"><b>${esc(c.guest)}</b>${st(c.status)}</div>
-        <div class="ar__meta">${esc(c.type)} · ${c.duration}${c.specialist ? " · " + esc(c.specialist) : ""}</div>
-        <p class="ar__out">${esc(c.outcome || "")}</p>
-      </div></a></li>`).join("");
-
-  mount({
-    role: "specialist",
-    active: "live",
-    title: "Live board",
-    meta: `Today <b>${S.callsToday}</b> calls, <b>${S.inbound}</b> inbound and <b>${S.outbound}</b> outbound · <b>${S.completed}</b> completed · <b>${S.inProgress}</b> in progress · <b>${S.escalated}</b> escalated · <b>${S.failed}</b> failed · <b>${S.takeoversToday}</b> takeovers · average handle <b>${S.avgHandle}</b> · <b>${S.upsellValueToday}</b> upsell value`,
-    body: `<div class="board">
-      <section class="mv" aria-label="Live calls">
-        ${lead(by("KK-24032"))}
-        ${order.map((id) => tile(by(id))).join("")}
-      </section>
-      <aside class="pane asrun" aria-label="Recently finished">
-        <div class="pane__head"><h2>Recently finished</h2><span class="end muted">${finished.length} calls</span></div>
-        <ol class="scroll">${asrun}</ol>
-        <div class="asrun__foot"><a class="link" href="03-call-logs.html">Open call logs</a></div>
-      </aside>
-    </div>`,
-    transport: `<footer class="transport" aria-label="Router">
-      <div class="xp__group"><div class="xp__label"><span class="cap">Selected</span><span class="umd-chip">KK-24032 · Owen Pritchard</span></div>${st("escalated", "· waiting 00:38")}</div>
-      <span class="xp__div"></span>
-      <div class="xp__group"><div class="xp__label"><span class="cap">Your monitor</span><span class="v">${lamp("pfl")} PFL on KK-24031 · Rashid Karimi</span></div>${meter(0.62, "guest", 20)}</div>
-      <div class="xp__end">
-        <button class="key key--lg"><span class="key__tag">PFL</span>Listen</button>
-        <button class="key key--lg">${ic("login-box-line")}Join</button>
-        <button class="key key--lg key--take" style="min-width:176px">${ic("mic-line")}Take over</button>
-      </div>
-    </footer>`,
-  });
+const done = K.calls.filter(x => x.status === 'completed' || x.status === 'failed');
+document.getElementById('recent').innerHTML = done.map(x => `<li>${shape(x.status)}<div><b>${esc(x.guest)}</b><p>${esc(x.outcome)}</p></div><div class="tm">${x.started}<small>${x.status === 'failed' ? 'Failed' : 'Completed'}${x.specialist ? ', ' + x.specialist.split(' ')[0] : ''}</small></div></li>`).join('');
+TT.draw();
 </script>
-</body>
-</html>
+</body></html>

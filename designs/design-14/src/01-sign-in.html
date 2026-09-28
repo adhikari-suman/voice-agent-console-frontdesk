@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku · Sign in</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="icons.js"></script>
+<script src="app.js"></script>
+<style>
+  .split { height: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+  .left { background: var(--ink); color: #E9ECE7; position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 48px 56px; }
+  .left .rings { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -52%); }
+  .left .id { position: relative; margin-top: auto; }
+  .left .id h1 { font-size: 88px; font-weight: 800; letter-spacing: -0.045em; line-height: .9; }
+  .left .id p { margin-top: 14px; font-size: 17px; color: #B7BEB8; }
+  .left .id .line { margin-top: 28px; display: flex; gap: 28px; font-size: 13px; color: #8E978F; }
+  .left .id .line b { display: block; color: #E9ECE7; font-weight: 500; font-size: 14px; margin-top: 2px; }
+  .left .top-row { position: relative; display: flex; gap: 10px; align-items: center; font-size: 13px; color: #8E978F; }
+  .right { background: var(--paper); display: flex; flex-direction: column; padding: 48px 56px; }
+  .form { width: 380px; margin: auto 0 auto 64px; display: flex; flex-direction: column; gap: 18px; }
+  .form h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+  .form .lead { color: var(--ink-3); margin-top: -8px; }
+  .row { display: flex; justify-content: space-between; align-items: center; }
+  .row a { color: var(--human-deep); font-weight: 600; font-size: 13px; text-decoration: none; }
+  .check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); }
+  .check i { width: 16px; height: 16px; border: 1.5px solid var(--ink-3); border-radius: 2px; display: inline-block; }
+  .input.focus { border-color: var(--human); box-shadow: 0 0 0 3px var(--human-wash); }
+  .foot { margin-top: auto; margin-left: 64px; }
+</style></head>
+<body>
+<div class="split">
+  <section class="left">
+    <div class="top-row"><span>Voice agent console</span></div>
+    <div class="rings" id="rings"></div>
+    <div class="id">
+      <h1>Kiku</h1>
+      <p>The Brenlow, Edinburgh</p>
+      <div class="line"><span>Hotel line<b id="hl"></b></span><span>Local time<b id="lt"></b></span></div>
+    </div>
+  </section>
+  <section class="right">
+    <form class="form" onsubmit="return false">
+      <h2>Sign in</h2>
+      <p class="lead">Use your Brenlow staff email.</p>
+      <div class="field"><label for="e">Email</label><div class="input focus"><span id="e">priya.raman@brenlow.example</span></div></div>
+      <div class="field"><label for="p">Password</label><div class="input"><span style="letter-spacing:3px">••••••••••••</span></div></div>
+      <div class="row"><span class="check"><i></i>Keep me signed in on this desk</span><a href="#">Forgot password?</a></div>
+      <button class="btn ink lg" style="justify-content:center">Sign in</button>
+    </form>
+    <p class="foot demo" id="demo"></p>
+  </section>
+</div>
+<script>
+  document.getElementById('hl').textContent = K.hotel.line;
+  document.getElementById('lt').textContent = K.hotel.now + ' ' + K.hotel.tz;
+  document.getElementById('demo').textContent = K.synthetic;
+  document.querySelector('.input.focus').innerHTML = '<span>' + K.people.specialist.email + '</span>';
+  // large overlap mark: two voices, one run
+  document.getElementById('rings').innerHTML = `<svg width="560" height="400" viewBox="0 0 560 400">
+    <defs><clipPath id="cl"><circle cx="210" cy="200" r="170"/></clipPath></defs>
+    <circle cx="210" cy="200" r="170" fill="none" stroke="#7AB86E" stroke-width="2"/>
+    <circle cx="350" cy="200" r="170" fill="none" stroke="#8A77CA" stroke-width="2"/>
+    <circle cx="350" cy="200" r="170" fill="#262E2A" clip-path="url(#cl)"/>
+    <circle cx="210" cy="200" r="120" fill="none" stroke="#7AB86E" stroke-opacity=".35"/>
+    <circle cx="350" cy="200" r="120" fill="none" stroke="#8A77CA" stroke-opacity=".35"/>
+    <circle cx="210" cy="200" r="70" fill="none" stroke="#7AB86E" stroke-opacity=".18"/>
+    <circle cx="350" cy="200" r="70" fill="none" stroke="#8A77CA" stroke-opacity=".18"/>
+  </svg>`;
+  icons();
+</script>
+</body></html>

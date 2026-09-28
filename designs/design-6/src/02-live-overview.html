@@ -2,101 +2,100 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=1440">
-<title>Live board · Kiku</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400..700&family=Atkinson+Hyperlegible+Next:wght@400..800&display=block">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20,400,0..1,0&icon_names=add,add_call,admin_panel_settings,arrow_back,arrow_forward,back_hand,block,calendar_today,call,call_end,call_made,call_received,campaign,category,check,check_circle,chevron_right,close,credit_card,description,download,edit,edit_note,error,event_available,expand_more,forward_10,graphic_eq,group,headphones,headset_mic,help,hourglass_top,info,list_alt,lock_clock,login,logout,mail,mic,mic_off,more_horiz,pause,payments,person_add,play_arrow,record_voice_over,remove,replay_10,room_service,schedule,search,send,sensors,smart_toy,speed,sticky_note_2,subtitles,sync,table_rows,undo,upload_file,volume_off&display=block">
-<script src="../../_shared/data.js"></script>
+<title>Kiku, live board</title>
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.453.0/dist/umd/lucide.min.js"></script>
 <script src="app.js"></script>
+<style>
+  .page { height: 100%; display: grid; grid-template-rows: auto auto 1fr; }
+  .today { font-size: 14px; color: var(--ink-2); max-width: 820px; line-height: 1.5; padding: 0 28px 16px; margin-top: -6px; }
+  .today b { color: var(--ink); font-weight: 600; }
+  .board { display: grid; grid-template-columns: 500px 1fr 1fr; grid-template-rows: auto auto; gap: 12px; padding: 0 28px; }
+  .tile { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .tile .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .tile .nm { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  .tile .id { font-size: 12px; color: var(--ink-3); }
+  .tile > div:has(.chip) { margin-bottom: 4px; }
+  .tile .pu { font-family: var(--serif); font-size: 15px; line-height: 1.4; color: var(--ink); }
+  .tile .foot { display: flex; align-items: center; gap: 8px; margin-top: auto; }
+  .tile .foot .who { font-size: 12.5px; margin-right: auto; display: inline-flex; gap: 6px; align-items: center; color: var(--ink-3); }
+  .tile .foot .who svg.lucide { width: 14px; height: 14px; }
+  .tile.mine { background: var(--human-soft); border-color: #b5dde4; }
+  .lead { grid-row: 1 / 3; background: var(--warn-soft); border-color: #efcf9f; padding: 22px 24px; gap: 14px; }
+  .lead .wait { display: flex; align-items: baseline; gap: 10px; }
+  .lead .wait b { font-size: 56px; font-weight: 600; letter-spacing: -0.04em; line-height: 1; color: var(--warn); font-variant-numeric: tabular-nums; }
+  .lead .wait span { color: var(--ink-2); font-size: 13px; line-height: 1.3; }
+  .lead .nm { font-size: 24px; }
+  .lead .pu { font-size: 18px; }
+  .lead .why { display: flex; gap: 8px; font-size: 13px; color: var(--warn); font-weight: 500; }
+  .lead .why svg.lucide { margin-top: 1px; }
+  .lead .acts { display: flex; gap: 8px; margin-top: 6px; }
+  .lead .acts .btn.human { flex: 1; }
+  .dur { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--ink-2); }
+
+  .recent { margin: 16px 28px 16px; display: grid; grid-template-rows: auto 1fr; min-height: 0; }
+  .recent-h { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 8px; }
+  .recent-h a { color: var(--kiku); font-size: 12.5px; font-weight: 500; text-decoration: none; }
+  .fin { display: grid; grid-template-columns: 60px 180px 120px 1fr 150px; gap: 14px; align-items: center; padding: 8px 14px; font-size: 13px; text-decoration: none; color: inherit; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
+  .fin + .fin { margin-top: 6px; }
+  .fin .g { font-weight: 500; }
+  .fin .o { color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+</style>
 </head>
 <body>
 <script>
-(() => {
-  const { K, ic, esc, st, key, typeTag, av, live, chNum, holder, specName, callPage, bars, first } = Kiku;
-  const s = K.stats;
-  const desk = Kiku.shell({ role: 'Specialist', nav: 'live', title: 'Live board', after: `<span class="strip-id">${live.length} calls live · ${live.filter(c => holder(c) === 'waiting').length} waiting for a specialist</span>` });
+const S = K.stats;
+const live = K.calls.filter(c => c.status === "in_progress" || c.status === "escalated");
+const lead = live.find(c => c.status === "escalated" && !c.specialist);
+const others = live.filter(c => c !== lead);
+function who(c) {
+  if (c.specialist === "Priya Raman") return `<span class="who who-h">${ic("mic")}You took over</span>`;
+  if (c.specialist) return `<span class="who" style="color:var(--kiku)">${ic("headphones")}You're listening</span>`;
+  return `<span class="who">${ic("audio-lines")}Kiku alone</span>`;
+}
+function acts(c) {
+  if (c.specialist === "Priya Raman") return `<a class="btn sm human" href="06-takeover-karaoke.html">${ic("mic")}Back to call</a>`;
+  if (c.specialist) return `<a class="btn sm" href="05-live-call-listening.html">${ic("headphones")}Open</a><button class="btn sm">${ic("mic")}Join</button>`;
+  return `<button class="btn sm">${ic("headphones")}Listen</button><button class="btn sm">${ic("mic")}Join</button>`;
+}
+const tiles = others.map(c => `
+  <article class="tile ${c.specialist === "Priya Raman" ? "mine" : ""}">
+    <div class="top">${status(c.status)}<span class="dur">${c.duration}</span></div>
+    <div><div class="nm">${c.guest}</div><div class="id">${c.id}, ${c.phone}</div></div>
+    <p class="pu">${c.purpose}</p>
+    <div>${c.direction === "inbound" ? dirChip(c) : typeChip(c)}</div>
+    <div class="foot">${who(c)}${acts(c)}</div>
+  </article>`).join("");
+const fin = K.calls.filter(c => c.status === "completed" || c.status === "failed").slice(0, 5).map(c => `
+  <a class="fin" href="${c.id === "KK-24027" ? "04-call-audit.html" : "03-call-logs.html"}">
+    <span class="muted">${c.started}</span><span class="g">${c.guest}</span>${status(c.status)}<span class="o">${c.outcome}</span><span class="muted" style="text-align:right">${c.type}${c.specialist ? `, ${c.specialist.split(" ")[0]}` : ""}</span>
+  </a>`).join("");
 
-  const need = live.filter(c => holder(c) === 'waiting');
-  const rest = live.filter(c => holder(c) !== 'waiting');
-  const kikuAv = `<svg class="av" viewBox="0 0 28 28" aria-hidden="true" style="padding:0;border:0"><rect width="28" height="28" rx="6" fill="#EEF2F9" stroke="#D9DFEA"/><rect x="6" y="9" width="16" height="3.5" rx="1.2" fill="#3D7BFF"/><rect x="6" y="15.5" width="10" height="3.5" rx="1.2" fill="#C3CADA"/></svg>`;
-  const me = K.people.specialist;
-
-  const needHTML = need.map(c => `
-    <section class="panel need" aria-labelledby="need-h">
-      <div class="ph need-h">${key('back_hand', 'esc')}<h2 id="need-h">Needs a specialist</h2><span class="ph-sub">${need.length} caller waiting for a person</span></div>
-      <div class="need-b">
-        <div class="need-ch"><span class="big-ch mono">CH ${chNum(c.id)}</span>${bars(3, 'floor', 8, 'lv-lg lv-low')}<span class="need-ch-s">Kiku holding</span></div>
-        <div class="need-m">
-          <div class="need-1"><h3>${esc(c.guest)}</h3>${st(c.status)}${typeTag(c)}</div>
-          <div class="need-2"><span class="mono">${esc(c.phone)}</span><span class="dot"></span><span class="mono">${c.id}</span><span class="dot"></span>Rang at <span class="mono">${c.started}</span></div>
-          <p class="need-p">${esc(c.purpose)}</p>
-          <div class="reason-box">${key('back_hand', 'esc')}<div><b>Why Kiku escalated</b>${esc(c.escalationReason)}</div></div>
-        </div>
-        <div class="need-r">
-          <div class="wait"><span class="wait-l">Waiting for you</span><b class="mono">${c.waiting}</b><span class="wait-s">On the call <span class="mono">${c.duration}</span></span></div>
-          <div class="need-a">
-            <a class="btn btn-pri btn-lg" href="06-takeover-karaoke.html">${ic('mic')}Take over</a>
-            <a class="btn btn-sec" href="05-live-call-listening.html">${ic('headphones')}Listen first</a>
-          </div>
-        </div>
-      </div>
-    </section>`).join('');
-
-  const whoOf = c => {
-    const h = holder(c);
-    if (h === 'taken') return `<span class="who">${av(me.name, 'av-sm')}<span><span class="who-n">You took over</span><span class="who-s">at <span class="mono">${K.takeover.takeoverAt}</span> · karaoke on</span></span></span>`;
-    if (h === 'listening') return `<span class="who">${av(me.name, 'av-sm')}<span><span class="who-n">You’re listening</span><span class="who-s">Kiku is talking</span></span></span>`;
-    return `<span class="who">${kikuAv}<span><span class="who-n">Kiku alone</span><span class="who-s">No specialist on</span></span></span>`;
-  };
-  const actOf = c => {
-    const h = holder(c);
-    if (h === 'taken') return `<a class="btn btn-pri btn-sm" href="${callPage(c)}">${ic('mic')}Back to call</a>`;
-    if (h === 'listening') return `<a class="btn btn-sec btn-sm is-on" href="${callPage(c)}">${ic('headphones')}Open</a>`;
-    return `<a class="btn btn-sec btn-sm" href="05-live-call-listening.html">${ic('headphones')}Listen</a>`;
-  };
-  const rows = rest.map((c, i) => `
-    <div class="lc${holder(c) === 'taken' ? ' is-mine' : ''}">
-      <div class="lc-ch"><span class="lc-n mono">CH ${chNum(c.id)}</span>${bars(i + 4, holder(c) === 'taken' ? 'interp' : 'floor', 7)}</div>
-      <div class="lc-m">
-        <b class="lc-g">${esc(c.guest)}</b>
-        <span class="lc-d">${ic(c.direction === 'inbound' ? 'call_received' : 'call_made')}${c.direction === 'inbound' ? 'Inbound' : esc(c.type)}<span class="dot"></span><span class="mono">${esc(c.phone)}</span></span>
-        <span class="lc-p">${esc(c.purpose)}</span>
-      </div>
-      <div class="lc-s">${st(c.status)}<span class="lc-dur">On call <span class="mono">${c.duration}</span></span></div>
-      <div class="lc-w">${whoOf(c)}</div>
-      <div class="lc-a">${actOf(c)}</div>
-    </div>`).join('');
-
-  const done = K.calls.filter(c => c.status === 'completed' || c.status === 'failed');
-  const recent = done.map(c => `
-    <a class="rf${c.id === 'KK-24027' ? ' is-link' : ''}" href="${c.id === 'KK-24027' ? '04-call-audit.html' : '03-call-logs.html'}">
-      <span class="rf-t mono">${c.started}</span>
-      <span class="rf-m"><b>${esc(c.guest)}</b></span>
-      ${st(c.status)}
-      <span class="rf-o">${esc(c.outcome || '')}</span>
-    </a>`).join('');
-
-  const n = v => `<b class="mono">${v}</b>`;
-  desk.innerHTML = `
-    <div class="lb">
-      <div class="col">
-        <p class="today">Today so far: ${n(s.callsToday)} calls, ${n(s.inbound)} inbound and ${n(s.outbound)} outbound. ${n(s.completed)} completed and ${n(s.failed)} failed; ${n(s.inProgress)} in progress and ${n(s.escalated)} escalated right now. Specialists took over ${n(s.takeoversToday)} calls. Average handle ${n(s.avgHandle)}, upsells added ${n(s.upsellValueToday)}.</p>
-        ${needHTML}
-        <section class="panel lcp" aria-labelledby="lc-h">
-          <div class="ph"><h2 id="lc-h">On the line</h2><span class="ph-sub">${rest.length} more calls live</span>
-            <div class="ph-r legend"><span><i class="lg-k" style="background:var(--floor)"></i>Kiku on the floor</span><span><i class="lg-k" style="background:var(--amber)"></i>Specialist on interpretation</span></div></div>
-          <div class="lc-list">${rows}</div>
-        </section>
-      </div>
-      <section class="panel rfp" aria-labelledby="rf-h">
-        <div class="ph"><h2 id="rf-h">Recently finished</h2><a class="ph-r lnk small" href="03-call-logs.html">All call logs</a></div>
-        <div class="rf-list scroll">${recent}</div>
-      </section>
-    </div>`;
-})();
+shell("specialist", "live", `
+<div class="page">
+  <div>
+    <div class="ph"><h1>Live now</h1><span class="sub">${live.length} calls on the line at ${K.hotel.now}</span></div>
+    <p class="today">Today Kiku has handled <b>${S.callsToday} calls</b>, ${S.inbound} in and ${S.outbound} out: <b>${S.completed}</b> completed, <b>${S.inProgress}</b> in progress, <b>${S.escalated}</b> escalated, <b>${S.failed}</b> failed. Specialists took over <b>${S.takeoversToday}</b> times, calls average <b>${S.avgHandle}</b>, and upsells added <b>${S.upsellValueToday}</b>.</p>
+  </div>
+  <div class="board">
+    <article class="tile lead" aria-label="Needs a specialist">
+      <div class="top">${status("escalated", "Needs a specialist")}<span class="dur">${lead.id}</span></div>
+      <div class="wait"><b>${lead.waiting}</b><span>waiting for<br>a specialist</span></div>
+      <div><div class="nm">${lead.guest}</div><div class="id">${lead.phone}, on the line ${lead.duration}</div></div>
+      <p class="pu">${lead.purpose}</p>
+      <div class="why">${ic("shield-alert")}${lead.escalationReason}</div>
+      <div>${dirChip(lead)}</div>
+      <div class="acts"><button class="btn lg human">${ic("mic")}Take over</button><button class="btn lg">${ic("headphones")}Listen first</button></div>
+    </article>
+    ${tiles}
+  </div>
+  <section class="recent">
+    <div class="recent-h"><h2>Recently finished</h2><a href="03-call-logs.html">All call logs</a></div>
+    <div class="scroll">${fin}</div>
+  </section>
+</div>`);
+finish();
 </script>
 </body>
 </html>

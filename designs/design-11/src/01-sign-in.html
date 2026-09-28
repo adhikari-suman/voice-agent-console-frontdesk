@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku · Sign in</title>
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="styles.css">
+<script src="vendor/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script><script src="app.js"></script>
+<style>
+body{background:var(--rail);color:#fff}
+.wrap{height:100vh;display:grid;grid-template-rows:1fr auto;position:relative;overflow:hidden}
+.tracks{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:420px;pointer-events:none}
+.tracks .a,.tracks .b{position:absolute;height:92px;border-radius:0 8px 8px 0}
+.tracks .a{top:84px;left:0;width:64%;background:var(--orchid)}
+.tracks .b{top:244px;left:26%;right:0;background:var(--saffron);border-radius:8px 0 0 8px}
+.tracks .a span,.tracks .b span{position:absolute;top:50%;transform:translateY(-50%);font-family:var(--display);font-weight:600;font-stretch:110%;font-size:22px;white-space:nowrap;letter-spacing:-.005em}
+.tracks .a span{left:64px;color:#fff}
+.tracks .b span{left:36px;color:var(--rail)}
+.tracks .a span s{text-decoration-thickness:2px;text-decoration-color:rgba(34,24,50,.55)}
+.tracks small{display:block;font-family:var(--text);font-size:13px;font-weight:600;font-stretch:100%;margin-bottom:4px;opacity:.85}
+.card{position:relative;z-index:2;align-self:center;justify-self:end;margin-right:120px;width:420px;background:var(--surface);color:var(--ink);border-radius:8px;padding:36px 36px 30px;box-shadow:0 30px 60px -20px rgba(10,5,20,.55)}
+.card .brand{padding:0;margin-bottom:6px}
+.card .brand .word{color:var(--ink);font-size:34px}
+.card .brand .mark{width:32px;height:27px}
+.card .hotel{color:var(--ink-2);margin-bottom:26px;font-size:14px}
+.card form{display:flex;flex-direction:column;gap:16px}
+.pw{display:flex;justify-content:space-between;align-items:baseline}
+.pw a{font-size:12.5px;color:var(--orchid-deep);font-weight:600;text-decoration:none}
+.card .btn{justify-content:center;width:100%;margin-top:6px}
+.fine{margin-top:18px;font-size:12px;color:var(--ink-3);line-height:1.45}
+.foot{position:relative;z-index:2;padding:18px 48px;display:flex;justify-content:space-between;font-size:12px;color:#A89EBC}
+</style></head>
+<body>
+<div class="wrap">
+  <div class="tracks" aria-hidden="true">
+    <div class="a"><span><small>Kiku wrote</small><s>Thank you. I've booked the accessible vehicle for 16:10</s></span></div>
+    <div class="b"><span><small>Tomasz said</small>Perfect. Ten past four Thursday</span></div>
+  </div>
+  <div class="card">
+    <div class="brand"><span id="m"></span><span class="word">Kiku</span></div>
+    <p class="hotel">The Brenlow, Edinburgh</p>
+    <form onsubmit="return false">
+      <div class="field"><label for="e">Work email</label><input id="e" class="input" value="priya.raman@brenlow.example"></div>
+      <div class="field"><div class="pw"><label for="p">Password</label><a href="#">Forgot password?</a></div><input id="p" class="input" type="password" value="kikudemo2026"></div>
+      <button class="btn primary lg">Sign in</button>
+    </form>
+    <p class="fine"><b style="color:var(--ink-2)">Demo data.</b> All names, numbers and bookings are fictional.</p>
+  </div>
+  <div class="foot"></div>
+</div>
+<script>
+document.getElementById("m").outerHTML = MARK;
+document.querySelector(".foot").innerHTML = `<span>${K.product.tagline} · ${K.hotel.line}</span><span>Staff sign-in only</span>`;
+icons();
+</script>
+</body></html>

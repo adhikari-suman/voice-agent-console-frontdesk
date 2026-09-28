@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku, call logs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Familjen+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .logs { display: flex; flex-direction: column; gap: 14px; height: 100%; }
+  .filters { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
+  .search { width: 236px; white-space: nowrap; background: #fff; }
+  .search svg.lucide { color: var(--ink-3); }
+  .search span { color: var(--ink-3); }
+  .chipset { display: flex; gap: 6px; }
+  .fchip { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 11px; border-radius: 20px; border: 1px solid var(--rule-2); background: var(--sheet); font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .fchip .n { color: var(--ink-3); font-weight: 400; }
+  .fchip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .fchip.on .n { color: #C9C5DA; }
+  .fchip .status { font-size: 13px; font-weight: 500; }
+  .fchip.on .status { color: #fff; }
+  .dd { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 10px 0 12px; border: 1px solid var(--rule-2); border-radius: var(--r-md); background: var(--sheet); font-size: 13px; white-space: nowrap; }
+  .dd .l { color: var(--ink-3); }
+  .dd svg.lucide { width: 14px; height: 14px; color: var(--ink-3); }
+  .tbl { flex: 1; min-height: 0; }
+  td { vertical-align: middle; white-space: nowrap; padding-top: 7px; padding-bottom: 7px; }
+  td.purpose { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; color: var(--ink-2); }
+  td .g { font-weight: 600; }
+  td .id { font-size: 12px; color: var(--ink-3); }
+  td .d { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+  td .d svg.lucide { width: 14px; height: 14px; }
+  td.none { color: var(--ink-3); }
+  tr.sel td.purpose { color: var(--ink); }
+  .open { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12.5px; color: #fff; background: var(--ink); border-radius: 7px; padding: 4px 9px; }
+  .spk-cell { display: inline-flex; align-items: center; gap: 7px; }
+  .spk-cell .who-dot { width: 7px; height: 7px; }
+  .foot { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; color: var(--ink-3); padding: 9px 14px; border-top: 1px solid var(--rule); }
+</style>
+</head>
+<body>
+<script>
+const C = K.calls;
+const count = s => C.filter(c => c.status === s).length;
+const rows = [...C].sort((a, b) => b.started.localeCompare(a.started)).map(c => {
+  const sel = c.id === "KK-24027";
+  const spec = c.specialist ? `<span class="spk-cell"><span class="who-dot h"></span>${esc(c.specialist)}</span>` : `<span class="spk-cell muted"><span class="who-dot k"></span>Kiku only</span>`;
+  return `<tr class="${sel ? "sel" : ""}">
+    <td class="num">${c.started}</td>
+    <td><div class="g">${esc(c.guest)}</div><div class="id">${c.id}</div></td>
+    <td class="num">${esc(c.phone)}</td>
+    <td><span class="d">${dirIcon(c.direction)}${c.direction === "inbound" ? "Inbound" : "Outbound"}</span></td>
+    <td>${c.direction === "inbound" ? '<span class="muted">Inbound</span>' : c.type}</td>
+    <td class="purpose" title="${esc(c.purpose)}">${esc(c.purpose)}</td>
+    <td>${status(c.status)}</td>
+    <td class="num">${c.duration}</td>
+    <td>${sel ? `<span style="display:flex;align-items:center;gap:10px">${spec}<span class="open">Open audit${ic("arrow-right")}</span></span>` : spec}</td>
+  </tr>`;
+}).join("");
+
+shell({
+  role: "specialist", active: "logs", title: "Call logs",
+  crumb: `${C.length} calls today on ${esc(K.hotel.line)} and outbound`,
+  body: `<div class="logs">
+  <div class="filters">
+    <div class="input search">${ic("search")}<span>Search guest, phone or purpose</span></div>
+    <div class="chipset">
+      <span class="fchip on">All <span class="n">${C.length}</span></span>
+      ${["completed", "in_progress", "escalated", "failed"].map(s => `<span class="fchip">${status(s)}<span class="n">${count(s)}</span></span>`).join("")}
+    </div>
+    <span class="dd"><span class="l">Direction</span>All${ic("chevron-down")}</span>
+    <span class="dd"><span class="l">Type</span>All${ic("chevron-down")}</span>
+    <span class="dd" style="margin-left:auto">${ic("calendar")}Today, 27 Sep${ic("chevron-down")}</span>
+  </div>
+  <div class="panel tbl">
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Time</th><th>Guest</th><th>Phone</th><th>Direction</th><th>Type</th><th>What the call was for</th><th>Status</th><th>Duration</th><th>Specialist</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="foot"><span>Showing all ${C.length} calls from today, newest first</span><span>Select a call to open its audit and karaoke record</span></div>
+  </div>
+</div>`
+});
+done();
+</script>
+</body>
+</html>

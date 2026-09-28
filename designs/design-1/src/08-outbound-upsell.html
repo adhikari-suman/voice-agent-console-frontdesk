@@ -2,83 +2,64 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<title>Kiku · Upsell calls</title>
 <meta name="viewport" content="width=1440">
-<title>Outbound upsell · Kiku</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&family=Geist+Mono:wght@400;500&display=block">
-<script src="https://cdn.jsdelivr.net/npm/lucide@1.48.0/dist/umd/lucide.min.js"></script>
-<script src="../../_shared/data.js"></script>
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
 <script src="app.js"></script>
+<link rel="stylesheet" href="outbound.css">
 </head>
 <body>
-<div id="app" class="app"></div>
 <script>
-const { K, ic, topbar, mount, esc, outboundHead, fileBlock, xmark } = UI;
-const U = K.upsellSingle;
-const C = K.upsellCsv;
-const offers = K.offers;
-const matchName = U.match.split(" · ")[0];
-const RECOVER = {
-  "Phone number too short": "Use the full number with country code, then upload again.",
-  "Confirmation number missing": "Add the booking’s BRN number, or remove the row.",
-};
+const { K, icon, mount } = Kiku;
+const U = K.upsellSingle, C = K.upsellCsv;
+const oIcon = { pickup: 'car', breakfast: 'cup', dinner: 'dinner' };
 
-const offerRows = offers.map((o) => `<div class="offer">
-  <span class="toggle${U.offers.includes(o.id) ? " on" : ""}" role="switch" aria-checked="${U.offers.includes(o.id)}" aria-label="${esc(o.name)}"></span>
-  <div><div class="nm">${esc(o.name)}</div><div class="muted">${esc(o.detail)}</div></div>
-  <div class="pr">${esc(o.price)}${o.alt ? `<small>${esc(o.alt)}</small>` : ""}</div>
-</div>`).join("");
+const offers = K.offers.map(o => `<div class="offer">
+  <span class="oic">${icon(oIcon[o.id])}</span>
+  <div><b>${o.name}</b><span>${o.detail}${o.alt ? `. ${o.alt}` : ''}</span></div>
+  <span class="price">${o.price}</span>
+  <span class="sw ${U.offers.includes(o.id) ? 'on' : ''}" role="switch" aria-checked="true"></span>
+</div>`).join('');
 
-function previewRows() {
-  const out = [];
-  let prev = 0;
-  const gap = (from, to) => `<tr class="gaprow"><td colspan="5">Rows ${from}–${to} · ${to - from + 1} more ready</td></tr>`;
-  C.preview.forEach((r) => {
-    if (r.row > prev + 1) out.push(gap(prev + 1, r.row - 1));
-    out.push(r.ok
-      ? `<tr><td class="mono">${r.row}</td><td class="mono">${esc(r.phone)}</td><td class="mono">${esc(r.confirmation)}</td><td>${esc(r.guest)}</td><td><span class="st">${ic("check")}Ready</span></td></tr>`
-      : `<tr class="errrow"><td class="mono">${r.row}</td><td class="mono">${r.phone ? esc(r.phone) : '<span class="muted">empty</span>'}</td><td class="mono">${r.confirmation ? esc(r.confirmation) : '<span class="muted">empty</span>'}</td>
-          <td class="wrap" colspan="2"><div class="err">${xmark()}<div><b>${esc(r.error)}</b><small>${esc(RECOVER[r.error] || "")}</small></div></div></td></tr>`);
-    prev = r.row;
-  });
-  if (prev < C.rows) out.push(gap(prev + 1, C.rows));
-  return out.join("");
-}
+const prev = C.preview.map(r => `<tr class="${r.ok ? '' : 'err'}">
+  <td class="rn">${r.row}</td><td class="ph">${r.phone || '<span class="miss">empty</span>'}</td><td>${r.confirmation || '<span class="miss">empty</span>'}</td>
+  <td>${r.ok ? r.guest : `<span class="bad">${icon('alert')}${r.error}</span>`}</td>
+  <td class="stc">${r.ok ? `<span class="ok">${icon('check')}Ready</span>` : `<span class="bad">${icon('x')}Skipped</span>`}</td>
+</tr>`).join('');
 
-mount(`
-${topbar("admin", "Outbound")}
-<main class="page">
-  ${outboundHead("Upsell")}
-  <section class="col panel path pad" style="grid-column:1/6;margin-bottom:24px">
-    <h2 class="sec-h h20">One guest <span class="cnt">by phone and confirmation</span></h2>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
-      <div class="field"><label class="label" for="ph">Phone</label><input class="input mono" id="ph" value="${esc(U.phone)}"></div>
-      <div class="field"><label class="label" for="cf">Confirmation number</label><input class="input mono" id="cf" value="${U.confirmation}"></div>
+mount({ role: 'admin', active: 'upsell', crumb: 'Outbound calls', title: 'Upsell', sub: 'Kiku calls guests with a booking and offers extras for their stay' }, `
+<div class="two">
+  <section class="panel path">
+    <div class="path-h"><span class="pn">One guest</span><h2>Call a guest about their booking</h2></div>
+    <div class="path-b">
+      <div class="pair">
+        <div class="field"><label>Phone number</label><div class="input">${icon('phone')}${U.phone}</div></div>
+        <div class="field"><label>Confirmation number</label><div class="input is-focus">${U.confirmation}</div></div>
+      </div>
+      <div class="match">${icon('check')}<div><b>Booking found</b><span>${U.match}</span></div></div>
+      <div class="lbl" style="margin-top:4px">Offers Kiku will make</div>
+      <div class="offers">${offers}</div>
     </div>
-    <div class="found">${ic("check", "i20")}<div><div class="strong">Booking found</div><div>${esc(U.match)}</div></div></div>
-    <div>
-      <h3 class="h16" style="margin-bottom:4px">Offers <span class="cnt">${U.offers.length} of ${offers.length} on</span></h3>
-      ${offerRows}
-    </div>
-    <div class="foot"><button class="btn primary lg">${ic("phone-outgoing")}Call now</button><span class="muted">Kiku calls ${esc(matchName)} with ${U.offers.length} offers.</span></div>
+    <div class="path-f"><span class="muted">Kiku calls ${U.phone} straight away.</span><button class="btn btn-primary">${icon('phone')}Call now</button></div>
   </section>
 
-  <section class="col panel path pad" style="grid-column:6/13;margin-bottom:24px">
-    <h2 class="sec-h h20">A list of guests <span class="cnt">CSV upload</span></h2>
-    ${fileBlock(C)}
-    <div style="display:flex;gap:24px;align-items:center"><span class="label" style="margin:0">Offer on each call</span>${offers.map((o) => `<span class="opt-row"><span class="check on">${ic("check", "i12")}</span>${esc(o.name)}</span>`).join("")}</div>
-    <div class="preview">
-      <table class="tbl prev">
-        <colgroup><col style="width:56px"><col style="width:168px"><col style="width:128px"><col><col style="width:104px"></colgroup>
-        <thead><tr><th>Row</th><th>Phone</th><th>Confirmation</th><th>Matched guest</th><th>Check</th></tr></thead>
-        <tbody>${previewRows()}</tbody>
-      </table>
+  <section class="panel path">
+    <div class="path-h"><span class="pn">A list</span><h2>Call everyone in a file</h2></div>
+    <div class="path-b">
+      <div class="file"><span class="fi">${icon('file')}</span><div><b>${C.file}</b><div class="n"><span>${C.size}</span><span>${C.rows} rows</span><span>Columns: ${C.columns.join(', ')}</span></div></div><button class="btn btn-sm">${icon('upload')}Replace</button></div>
+      <div class="tally"><span class="ok big">${icon('check')}<b>${C.ready}</b> ready to call</span><span class="bad big">${icon('alert')}<b>${C.errors}</b> rows need fixing</span></div>
+      <div class="prev">
+        <table>
+          <thead><tr><th>Row</th><th>Phone</th><th>Confirmation</th><th>Guest</th><th></th></tr></thead>
+          <tbody>${prev}</tbody>
+        </table>
+      </div>
+      <p class="help">Showing the first rows and every row with a problem. Rows with problems are skipped; fix them in the file and upload it again to include them.</p>
     </div>
-    <div class="foot"><button class="btn primary lg">${ic("phone-outgoing")}Start ${C.ready} calls</button><span class="muted">${C.errors} rows with errors will be skipped.</span></div>
+    <div class="path-f"><span class="muted">Only the ${C.ready} ready rows are called.</span><button class="btn btn-primary">${icon('phone')}Start ${C.ready} calls</button></div>
   </section>
-</main>
+</div>
 `);
 </script>
 </body>

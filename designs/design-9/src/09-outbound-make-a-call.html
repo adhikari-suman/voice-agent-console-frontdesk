@@ -3,79 +3,79 @@
 <head>
 <meta charset="utf-8">
 <title>Kiku · Make a call</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&display=block">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
-<script src="../../_shared/data.js"></script>
 <link rel="stylesheet" href="styles.css">
-<script src="app.js"></script>
 <style>
-  .left { width: 432px; flex: none; gap: 24px; }
-  .path { padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; }
-  .path-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-  .path-h h2 { font: 600 17px/1.2 var(--sans); }
-  .path-h span { font-size: 12.5px; color: var(--ivory-2); }
-  .act { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
-  .act .note { font-size: 12.5px; color: var(--ivory-2); margin-right: auto; }
-  .csvp { flex: 1; min-width: 0; }
-  .cols { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--ivory-2); }
-  .colname { padding: 3px 9px; border: 1px solid var(--line); border-radius: 3px; background: var(--lacquer-deep); color: var(--ivory); font-size: 12.5px; }
-  .tpl { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 3px; font-size: 13px; }
-  .tpl i.lead { font-size: 20px; color: var(--brass); }
-  .tpl .link { margin-left: auto; }
-  .recent a { display: grid; grid-template-columns: 44px 1fr auto; gap: 3px 10px; padding: 10px 2px; border-bottom: 1px solid var(--line); font-size: 13px; }
-  .recent a:first-child { border-top: 1px solid var(--line); }
-  .recent a:hover { background: var(--ivory-wash); }
-  .recent .t { color: var(--ivory-2); }
-  .recent .n { font-weight: 600; }
-  .recent .o { grid-column: 2 / 4; color: var(--ivory-2); font-size: 12.5px; }
-  .csv td:last-child { white-space: normal; line-height: 1.4; padding-top: 6px; padding-bottom: 6px; }
-  .csv td:nth-child(2), .csv td:nth-child(3) { white-space: nowrap; }
+  .grid { flex: 1; min-height: 0; display: grid; grid-template-columns: 500px 1fr; gap: 16px; }
+  .pane { display: flex; flex-direction: column; }
+  .pane .body { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .ph .n { width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11px; display: grid; place-items: center; }
+  textarea.input { font-family: var(--voice); font-size: 16px; line-height: 1.5; color: var(--kiku-deep); }
+  .help { font-size: 12px; color: var(--ink-3); }
+  .preview { border-left: 3px solid var(--kiku); padding: 10px 14px; background: var(--kiku-tint); border-radius: 0 var(--r) var(--r) 0; }
+  .preview .spk { margin-bottom: 4px; }
+  .preview .voice { font-size: 15px; color: var(--kiku-deep); }
+  .cols { font-size: 12px; color: var(--ink-3); display: flex; gap: 6px; align-items: center; }
+  .cols code { font-family: var(--ui); font-weight: 600; font-size: 12px; background: var(--white); border: 1px solid var(--line); padding: 0 5px; border-radius: 2px; color: var(--ink-2); }
+  .tw { border: 1px solid var(--line); border-radius: var(--r); background: var(--white); overflow: hidden; }
+  .tw th { background: var(--paper); }
+  td.rn { color: var(--ink-3); width: 44px; }
+  td.pp { line-height: 1.4; }
+  .skip td { border: 0; padding: 4px 12px; font-size: 11.5px; color: var(--ink-3); background: var(--paper); text-align: center; }
+  .recent h3 { font-size: 12px; font-weight: 600; color: var(--ink-3); margin-bottom: 4px; }
+  .rr { display: flex; gap: 12px; align-items: flex-start; padding: 9px 0; border-top: 1px solid var(--line-2); font-size: 13px; }
+  .rr > div { flex: 1; }
+  .rr b { font-weight: 600; display: block; }
+  .rr > div > span { display: block; font-size: 12px; color: var(--ink-2); }
+  .tpl { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border: 1px dashed var(--line); border-radius: var(--r); font-size: 13px; }
+  .tpl svg { color: var(--kiku); }
+  .tpl .btn { margin-left: auto; }
 </style>
 </head>
 <body>
+<header class="top" id="top"></header>
+<main class="main" id="main"></main>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
 <script>
-  const { K, icon, csvTable, status } = KK;
-  const m = K.makeCallSingle, c = K.makeCallCsv;
-  const recent = K.calls.filter((x) => x.type === "Make a call");
+shell("admin", "out");
+const M = K.makeCallSingle, V = K.makeCallCsv;
+const rows = V.preview.map((r, i) => {
+  const skip = i > 0 && r.row - V.preview[i - 1].row > 1 ? `<tr class="skip"><td colspan="5">Row ${V.preview[i - 1].row + 1} ready</td></tr>` : "";
+  return `${skip}<tr class="${r.ok ? "" : "err"}"><td class="rn">${r.row}</td><td style="white-space:nowrap">${r.phone || `<span class="faint">empty</span>`}</td><td style="white-space:nowrap">${r.name ? esc(r.name) : `<span class="faint">No name</span>`}</td><td class="pp">${esc(r.purpose)}</td>
+    <td style="white-space:nowrap">${r.ok ? `<span class="st completed">${STATUS.completed.svg}Ready</span>` : `<span class="rowerr">${STATUS.escalated.svg}${esc(r.error)}</span>`}</td></tr>`;
+}).join("");
 
-  KK.mount("admin", "make", `
-    <header class="ph">
-      <div class="ph-l"><h1 class="title">Make a call</h1></div>
-    </header>
-    <div class="dbl"></div>
+document.getElementById("main").innerHTML = `
+<div class="head"><h1>Outbound calls</h1>${outboundTabs("make")}<p class="sp">Tell Kiku who to call and why. It handles the conversation.</p></div>
+<div class="grid">
+  <section class="panel pane">
+    <div class="ph"><span class="n">a</span>Place one call</div>
     <div class="body">
-      <section class="col left">
-        <div class="panel path">
-          <div class="path-h"><h2>Call one person</h2><span>Any purpose, any number</span></div>
-          <div class="field">
-            <label class="label" for="pu">Purpose</label>
-            <textarea class="input is-focus" id="pu" rows="4">${m.purpose}</textarea>
-            <p class="help">Write what Kiku should find out or pass on. It works from this on the call.</p>
-          </div>
-          <div class="field"><label class="label" for="nm">Name <span class="opt">Optional</span></label><input class="input" id="nm" value="${m.name}" placeholder="Who Kiku should ask for"></div>
-          <div class="field"><label class="label" for="pn">Phone</label><input class="input" id="pn" value="${m.phone}"></div>
-          <div class="act"><button class="btn btn-primary">${icon("phone-outgoing")}Place call</button></div>
-        </div>
-        <div>
-          <div class="h2-row" style="margin-bottom:8px"><h2 class="h2">Placed today</h2><a class="link small" href="03-call-logs.html">Call logs${icon("arrow-right")}</a></div>
-          <div class="recent">${recent.map((x) => `<a href="03-call-logs.html"><span class="t">${x.started}</span><span class="n">${x.guest}</span>${status(x.status)}<span class="o">${x.purpose}${x.outcome ? ` · ${x.outcome}` : ""}</span></a>`).join("")}</div>
-        </div>
-      </section>
-
-      <section class="panel path csvp">
-        <div class="path-h"><h2>Call from a list</h2><span>One call per row</span></div>
-        <div class="cols">Columns ${c.columns.map((x) => `<span class="colname">${x}</span>`).join("")}</div>
-        <div class="tpl">${icon("file-arrow-down", "lead")}<span>Not sure of the format? Start from the template, one row per call.</span><a class="link" href="#">${icon("download-simple")}Download template</a></div>
-        <div class="drop">${icon("file-csv")}<div><div class="drop-name">${c.file}</div><div class="drop-meta">${c.size} · ${c.rows} rows · drop a new file here to replace it</div></div><button class="btn btn-sm btn-quiet">${icon("upload-simple")}Replace</button></div>
-        <div class="tally"><span class="ok">${icon("check")}<b>${c.ready}</b>&nbsp;ready</span><span class="bad">${icon("x")}<b>${c.errors}</b>&nbsp;error</span></div>
-        <div>${csvTable([
-          { key: "phone", label: "Phone" },
-          { key: "name", label: "Name", emptyText: "No name given" },
-          { key: "purpose", label: "Purpose" },
-        ], c.preview, c.rows)}</div>
-        <div class="act" style="margin-top:auto"><span class="note">${c.errors} row will be skipped.</span><button class="btn btn-primary">${icon("phone-outgoing")}Place ${c.ready} calls</button></div>
-      </section>
-    </div>`);
+      <div class="field"><label>What is the call for?</label><textarea class="input focus" rows="6">${esc(M.purpose)}</textarea>
+        <span class="help">Write it as you would brief a colleague. Kiku turns it into the conversation.</span></div>
+      <div class="field"><label>Name <em>(optional)</em></label><div class="input">${icon("user")}${esc(M.name)}</div></div>
+      <div class="field"><label>Phone</label><div class="input">${icon("phone")}${M.phone}</div></div>
+      <div class="recent" style="margin-top:auto"><h3>Placed today</h3>${K.calls.filter(c => c.type === "Make a call").map(c => `<div class="rr"><div><b>${esc(c.guest)}</b><span>${c.started} · ${esc(c.purpose)}</span>${c.outcome ? `<span>${esc(c.outcome)}</span>` : ""}</div>${status(c.status)}</div>`).join("")}</div>
+    </div>
+    <div class="formfoot"><span class="sp">Kiku calls straight away</span><button class="btn pri">${icon("phone-outgoing")}Place call</button></div>
+  </section>
+  <section class="panel pane">
+    <div class="ph"><span class="n">b</span>Place calls from CSV<span class="sp cols">Columns ${V.columns.map(c => `<code>${c}</code>`).join("")}</span></div>
+    <div class="body">
+      <div class="file"><span class="fi">CSV</span><div><b>${V.file}</b><div class="faint small">${V.size} · ${V.rows} rows</div></div>
+        <div class="counts" style="margin-left:auto"><span class="st completed">${STATUS.completed.svg}${V.ready} ready</span><span class="st escalated">${STATUS.escalated.svg}${V.errors} error</span></div>
+        <button class="btn sm">${icon("upload")}Replace</button></div>
+      <div class="tw scroll">
+        <table><thead><tr><th>Row</th><th>phone</th><th>name</th><th>purpose</th><th>Check</th></tr></thead><tbody>${rows}</tbody></table>
+      </div>
+      <p class="small muted">Row 6 will be skipped until it has a phone number. Showing ${V.preview.length} of ${V.rows} rows.</p>
+      <div class="tpl" style="margin-top:auto">${icon("file-down")}<span>Starting a new list? The template has the three columns, with name left blank where you don't know it.</span><button class="btn sm">${icon("download")}Download template</button></div>
+    </div>
+    <div class="formfoot"><span class="sp">${V.ready} calls, each with its own purpose</span><button class="btn">Cancel</button><button class="btn pri">${icon("phone-outgoing")}Place ${V.ready} calls</button></div>
+  </section>
+</div>`;
 </script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>

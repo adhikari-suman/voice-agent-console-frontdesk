@@ -2,103 +2,179 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<title>Kiku · Call audit KK-24027</title>
 <meta name="viewport" content="width=1440">
-<title>Call audit KK-24027 · Kiku</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&family=Geist+Mono:wght@400;500&display=block">
-<script src="https://cdn.jsdelivr.net/npm/lucide@1.48.0/dist/umd/lucide.min.js"></script>
-<script src="../../_shared/data.js"></script>
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
 <script src="app.js"></script>
+<style>
+  .content { gap: 16px; padding-top: 18px; }
+
+  /* Header written as a sentence, not a key-value strip */
+  .head { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 32px; align-items: start; }
+  .head .name { display: flex; align-items: baseline; gap: 14px; }
+  .head .name h2 { font: 500 34px/1.05 var(--voice); letter-spacing: -.015em; }
+  .head .story { margin-top: 8px; font: 400 16px/1.45 var(--voice); color: var(--ink-2); max-width: none; }
+  .head .story b { font-weight: 600; color: var(--ink); }
+  .head .story .hum { background: var(--amber-hi); color: var(--ink); padding: 0 4px; border-radius: 3px; font-style: italic; }
+  .head-r { display: flex; gap: 10px; align-items: center; padding-top: 8px; }
+
+  .body { flex: 1; min-height: 0; display: grid; grid-template-columns: 400px minmax(0,1fr); gap: 20px; }
+  .dossier { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+
+  /* Ring player: the whole call as one loop, bisected by the midline */
+  .ringp { padding: 14px 18px 14px; }
+  .ringp .h { display: flex; justify-content: space-between; align-items: baseline; }
+  .ringwrap { position: relative; width: 172px; height: 172px; margin: 6px auto 6px; }
+  .ringt { position: absolute; left: 50%; top: 64%; transform: translateX(-50%); font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .ringt b { color: var(--ink); font-weight: 600; }
+  .ringwrap > svg { position: absolute; inset: 0; overflow: visible; }
+  .ringc { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  .play { width: 46px; height: 46px; border-radius: 50%; background: var(--violet); color: #fff; display: flex; align-items: center; justify-content: center; }
+  .play .i { width: 20px; height: 20px; margin-left: 3px; }
+  .ringc .t { font-size: 12.5px; color: var(--muted); background: var(--surface); padding: 0 6px; }
+  .ringc .t b { color: var(--ink); font-weight: 600; }
+  .rl { position: absolute; font-size: 11.5px; font-weight: 600; white-space: nowrap; display: flex; gap: 5px; align-items: center; }
+  .rl svg { position: static; width: 10px; height: 10px; }
+  .keys { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-top: 4px; font-size: 12px; color: var(--ink-2); }
+  .keys span { display: flex; align-items: center; gap: 7px; }
+  .keys i { width: 18px; height: 4px; border-radius: 2px; flex: none; }
+  .keys i.dot { width: 10px; height: 10px; border-radius: 50%; }
+  .ksum { display: flex; align-items: baseline; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--rule); }
+  .ksum b { font: 500 28px/1 var(--voice); color: var(--violet); white-space: nowrap; }
+  .ksum span { font-size: 13px; color: var(--ink-2); line-height: 1.35; }
+
+  .out { padding: 14px 18px 16px; flex: 1; min-height: 0; overflow: auto; }
+  .oi { display: grid; grid-template-columns: 16px 1fr auto; gap: 10px; align-items: start; padding: 9px 0; border-bottom: 1px solid var(--rule); }
+  .oi .t { font-size: 13px; font-weight: 500; line-height: 1.35; }
+  .oi .r { display: inline-flex; margin-top: 2px; }
+  .oi .r .i { width: 14px; height: 14px; }
+  .oi .rs { font-size: 11.5px; font-weight: 600; margin-left: 6px; color: var(--green); }
+  .oi.dec .rs { color: var(--muted); }
+  .r-add { color: var(--green); }
+  .r-dec { color: var(--muted); }
+  .oi .amt { font-weight: 700; font-size: 13.5px; }
+  .oi.dec .t { color: var(--muted); }
+  .total { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0 8px; }
+  .total b { font: 500 26px/1 var(--voice); }
+  .roomnote { display: flex; gap: 8px; align-items: flex-start; background: var(--sunk); padding: 9px 12px; border-radius: 10px; font-size: 12.5px; }
+  .roomnote .i { margin-top: 1px; color: var(--ink-2); width: 14px; height: 14px; }
+
+  .hist { display: flex; flex-direction: column; min-height: 0; }
+  .hist .scroll { -webkit-mask-image: linear-gradient(transparent 0, #000 24px); mask-image: linear-gradient(transparent 0, #000 24px); flex: 1; padding: 4px 28px 24px 8px; position: relative; }
+  .legend { display: flex; gap: 16px; align-items: center; font-size: 12px; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .lg-bead { font: 500 12.5px var(--voice); color: var(--violet); border: 1.5px solid var(--violet); border-radius: 999px; padding: 0 7px; background: #fff; }
+  .lg-del { color: var(--violet-soft); text-decoration: line-through; font-family: var(--voice); font-size: 13px; }
+  .lg-ins { background: var(--amber-hi); color: var(--ink); font-family: var(--voice); font-style: italic; padding: 0 4px; border-radius: 3px; font-size: 13px; }
+  .tl-spec { padding: 12px 0 16px; }
+  .tl-spec .tl-who { margin-bottom: 10px; }
+  .match { font-weight: 600; color: var(--muted); font-size: 12px; }
+  .exact { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px 0 7px; border-radius: 999px; background: var(--violet); color: #fff; font-size: 12px; font-weight: 700; }
+  .exact .i { width: 13px; height: 13px; }
+</style>
 </head>
 <body>
-<div id="app" class="app"></div>
 <script>
-const { K, ic, status, topbar, mount, esc, spineEntry, legend, toSec, firstName } = UI;
+const { K, icon, status, zipper, mount, toSec, dir } = Kiku;
 const A = K.audit;
-const total = toSec(A.duration);
-const pct = (t) => ((toSec(t) / total) * 100).toFixed(2) + "%";
-const esc36 = A.transcript.find((e) => e.kind === "escalation");
-const kturns = A.transcript.filter((e) => e.karaoke);
-const PLAYHEAD = "01:12";
+const total = toSec(A.duration), escT = toSec('00:36'), takeT = toSec(A.takeoverAt);
+const first = A.specialist.split(' ')[0];
+const kturns = A.transcript.filter(t => t.karaoke);
 
-let ticks = "";
-for (let s = 0; s <= total; s += 10) {
-  const major = s % 30 === 0;
-  ticks += `<span class="tick${major ? "" : " minor"}" style="left:${((s / total) * 100).toFixed(2)}%"></span>`;
-  if (major) ticks += `<span class="tlab" style="left:${((s / total) * 100).toFixed(2)}%">${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}</span>`;
-}
-const ktick = kturns.map((k) => `<span class="kt" style="left:${pct(k.t)};${k.asWritten ? "height:12px;top:36px" : "background:var(--ink)"}" title="${k.t}"></span>`).join("");
+// ---- ring geometry ----
+const R = 96, CX = 116, CY = 116, C = 2 * Math.PI * R;
+const ang = s => (s / total) * 2 * Math.PI - Math.PI / 2;
+const pt = (s, r) => [CX + (r || R) * Math.cos(ang(s)), CY + (r || R) * Math.sin(ang(s))];
+const beads = kturns.map(t => {
+  const [x, y] = pt(toSec(t.t));
+  return t.asWritten
+    ? `<circle cx="${x}" cy="${y}" r="6.5" fill="#2F0BA6" stroke="#fff" stroke-width="2"/>`
+    : `<circle cx="${x}" cy="${y}" r="5.5" fill="#fff" stroke="#A8330C" stroke-width="1.8"/>`;
+}).join('');
+const [ex, ey] = pt(escT), [tx, ty] = pt(takeT);
+const [ex2, ey2] = pt(escT, R + 16), [tx2, ty2] = pt(takeT, R + 16);
+const ring = `<svg viewBox="0 0 232 232" width="172" height="172" aria-hidden="true">
+  <line x1="-8" y1="${CY}" x2="240" y2="${CY}" stroke="#2F0BA6" stroke-width="1.5"/>
+  <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#EDEBF5" stroke-width="12"/>
+  <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#2F0BA6" stroke-width="12" stroke-dasharray="${C * takeT / total} ${C}" transform="rotate(-90 ${CX} ${CY})"/>
+  <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#FF6B3D" stroke-width="12" stroke-dasharray="${C * (total - takeT) / total} ${C}" stroke-dashoffset="${-C * takeT / total}" transform="rotate(-90 ${CX} ${CY})"/>
+  <line x1="${CX}" y1="${CY - R - 10}" x2="${CX}" y2="${CY - R + 10}" stroke="#1C1830" stroke-width="2.5" stroke-linecap="round"/>
+  <g transform="translate(${ex} ${ey}) rotate(45)"><rect x="-6" y="-6" width="12" height="12" fill="#F0592B" stroke="#fff" stroke-width="2"/></g>
+  <circle cx="${tx}" cy="${ty}" r="7.5" fill="#FF6B3D" stroke="#150A3D" stroke-width="2.5"/>
+  ${beads}
+</svg>`;
 
-const player = `<div class="player">
-  <button class="play" aria-label="Play recording">${ic("play")}</button>
-  <div class="ptime">${PLAYHEAD} <span class="muted">/ ${A.duration}</span><small>Recording</small></div>
-  <div class="tl" aria-label="Call timeline">
-    <span class="mk" style="right:calc(100% - ${pct(esc36.t)} - 5px);flex-direction:row">Escalated ${esc36.t}<svg viewBox="0 0 10 10" style="width:10px;height:10px"><path d="M5 0 L10 9.5 H0 Z" fill="#FF6A13"/></svg><span class="stem" style="left:auto;right:5px"></span></span>
-    <span class="mk" style="left:calc(${pct(A.takeoverAt)} - 5px)"><svg viewBox="0 0 10 10" style="width:10px;height:10px"><rect x=".5" y=".5" width="9" height="9" fill="#C8F03C" stroke="#0E0E0E"/></svg>${esc(firstName(A.specialist))} took over ${A.takeoverAt}<span class="stem"></span></span>
-    <span class="lane"></span>
-    <span class="played" style="width:${pct(PLAYHEAD)}"></span>
-    <span class="kband" style="left:${pct(A.takeoverAt)};right:0"></span>
-    ${ticks}${ktick}
-    <span class="head" style="left:${pct(PLAYHEAD)}"></span>
+// ---- message history ----
+const sysIcon = { escalation: 'alert', join: 'headphones', takeover: 'mic', end: 'phoneoff' };
+let lineNo = 0;
+const rows = A.transcript.map(t => {
+  if (t.speaker === 'system') return `<div class="tl-row tl-sys sys-${t.kind}"><div class="tl-t">${t.t}</div><div class="tl-dot"><span></span></div><div class="tl-body">${icon(sysIcon[t.kind])}${t.text}</div></div>`;
+  if (t.karaoke) {
+    lineNo++;
+    return `<div class="tl-row tl-spec"><div class="tl-t">${t.t}</div><div class="tl-dot"><span></span></div><div>
+      <div class="tl-who">${A.specialist}<span class="aside">Karaoke line ${lineNo} of ${A.karaokeSummary.lines}</span>${t.asWritten ? `<span class="exact">${icon('check')}Spoken as written</span>` : `<span class="match">${t.match}% of the script kept</span>`}</div>
+      ${zipper(t, { who: first })}
+    </div></div>`;
+  }
+  const who = t.speaker === 'agent' ? 'Kiku' : A.guest;
+  return `<div class="tl-row ${t.speaker === 'agent' ? 'tl-kiku' : 'tl-guest'}"><div class="tl-t">${t.t}</div><div class="tl-dot"><span></span></div><div><div class="tl-who">${who}</div><div class="tl-text">${t.text}</div></div></div>`;
+}).join('');
+
+mount({
+  role: 'specialist', active: 'logs', crumb: 'Call logs', title: 'Call audit', sub: A.id,
+  topRight: `<a class="btn btn-sm" href="03-call-logs.html">${icon('logs')}Back to call logs</a>`
+}, `
+<section class="head">
+  <div>
+    <div class="name"><h2>${A.guest}</h2>${status(A.status)}</div>
+    <p class="story">An <b>outbound ${A.type.toLowerCase()}</b> call to <b>${A.phone}</b> on booking <b>${A.booking}</b> (${A.stay}), placed ${A.started.replace("Sun 27 Sep, ", "at ")}, lasting <b>${A.duration}</b>. Purpose: ${A.purpose.toLowerCase()}. Kiku escalated at 00:36 and <span class="hum">${A.specialist} took over at ${A.takeoverAt}</span>.</p>
   </div>
-</div>`;
+  <div class="head-r">${dir(A.direction)}<span class="tag">${A.type}</span></div>
+</section>
 
-const ctx = { guest: A.guest, specialistFirst: firstName(A.specialist), current: PLAYHEAD };
-const transcript = A.transcript.map((e) => `<div data-t="${e.t}">${spineEntry(e, ctx)}</div>`).join("");
-
-const outcome = A.outcome.map((o) => `<div class="outcome-row">
-  <div>${esc(o.item)}</div>
-  <div class="res">${o.result === "added" ? ic("check", "i12") + "Added" : ic("x", "i12") + "Declined"}</div>
-  <div class="num strong${o.result === "declined" ? " muted" : ""}">${o.amount}</div></div>`).join("");
-
-const kcells = kturns.map((k) => `<div class="kcell${k.asWritten ? " aw" : ""}" title="${k.t}"><span class="pc">${k.match}%</span><span class="fill" style="height:${Math.max(2, Math.round(k.match * 0.26))}px"></span></div>`).join("");
-
-mount(`
-${topbar("specialist", "Call logs")}
-<main class="page">
-  <header class="ph">
-    <h1 class="h52">${esc(A.guest)}</h1>
-    <div class="audit-chips">${status(A.status, { chip: true })}<span class="chip flat">${ic("phone-outgoing", "i12")}Outbound · ${esc(A.type)}</span><span class="chip flat mono">${A.duration}</span><span class="chip flat mono">${A.id}</span><span class="chip flat">${esc(A.started)}</span></div>
-    <a class="aside link" href="03-call-logs.html">${ic("arrow-left")}Call logs</a>
-  </header>
-
-  <aside class="col rail-a" style="grid-column:1/5">
-    <p class="t16 strong">${esc(A.purpose)}</p>
-    <dl class="facts">
-      <div><dt>Phone</dt><dd class="mono">${esc(A.phone)}</dd></div>
-      <div><dt>Booking</dt><dd class="mono">${A.booking}</dd></div>
-      <div class="w"><dt>Stay</dt><dd>${esc(A.stay)}</dd></div>
-      <div class="w"><dt>Handled by</dt><dd>${esc(A.agent)}, then ${esc(A.specialist)} from <span class="mono">${A.takeoverAt}</span></dd></div>
-      <div class="w"><dt>Escalated at <span class="mono">${esc36.t}</span></dt><dd>${esc(A.escalationReason)}</dd></div>
-    </dl>
-    <section>
-      <h2 class="sec-h h20" title="Share of Kiku’s script kept, per line">Karaoke <span class="cnt">${A.karaokeSummary.lines} lines · ${A.karaokeSummary.asWritten} as written · ${A.karaokeSummary.improvised} improvised</span></h2>
-      <div class="kstrip">${kcells}</div>
-      <div class="klab">${kturns.map((k) => `<span>${k.t}</span>`).join("")}</div>
+<section class="body">
+  <div class="dossier">
+    <section class="panel ringp">
+      <div class="h"><h2 class="h2">Recording</h2><span class="muted" style="font-size:12px">Starts at the top, runs clockwise</span></div>
+      <div class="ringwrap">
+        ${ring}
+        <div class="ringc"><button class="play" aria-label="Play recording">${icon('play')}</button></div>
+        <span class="ringt"><b>00:00</b> / ${A.duration}</span>
+      </div>
+      <div class="keys">
+        <span><i style="background:var(--violet)"></i>Kiku speaking</span>
+        <span><i style="background:var(--amber)"></i>${first} on the line</span>
+        <span><i class="dot" style="background:var(--violet);border:2px solid #fff;box-shadow:0 0 0 1px var(--violet)"></i>Line said as written</span>
+        <span><i class="dot" style="background:#fff;border:1.8px solid var(--amber-ink)"></i>Line improvised</span>
+        <span><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 0 10 5 5 10 0 5z" fill="#F0592B"/></svg>Escalated 00:36</span>
+        <span><i class="dot" style="background:var(--amber);border:2px solid var(--night)"></i>Took over 00:52</span>
+      </div>
+      <div class="ksum"><b>${A.karaokeSummary.asWritten} of ${A.karaokeSummary.lines}</b><span>karaoke lines spoken as written. ${A.karaokeSummary.improvised} improvised by ${first}.</span></div>
     </section>
-    <section>
-      <h2 class="sec-h h20">Outcome <span class="cnt">${A.outcome.filter((o) => o.result === "added").length} added to ${A.booking}</span></h2>
-      ${outcome}
-      <div class="outcome-row total"><div>Total added</div><div class="num">${A.total}</div></div>
-      <p class="st" style="padding-top:8px">${ic("pencil")}${esc(A.note)}</p>
+    <section class="panel out">
+      <h2 class="h2">What was added</h2>
+      ${A.outcome.map(o => `<div class="oi ${o.result === 'declined' ? 'dec' : ''}"><span class="r ${o.result === 'added' ? 'r-add' : 'r-dec'}" title="${o.result === 'added' ? 'Added to booking' : 'Declined'}">${icon(o.result === 'added' ? 'check' : 'x')}</span><div class="t">${o.item}<span class="rs">${o.result === 'added' ? 'Added' : 'Declined'}</span></div><span class="amt">${o.amount}</span></div>`).join('')}
+      <div class="total"><span class="muted">Total on ${A.booking}</span><b>${A.total}</b></div>
+      <div class="roomnote">${icon('note')}<span>${A.note}</span></div>
     </section>
-  </aside>
-
-  <section class="col panel" style="grid-column:5/13;margin-bottom:24px">
-    ${player}
-    <div class="transcript" id="tx">
-      <div class="sp-head"><div class="l">${legend()}<span class="st">${ic("audio-lines")}Kiku</span></div><div class="c">Time</div><div class="r"><span class="st">${ic("user")}${esc(A.specialist)}</span><span class="muted t12 st">${ic("audio-lines", "i12")}Following playback</span></div></div>
-      <div class="spine">${transcript}</div>
+  </div>
+  <section class="panel hist">
+    <div class="panel-h">
+      <h2>Message history</h2>
+      <div class="legend">
+        <span><i class="lg-bead">kept</i>on the script line</span>
+        <span><i class="lg-del">Kiku wrote</i>above, not said</span>
+        <span><i class="lg-ins">${first} said</i>below, improvised</span>
+      </div>
     </div>
+    <div class="scroll" id="hs"><div class="tl">${rows}</div></div>
   </section>
-</main>
-`, () => {
-  const tx = document.getElementById("tx");
-  const target = tx.querySelector('[data-t="00:36"]');
-  tx.scrollTop = target.getBoundingClientRect().top - tx.getBoundingClientRect().top - 48;
-});
+</section>
+`);
+const hs = document.getElementById('hs');
+const sc = () => { const r = hs.querySelector('.sys-escalation'); hs.scrollTop = r.offsetTop - 8; };
+sc(); document.fonts.ready.then(() => requestAnimationFrame(sc));
 </script>
 </body>
 </html>

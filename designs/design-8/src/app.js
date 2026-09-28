@@ -1,140 +1,119 @@
+/* Kiku design 8: shared helpers. Relies on window.KIKU from data.js */
 (function () {
-  const D = window.KIKU;
-  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const icon = (n, c = "") => `<span class="ms ${c}" aria-hidden="true">${n}</span>`;
+  const K = window.KIKU;
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const ic = (n, cls = "") => `<i data-lucide="${n}" class="${cls}"></i>`;
 
-  const STATUS = {
-    completed: { label: "Completed", icon: "check_box", cls: "done" },
-    in_progress: { label: "In progress", icon: "graphic_eq", cls: "prog" },
-    escalated: { label: "Escalated", icon: "warning", cls: "esc" },
-    failed: { label: "Failed", icon: "block", cls: "fail" },
+  // Status shapes: circle+check, half-filled ring, triangle, square+x
+  const SHAPES = {
+    completed: `<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="6.2" fill="currentColor"/><path d="M4.2 7.2l1.9 1.9 3.8-4" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    in_progress: `<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 2.6a4.4 4.4 0 0 1 0 8.8z" fill="currentColor"/></svg>`,
+    escalated: `<svg viewBox="0 0 14 14"><path class="f" d="M7 1.4L13 12.3H1z" fill="currentColor" stroke-linejoin="round"/><path d="M7 5.2v3.3" stroke="#1B1C1E" stroke-width="1.6" stroke-linecap="round"/><circle cx="7" cy="10.2" r=".9" fill="#1B1C1E"/></svg>`,
+    failed: `<svg viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2" fill="currentColor"/><path d="M4.6 4.6l4.8 4.8M9.4 4.6l-4.8 4.8" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>`,
   };
-  const status = (s, extra = "") => {
-    const m = STATUS[s];
-    return `<span class="st st-${m.cls} ${extra}">${icon(m.icon)}<span>${m.label}</span></span>`;
-  };
-  const kind = (c) => (c.status === "escalated" ? "pri" : c.status === "failed" ? "fail" : c.direction === "inbound" ? "arr" : "dep");
-  const dirTab = (c) => (c.direction === "inbound" ? `${icon("call_received")}<span>IN</span>` : `${icon("call_made")}<span>OUT</span>`);
-  const route = (c) => (c.direction === "inbound" ? "Inbound" : `Outbound · ${c.type}`);
-  const initials = (name) => name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-  const specParse = (c) => {
-    if (!c.specialist) return null;
-    const m = c.specialist.match(/^(.*?)(?: \((.*)\))?$/);
-    return { name: m[1], note: m[2] || null };
-  };
-  const hand = (t, cls = "") => `<span class="hand ${cls}">${esc(t)}</span>`;
-  const sig = (c, { short = false } = {}) => {
-    const s = specParse(c);
-    if (!s) return `<span class="kiku-only">${glyph(14)}Kiku only</span>`;
-    return `<span class="sig">${hand(initials(s.name))}<span class="nm">${esc(short ? s.name.split(" ")[0] : s.name)}${s.note ? ` · ${esc(s.note)}` : ""}</span></span>`;
+  const LABEL = { completed: "Completed", in_progress: "In progress", escalated: "Escalated", failed: "Failed" };
+  const status = (s, chip = false) => `<span class="status ${s}${chip ? " chip" : ""}">${SHAPES[s]}${LABEL[s]}</span>`;
+
+  const dir = c => c.direction === "inbound"
+    ? `<span class="dir">${ic("phone-incoming")}Inbound</span>`
+    : `<span class="dir">${ic("phone-outgoing")}Outbound</span>`;
+
+  const initials = n => n.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+
+  // Duet: Kiku's script (left) and what the person said (right), from one diff.
+  function scriptHtml(diff) {
+    return diff.map(d => d.op === "same" ? esc(d.text) : d.op === "del" ? `<del>${esc(d.text)}</del>` : `<span class="ins-at" title="Specialist added words here">&#8248;</span>`).join(" ");
+  }
+  function spokenHtml(diff, caret) {
+    return diff.filter(d => d.op !== "del").map(d => d.op === "same" ? esc(d.text) : `<mark>${esc(d.text)}</mark>`).join(" ") + (caret ? `<span class="caret"></span>` : "");
+  }
+  const megg = m => `<span class="megg" title="${m}% of Kiku's words kept"><b style="height:${m}%"></b></span><span class="pct">${m}%</span>`;
+  const match = m => `<span class="match"><span class="bar"><b style="width:${m}%"></b></span><span class="num">${m}%</span> of Kiku's words kept</span>`;
+  const verdict = asW => asW
+    ? `<span class="verdict asw">${ic("check")}Spoken as written</span>`
+    : `<span class="verdict imp">${ic("pencil-line")}Improvised</span>`;
+
+  // rows for a duet grid. who: {guestInitials, guestName, spec, specInitials}
+  function duetRows(list, o) {
+    let post = false;
+    return list.map(x => {
+      if (x.speaker === "system") {
+        if (x.kind === "takeover") post = true;
+        const icn = { escalation: "triangle-alert", join: "headphones", takeover: "mic", end: "phone-off" }[x.kind];
+        return `<div class="sysrow ${x.kind}"><span class="pill"><span class="ico">${ic(icn)}</span><span class="num" style="font-size:12px">${x.t}</span>${esc(x.text)}</span></div>`;
+      }
+      const sp = cls => `<div class="sp${post ? " post" : ""}">${cls}</div>`;
+      if (x.karaoke && x.asWritten) {
+        return `<div class="rowspan"><div class="say asw"><div class="who"><span class="num" style="color:var(--ink)">${x.t}</span>${verdict(true)}<span>Kiku wrote it and ${o.specFirst} said it word for word</span></div>${esc(x.said)}</div></div>`;
+      }
+      if (x.karaoke) {
+        return `<div class="c left"><div class="say script"><div class="who">${ic("pencil")}Kiku wrote</div>${scriptHtml(x.diff)}</div></div>
+          ${sp(`<span class="tm">${x.t}</span>${megg(x.match)}`)}
+          <div class="c"><div class="say spoken"><div class="who"><span class="egg sm human" style="width:18px;height:21px;font-size:8.5px">${o.specInitials}</span>${o.specLabel} said</div>${spokenHtml(x.diff, x.live)}</div></div>`;
+      }
+      if (x.speaker === "agent") {
+        return `<div class="c left"><div class="say kiku"><div class="who"><span class="egg sm kiku" style="width:18px;height:21px;font-size:8.5px">Ki</span>Kiku said</div>${esc(x.text)}</div></div>${sp(`<span class="tm">${x.t}</span><span class="node"></span>`)}<div class="c"></div>`;
+      }
+      return `<div class="c left"></div>${sp(`<span class="tm">${x.t}</span><span class="node"></span>`)}<div class="c"><div class="say guest"><div class="who">${esc(o.guest)}</div>${esc(x.text)}</div></div>`;
+    }).join("");
+  }
+
+  // Deterministic level bars
+  function level(n, seed = 3, maxH = 20, anim = false) {
+    let x = seed, out = "";
+    for (let i = 0; i < n; i++) {
+      x = (x * 9301 + 49297) % 233280;
+      const h = 4 + Math.round((x / 233280) * (maxH - 4));
+      out += `<i style="height:${h}px;${anim ? `animation-delay:-${(i * 0.13) % 1.1}s` : ""}"></i>`;
+    }
+    return `<span class="level${anim ? " anim" : ""}">${out}</span>`;
+  }
+
+  const NAV = {
+    specialist: [
+      { g: "Calls" },
+      { id: "live", label: "Live board", icon: "radio", href: "02-live-overview.html", count: 2 },
+      { id: "logs", label: "Call logs", icon: "list", href: "03-call-logs.html" },
+      { g: "Outbound" },
+      { id: "campaign", label: "Campaign", icon: "megaphone", href: "07-outbound-campaign.html" },
+      { id: "upsell", label: "Upsell", icon: "concierge-bell", href: "08-outbound-upsell.html" },
+      { id: "make", label: "Make a call", icon: "phone-outgoing", href: "09-outbound-make-a-call.html" },
+    ],
+    admin: [
+      { g: "Calls" },
+      { id: "logs", label: "Call logs", icon: "list", href: "03-call-logs.html" },
+      { g: "Outbound" },
+      { id: "campaign", label: "Campaign", icon: "megaphone", href: "07-outbound-campaign.html" },
+      { id: "upsell", label: "Upsell", icon: "concierge-bell", href: "08-outbound-upsell.html" },
+      { id: "make", label: "Make a call", icon: "phone-outgoing", href: "09-outbound-make-a-call.html" },
+      { g: "Team" },
+      { id: "users", label: "Users", icon: "users", href: "10-users.html" },
+    ],
   };
 
-  const glyph = (w = 24) =>
-    `<svg width="${w}" height="${Math.round(w * 0.62)}" viewBox="0 0 26 16" aria-hidden="true"><rect x=".5" y="2.5" width="25" height="11" rx="1" fill="#F7D34A" stroke="#121513"/><rect x=".5" y="2.5" width="6" height="11" fill="#A88A12" stroke="#121513"/><path d="M10 6.5h6M10 9.5h11" stroke="#121513" stroke-width="1.2"/></svg>`;
-  const tick = (cls = "") =>
-    `<svg class="${cls}" viewBox="0 0 34 30" aria-hidden="true"><path d="M3 17c3 1.5 5.5 4.5 8 9.5C15 16 22 8 31 3" fill="none" stroke="#1D3FA8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const caret = () =>
-    `<span class="cw" aria-hidden="true"><svg class="caret" viewBox="0 0 12 10"><path d="M1 9.2 6 1.2l5 8" fill="none" stroke="#1D3FA8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
-  const ring = (cls = "", style = "") =>
-    `<svg class="penmark ${cls}" style="${style}" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"><path d="M14 6C38-1 82 1 94 14c8 9-10 21-44 22C20 37 3 29 5 18 7 10 20 5 34 4" fill="none" stroke="#C62828" stroke-width="2.4" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
-
-  function tower({ role = "specialist", active = "" } = {}) {
-    const u = role === "admin" ? D.people.admin : D.people.specialist;
-    const waiting = D.calls.filter((c) => c.status === "escalated" && !c.specialist).length;
-    const items =
-      role === "admin"
-        ? [["logs", "Call logs", "03-call-logs.html", "list"], ["outbound", "Outbound", "07-outbound-campaign.html", "call_made"], ["users", "Users", "10-users.html", "group"]]
-        : [["live", "Live board", "02-live-overview.html", "view_week"], ["logs", "Call logs", "03-call-logs.html", "list"], ["outbound", "Outbound", "07-outbound-campaign.html", "call_made"]];
-    const nav = items
-      .map(([k, label, href, ic]) => {
-        const cnt = k === "live" && waiting ? `<span class="cnt" title="${waiting} waiting for a specialist">${icon("warning")}${waiting}</span>` : "";
-        return `<a href="${href}" class="${k === active ? "on" : ""}"${k === active ? ' aria-current="page"' : ""}>${icon(ic)}${label}${cnt}</a>`;
-      })
-      .join("");
-    const h = D.hotel;
-    const day = h.today.split(" ");
+  function rail(role, active) {
+    const p = K.people[role];
+    const items = NAV[role].map((it, i) => it.g
+      ? (i ? `<hr>` : "")
+      : `<a href="${it.href}" class="${it.id === active ? "on" : ""}"><span class="ico">${ic(it.icon)}</span>${it.label}${it.count ? `<span class="count">${it.count}</span>` : ""}</a>`).join("");
     return `
-      <a class="brand" href="${role === "admin" ? "03-call-logs.html" : "02-live-overview.html"}" aria-label="Kiku">${glyph(26)}<b>KIKU</b></a>
-      <div class="hotel"><b>${esc(h.name)}, ${esc(h.city)}</b><span>LINE ${esc(h.line)}</span></div>
-      <nav class="nav" aria-label="Main">${nav}</nav>
-      <div class="gap"></div>
-      <div class="clock" aria-label="Local time ${h.now} ${h.tz}"><span class="t">${h.now}</span><span class="z"><b>${h.tz}</b>${day[0].slice(0, 3).toUpperCase()} ${day[1]} ${day[2].slice(0, 3).toUpperCase()}</span></div>
-      <div class="who"><span class="av">${u.initials}</span><span class="n"><b>${esc(u.name)}</b><span>${u.role}</span></span></div>`;
+      <div class="wordmark">Kiku<span class="tick"></span></div>
+      <div class="rail-hotel"><b>The Brenlow</b>${K.hotel.city}</div>
+      <nav class="nav">${items}</nav>
+      <div class="rail-foot"><div class="egg ${role === "specialist" ? "me" : "admin"}">${p.initials}</div>${p.name.split(" ")[0]}<br>${p.role}</div>`;
   }
 
-  function mountTower(opts) {
-    const el = document.getElementById("tower");
-    if (el) el.innerHTML = tower(opts);
+  function clock() {
+    const live = K.calls.filter(c => c.status === "in_progress" || c.status === "escalated").length;
+    return `<div class="hotelstrip"><span>Hotel line <span class="num" style="font-size:14px;color:var(--ink)">${K.hotel.line}</span></span><span class="live"><i></i>${live} live</span><span class="sep"></span><div class="clock">${K.hotel.today}<span class="num">${K.hotel.now}</span>${K.hotel.tz}</div></div>`;
   }
 
-  function amended(diff, { live = false } = {}) {
-    let segs = diff.slice();
-    let aheadIdx = -1;
-    if (live && segs.length > 1 && segs[segs.length - 1].op === "ins" && segs[segs.length - 2].op === "del") {
-      const a = segs[segs.length - 2];
-      segs[segs.length - 2] = segs[segs.length - 1];
-      segs[segs.length - 1] = a;
-      aheadIdx = segs.length - 1;
-    }
-    return segs
-      .map((s, i) => {
-        if (s.op === "same") return `<span class="ty">${esc(s.text)}</span>`;
-        if (s.op === "del") return i === aheadIdx ? `<span class="ahead">${esc(s.text)}</span>` : `<span class="del">${esc(s.text)}</span>`;
-        const nib = live && i === aheadIdx - 1 ? `<span class="nib">${icon("edit", "fill")}</span>` : "";
-        return `<span class="hw">${caret()}${esc(s.text)}${nib}</span>`;
-      })
-      .join(" ");
-  }
+  window.UI = { K, esc, ic, status, dir, duetRows, scriptHtml, spokenHtml, megg, match, verdict, level, rail, clock, initials, LABEL, SHAPES };
 
-  function meter(total, on, cls = "") {
-    let s = "";
-    for (let i = 0; i < total; i++) s += `<i class="${i < on ? "on" : ""}"></i>`;
-    return `<span class="meter ${cls}" aria-hidden="true">${s}</span>`;
-  }
-
-  function spk(item, ctx) {
-    if (item.speaker === "agent") return `<span class="spk">${glyph(15)}Kiku</span>`;
-    if (item.speaker === "guest") return `<span class="spk guest">${esc(ctx.guest)}</span>`;
-    return `<span class="spk">${esc(ctx.specialist)}</span>`;
-  }
-
-  const SYS = {
-    escalation: { tag: "Escalated", ic: "warning", cls: "esc" },
-    join: { tag: "Joined", ic: "headphones", cls: "" },
-    takeover: { tag: "Took over", ic: "record_voice_over", cls: "" },
-    end: { tag: "Ended", ic: "call_end", cls: "" },
-  };
-
-  function txRow(item, ctx, extra = "") {
-    if (item.speaker === "system") {
-      const m = SYS[item.kind] || SYS.end;
-      const txt = item.text.replace(/^Escalated: /, "");
-      return `<div class="txr sys ${extra}"><span class="t">${item.t}</span><div class="sysline"><span class="tag ${m.cls}">${icon(m.ic)}${m.tag}</span><span class="txt">${esc(txt)}</span></div></div>`;
-    }
-    if (item.karaoke) return ctx.karaoke(item);
-    return `<div class="txr ${extra}"><span class="t">${item.t}</span>${spk(item, ctx)}<p class="x">${esc(item.text)}</p></div>`;
-  }
-
-  function finish(root = document.body) {
-    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-    const hits = [];
-    while (w.nextNode()) if (/\w[:,.]\w/.test(w.currentNode.nodeValue)) hits.push(w.currentNode);
-    hits.forEach((n) => {
-      const el = n.parentElement;
-      if (!el || !/B612 Mono/.test(getComputedStyle(el).fontFamily)) return;
-      const wrap = Object.assign(document.createElement("span"), { className: "cnw" });
-      n.nodeValue.split(/(?<=\w)([:,.])(?=\w)/).forEach((part, i) => {
-        if (i % 2) wrap.appendChild(Object.assign(document.createElement("span"), { className: "cn", textContent: part }));
-        else wrap.appendChild(document.createTextNode(part));
-      });
-      n.replaceWith(wrap);
-    });
-  }
-
-  function outTabs(active) {
-    const t = [["campaign", "Campaign", "07-outbound-campaign.html", "campaign"], ["upsell", "Upsell", "08-outbound-upsell.html", "room_service"], ["call", "Make a call", "09-outbound-make-a-call.html", "call_made"]];
-    return t.map(([k, l, h, ic]) => `<a class="btab ${k === active ? "on" : ""}" href="${h}"${k === active ? ' aria-current="page"' : ""}>${icon(ic)}${l}</a>`).join("");
-  }
-
-  window.KK = { finish, outTabs, D, esc, icon, status, kind, dirTab, route, initials, specParse, hand, sig, glyph, tick, caret, ring, tower, mountTower, amended, meter, txRow, STATUS };
+  document.addEventListener("DOMContentLoaded", () => {
+    const r = document.querySelector(".rail[data-role]");
+    if (r) r.innerHTML = rail(r.dataset.role, r.dataset.active);
+    document.querySelectorAll("[data-clock]").forEach(el => (el.innerHTML = clock()));
+    if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.9 } });
+  });
 })();

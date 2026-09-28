@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Users</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .page { padding: 0; display: grid; grid-template-columns: minmax(0,1fr) 420px; }
+  .lhs { padding: 22px 28px; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+  .ucard { padding-top: 14px; }
+  .who { display: flex; gap: 12px; align-items: center; }
+  .who .av { background: var(--teal-soft); color: var(--teal); width: 34px; height: 34px; }
+  .who b { font-weight: 600; display: block; }
+  .who span { font-size: 12.5px; color: var(--ink-3); }
+  .us { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; font-weight: 600; }
+  .us svg.lucide { width: 14px; height: 14px; }
+  .us.Active { color: var(--teal); } .us.Invited { color: var(--prog); } .us.Deactivated { color: var(--ink-3); }
+  tr.off td { color: var(--ink-3); }
+  .tk { display: flex; align-items: center; gap: 10px; }
+  .tk .meter { width: 80px; }
+  .tk .meter i { background: var(--lime); }
+  .panel { background: var(--card); border-left: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; box-shadow: -12px 0 30px -24px rgba(19,33,30,.35); }
+  .panel .hd { padding: 20px 24px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; }
+  .panel .hd h2 { font-size: 18px; font-weight: 700; }
+  .panel .bd { padding: 18px 24px; display: grid; gap: 16px; align-content: start; }
+  .rolec { border: 1px solid var(--line); border-radius: 10px; padding: 13px 14px; display: grid; grid-template-columns: 20px 1fr; gap: 4px 10px; }
+  .rolec.on { border: 1.5px solid var(--ink); background: #fbfcfb; }
+  .radio { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--ink-3); margin-top: 1px; }
+  .rolec.on .radio { border: 5px solid var(--ink); }
+  .rolec b { font-weight: 700; }
+  .rolec ul { grid-column: 2; list-style: none; display: grid; gap: 4px; margin-top: 4px; }
+  .rolec li { display: flex; gap: 8px; font-size: 12.5px; color: var(--ink-2); align-items: center; }
+  .rolec li svg.lucide { width: 13px; height: 13px; color: var(--teal); }
+  .panel .ft { margin-top: auto; padding: 14px 24px; border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: center; }
+</style>
+</head>
+<body data-role="admin">
+<div class="app">
+  <aside class="rail" id="rail"></aside>
+  <main class="main">
+    <header class="top" id="top"></header>
+    <div class="page" id="page"></div>
+  </main>
+</div>
+<script>
+$("#rail").innerHTML = rail("admin", "users");
+$("#top").innerHTML = topbar("Users");
+const N = K.newUserDraft;
+const usIcon = { Active: "circle-check", Invited: "mail", Deactivated: "circle-slash" };
+const max = Math.max(...K.users.map(u => u.takeovers30d));
+const roleDesc = { Specialist: "Listens to live calls and takes over when Kiku escalates.", Admin: "Manages the team and sets up outbound calls." };
+
+$("#page").innerHTML = `
+<div class="lhs">
+  <div class="row"><span class="h2">Team</span><span class="small muted">${K.users.length} people, ${K.users.filter(u => u.status === "Active").length} active</span>
+    <div class="input" style="margin-left:auto;width:240px;height:32px">${ic("search")}<span class="small muted">Search name or email</span></div></div>
+  <section class="card ucard scroll">
+    <table class="tbl">
+      <thead><tr><th style="padding-left:18px">Name</th><th>Role</th><th>Status</th><th>Last active</th><th>Takeovers, 30 days</th></tr></thead>
+      <tbody>${K.users.map(u => `<tr class="${u.status === "Deactivated" ? "off" : ""}">
+        <td style="padding-left:18px;height:58px"><div class="who"><span class="av">${u.initials}</span><div><b>${esc(u.name)}</b><span>${esc(u.email)}</span></div></div></td>
+        <td><span class="tag">${u.role}</span></td>
+        <td><span class="us ${u.status}">${ic(usIcon[u.status])}${u.status}</span></td>
+        <td class="small">${esc(u.lastActive)}</td>
+        <td><div class="tk"><b style="width:22px;font-weight:600">${u.takeovers30d}</b>${u.role === "Specialist" ? `<span class="meter"><i style="width:${u.takeovers30d / max * 100}%"></i></span>` : ""}</div></td>
+      </tr>`).join("")}</tbody>
+    </table>
+  </section>
+</div>
+<aside class="panel" aria-label="Add a user">
+  <div class="hd"><h2>Add a user</h2><button class="btn sm ghost" style="margin-left:auto" aria-label="Close">${ic("x")}</button></div>
+  <div class="bd">
+    <div class="field"><label>Full name</label><div class="input">${esc(N.name)}</div></div>
+    <div class="field"><label>Work email</label><div class="input focus">${esc(N.email)}</div><span class="hint">The invite goes to this address. They set their own password.</span></div>
+    <div class="field"><label>Role</label>
+      ${["Specialist", "Admin"].map(r => `<div class="rolec ${N.role === r ? "on" : ""}"><span class="radio"></span><div><b>${r}</b><div class="small muted">${roleDesc[r]}</div></div>
+        <ul>${K.roles[r].map(p => `<li>${ic("check")}${esc(p)}</li>`).join("")}</ul></div>`).join("")}
+    </div>
+  </div>
+  <div class="ft"><button class="btn">Cancel</button><button class="btn ink" style="margin-left:auto">${ic("send")}Send invite</button></div>
+</aside>`;
+boot();
+</script>
+</body>
+</html>

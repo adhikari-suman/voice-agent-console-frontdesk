@@ -3,87 +3,88 @@
 <head>
 <meta charset="utf-8">
 <title>Kiku · Upsell calls</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&display=block">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
-<script src="../../_shared/data.js"></script>
 <link rel="stylesheet" href="styles.css">
-<script src="app.js"></script>
 <style>
-  .left { width: 432px; flex: none; gap: 22px; }
-  .tariff { border-top: 1px solid var(--line); }
-  .tf { display: grid; grid-template-columns: 1fr auto; gap: 2px 16px; padding: 10px 2px; border-bottom: 1px solid var(--line); }
-  .tf b { font-weight: 600; font-size: 14px; }
-  .tf .p { text-align: right; font-weight: 600; color: var(--brass); font-size: 13.5px; }
-  .tf .d { font-size: 12.5px; color: var(--ivory-2); }
-  .tf .a { text-align: right; font-size: 12.5px; color: var(--ivory-2); }
-  .path { padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
-  .path-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-  .path-h h2 { font: 600 17px/1.2 var(--sans); }
-  .path-h span { font-size: 12.5px; color: var(--ivory-2); }
+  .offers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; flex: none; }
+  .offer { padding: 14px 16px; display: grid; grid-template-columns: 36px 1fr auto; gap: 4px 12px; align-items: start; }
+  .offer .oi { width: 36px; height: 36px; border-radius: var(--r); background: var(--kiku-tint); color: var(--kiku-deep); display: grid; place-items: center; grid-row: span 2; }
+  .offer .oi svg { width: 18px; height: 18px; }
+  .offer b { font-size: 15px; font-weight: 600; }
+  .offer .pr { font-weight: 600; font-size: 14px; text-align: right; }
+  .offer .d { font-size: 12.5px; color: var(--ink-2); }
+  .offer .alt { font-size: 12px; color: var(--ink-3); text-align: right; }
+  .grid { flex: 1; min-height: 0; display: grid; grid-template-columns: 460px 1fr; gap: 16px; }
+  .pane { display: flex; flex-direction: column; }
+  .pane .body { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .match { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1px solid rgba(140, 196, 158, 0.45); border-radius: 3px; background: var(--lacquer-deep); }
-  .match > i { color: var(--sage); font-size: 18px; margin-top: 1px; }
-  .match .t { font-size: 12.5px; color: var(--ivory-2); }
-  .match .g { font-weight: 600; font-size: 14px; margin: 2px 0 3px; display: flex; align-items: center; gap: 10px; }
-  .match .x { font-size: 13px; color: var(--ivory); }
-  .togs { display: flex; flex-direction: column; }
-  .togs .tog { justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; width: 100%; }
-  .togs .tog:first-child { border-top: 1px solid var(--line); }
-  .togs .tog span.n { flex: 1; }
-  .togs .tog span.p { color: var(--ivory-2); font-size: 12.5px; }
-  .act { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
-  .csvp { flex: 1; min-width: 0; }
-  .csvp .tbl-wrap { flex: 1; min-height: 0; overflow: auto; }
-  .act .note { font-size: 12.5px; color: var(--ivory-2); margin-right: auto; }
+  .matchcard { border: 1px solid #B9D0DE; background: #F1F6F9; border-radius: var(--r); padding: 10px 12px; display: flex; gap: 10px; font-size: 13px; }
+  .matchcard svg { color: var(--ok); margin-top: 2px; }
+  .matchcard b { display: block; font-size: 14px; }
+  .tog { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line-2); font-size: 13px; }
+  .tog:last-child { border-bottom: 0; }
+  .tog span:nth-child(2) { flex: 1; }
+  .tog small { color: var(--ink-3); font-size: 12px; }
+  .ph .n { width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11px; display: grid; place-items: center; }
+  .cols { font-size: 12px; color: var(--ink-3); display: flex; gap: 6px; align-items: center; }
+  .cols code { font-family: var(--ui); font-weight: 600; font-size: 12px; background: var(--white); border: 1px solid var(--line); padding: 0 5px; border-radius: 2px; color: var(--ink-2); }
+  table td { padding: 8px 12px; }
+  .tw { border: 1px solid var(--line); border-radius: var(--r); background: var(--white); overflow: hidden; }
+  .tw th { background: var(--paper); }
+  td.rn { color: var(--ink-3); width: 44px; }
+  .skip td { border: 0; padding: 4px 12px; font-size: 11.5px; color: var(--ink-3); background: var(--paper); text-align: center; }
 </style>
 </head>
 <body>
+<header class="top" id="top"></header>
+<main class="main" id="main"></main>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
 <script>
-  const { K, icon, fob, csvTable } = KK;
-  const u = K.upsellSingle, c = K.upsellCsv;
-  const [mName, ...mRest] = u.match.split(" · ");
-  const offer = (id) => K.offers.find((o) => o.id === id);
+shell("admin", "out");
+const U = K.upsellSingle, V = K.upsellCsv;
+const oIcon = { pickup: "car", breakfast: "coffee", dinner: "utensils" };
+const offers = K.offers.map(o => `<section class="panel offer"><span class="oi">${icon(oIcon[o.id])}</span><b>${o.name}</b><span class="pr">${o.price}</span><span class="d">${o.detail}</span><span class="alt">${o.alt || ""}</span></section>`).join("");
 
-  KK.mount("admin", "upsell", `
-    <header class="ph">
-      <div class="ph-l"><h1 class="title">Upsell calls</h1></div>
-    </header>
-    <div class="dbl"></div>
+const prevRows = V.preview.map((r, i) => {
+  const skip = i > 0 && r.row - V.preview[i - 1].row > 1 ? `<tr class="skip"><td colspan="5">Rows ${V.preview[i - 1].row + 1}–${r.row - 1} ready</td></tr>` : "";
+  return `${skip}<tr class="${r.ok ? "" : "err"}"><td class="rn">${r.row}</td><td>${r.phone || `<span class="faint">empty</span>`}</td><td>${r.confirmation || `<span class="faint">empty</span>`}</td><td>${r.guest ? esc(r.guest) : `<span class="faint">No match</span>`}</td>
+    <td>${r.ok ? `<span class="st completed">${STATUS.completed.svg}Ready</span>` : `<span class="rowerr">${STATUS.escalated.svg}${esc(r.error)}</span>`}</td></tr>`;
+}).join("");
+
+document.getElementById("main").innerHTML = `
+<div class="head"><h1>Outbound calls</h1>${outboundTabs("upsell")}<p class="sp">Kiku calls guests with a booking and offers extras for their stay.</p></div>
+<div class="offers">${offers}</div>
+<div class="grid">
+  <section class="panel pane">
+    <div class="ph"><span class="n">a</span>Call one guest</div>
     <div class="body">
-      <section class="col left">
-        <div>
-          <div class="h2-row" style="margin-bottom:8px"><h2 class="h2">Offers Kiku makes</h2><span class="muted small">On an existing booking</span></div>
-          <div class="tariff">
-            ${K.offers.map((o) => `<div class="tf"><b>${o.name}</b><span class="p">${o.price}</span><span class="d">${o.detail}</span><span class="a">${o.alt || ""}</span></div>`).join("")}
-          </div>
-        </div>
-        <div class="panel path">
-          <div class="path-h"><h2>Call one guest</h2><span>Phone and confirmation number</span></div>
-          <div class="two">
-            <div class="field"><label class="label" for="ph">Phone</label><input class="input ok" id="ph" value="${u.phone}"></div>
-            <div class="field"><label class="label" for="cf">Confirmation number</label><div class="input-icon"><input class="input ok" id="cf" value="${u.confirmation}" style="padding-left:12px"><i class="ph-light ph-check trail"></i></div></div>
-          </div>
-          <div class="match">${icon("check-circle")}<div><div class="t">Booking found</div><div class="g">${mName}${fob(u.confirmation)}</div><div class="x">${mRest.join(" · ")}</div></div></div>
-          <div class="field">
-            <span class="label">Offers to make on this call</span>
-            <div class="togs">${u.offers.map((id) => `<label class="tog"><span class="n">${offer(id).name}</span><span class="p">${offer(id).price}</span><input type="checkbox" checked><span class="tog-t"></span></label>`).join("")}</div>
-          </div>
-          <div class="act"><button class="btn btn-primary">${icon("phone-outgoing")}Call now</button></div>
-        </div>
-      </section>
-
-      <section class="panel path csvp">
-        <div class="path-h"><h2>Call from a list</h2><span>CSV with columns <b style="color:var(--ivory);font-weight:500">${c.columns.join(", ")}</b></span></div>
-        <div class="drop">${icon("file-csv")}<div><div class="drop-name">${c.file}</div><div class="drop-meta">${c.size} · ${c.rows} rows · drop a new file here to replace it</div></div><button class="btn btn-sm btn-quiet">${icon("upload-simple")}Replace</button></div>
-        <div class="tally"><span class="ok">${icon("check")}<b>${c.ready}</b>&nbsp;ready</span><span class="bad">${icon("x")}<b>${c.errors}</b>&nbsp;errors</span><span class="muted small" style="margin-left:auto">Showing the first rows and every error</span></div>
-        <div class="tbl-wrap">${csvTable([
-          { key: "phone", label: "Phone" },
-          { key: "confirmation", label: "Confirmation" },
-          { key: "guest", label: "Matched booking", emptyText: "No match" },
-        ], c.preview, c.rows)}</div>
-        <div class="act"><span class="note">${c.errors} rows will be skipped. The other ${c.ready} guests get a call each.</span><button class="btn btn-primary">${icon("phone-outgoing")}Start ${c.ready} calls</button></div>
-      </section>
-    </div>`);
+      <div class="two">
+        <div class="field"><label>Phone</label><div class="input">${icon("phone")}${U.phone}</div></div>
+        <div class="field"><label>Confirmation number</label><div class="input focus">${icon("hash")}${U.confirmation}</div></div>
+      </div>
+      <div class="matchcard">${STATUS.completed.svg}<div><span class="faint small">Booking found</span><b>${esc(U.match.split(" · ")[0])}</b>${esc(U.match.split(" · ").slice(1).join(" · "))}</div></div>
+      <div class="field"><label>Offers Kiku will make</label>
+        <div>${K.offers.map(o => `<div class="tog"><span class="toggle ${U.offers.includes(o.id) ? "on" : ""}"></span><span>${o.name}</span><small>${o.price}</small></div>`).join("")}</div>
+      </div>
+    </div>
+    <div class="formfoot"><span class="sp">Kiku calls straight away</span><button class="btn pri">${icon("phone-outgoing")}Call now</button></div>
+  </section>
+  <section class="panel pane">
+    <div class="ph"><span class="n">b</span>Call a list from CSV<span class="sp cols">Columns ${V.columns.map(c => `<code>${c}</code>`).join("")}</span></div>
+    <div class="body">
+      <div class="file"><span class="fi">CSV</span><div><b>${V.file}</b><div class="faint small">${V.size} · ${V.rows} rows</div></div>
+        <div class="counts" style="margin-left:auto"><span class="st completed">${STATUS.completed.svg}${V.ready} ready</span><span class="st escalated">${STATUS.escalated.svg}${V.errors} errors</span></div>
+        <button class="btn sm">${icon("upload")}Replace</button></div>
+      <div class="tw scroll">
+        <table><thead><tr><th>Row</th><th>phone</th><th>confirmation</th><th>Matched guest</th><th>Check</th></tr></thead><tbody>${prevRows}</tbody></table>
+      </div>
+      <p class="small muted">Rows 14 and 27 will be skipped. Fix them in the file and upload it again to include them. Kiku offers arrival pickup, breakfast and dinner on each call.</p>
+    </div>
+    <div class="formfoot"><span class="sp">${V.ready} guests, one call each</span><button class="btn">Cancel</button><button class="btn pri">${icon("phone-outgoing")}Start ${V.ready} calls</button></div>
+  </section>
+</div>`;
 </script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>

@@ -2,51 +2,74 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Kiku · Sign in</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Alegreya+Sans+SC:wght@400;500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&display=block">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.35.0/dist/tabler-icons-300-outline.min.css">
-<script src="../../_shared/data.js"></script>
+<title>Kiku: Sign in</title>
 <link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
 <script src="app.js"></script>
 <style>
-  body { display: block; }
-  .plate { position: absolute; inset: 24px; border: 1px solid var(--staff); display: flex; flex-direction: column; align-items: center; }
-  .plate::before { content: ""; position: absolute; inset: 4px; border: 1px solid var(--rule); pointer-events: none; }
-  .title { margin-top: 118px; text-align: center; display: grid; justify-items: center; }
-  .title svg { width: 44px; height: 44px; }
-  .title h1 { font: 500 40px/1 var(--serif); margin-top: 14px; letter-spacing: -.01em; }
-  .title .sub { font: italic 400 20px/1.3 var(--serif); color: var(--ink-2); margin-top: 8px; }
-  .title .for { font: 500 16px/1 var(--sc); letter-spacing: .08em; margin-top: 18px; color: var(--ink); }
-  .orn { width: 160px; height: 17px; margin: 30px 0 30px; background: repeating-linear-gradient(to bottom, var(--staff) 0 1px, transparent 1px 4px); position: relative; border-left: 1px solid var(--ink); }
-  .orn::after { content: ""; position: absolute; right: 0; top: 0; width: 7px; height: 17px; border-left: 1px solid var(--ink); border-right: 3px solid var(--ink); box-sizing: border-box; }
-  form { width: 360px; display: grid; gap: 16px; }
-  .rowx { display: flex; justify-content: space-between; align-items: baseline; }
-  form .btn { width: 100%; }
-  .foot { position: absolute; bottom: 22px; left: 0; right: 0; text-align: center; font: italic 400 14px/1.4 var(--serif); color: var(--ink-2); }
-  .foot b { font: 500 12px/1 var(--sc); letter-spacing: .04em; font-style: normal; color: var(--ink); margin-right: 6px; }
+  body { background: var(--ink); color: #EFE8E0; }
+  .signin { display: grid; grid-template-columns: 1fr 520px; height: 100vh; }
+  .left { position: relative; padding: 56px 64px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+  .big { font-family: var(--f-display); font-weight: 800; font-size: 260px; line-height: .78; letter-spacing: -.01em; color: #fff; margin-left: -8px; }
+  .hotelname { font-size: 20px; color: #D8CFDA; margin-top: 22px; }
+  .hotelname b { font-weight: 600; color: #fff; }
+  .dial { position: absolute; left: 64px; right: 0; top: 50%; height: 120px; transform: translateY(-50%); }
+  .rows { display: flex; flex-direction: column; gap: 0; }
+  .rows .scalekey { margin-top: 16px; }
+  .vscale.a { border-bottom: 1px solid rgba(255,255,255,.35); }
+  .vscale { position: relative; height: 44px; }
+  .vscale.a { background:
+      repeating-linear-gradient(to right, rgba(255,255,255,.55) 0 1.5px, transparent 1.5px 60px) bottom/100% 30px no-repeat,
+      repeating-linear-gradient(to right, rgba(255,255,255,.28) 0 1px, transparent 1px 12px) bottom/100% 14px no-repeat; }
+  .vscale.b { background:
+      repeating-linear-gradient(to right, rgba(224,118,79,.95) 0 1.5px, transparent 1.5px 54px) top/100% 30px no-repeat,
+      repeating-linear-gradient(to right, rgba(224,118,79,.5) 0 1px, transparent 1px 10.8px) top/100% 14px no-repeat;
+      background-position-x: 18px; }
+  .scalekey { display: flex; gap: 26px; font-size: 13px; color: #BFB3A6; }
+  .scalekey span { display: inline-flex; align-items: center; gap: 8px; }
+  .scalekey i { width: 18px; height: 2px; background: #fff; display: block; }
+  .scalekey i.h { background: #E0764F; }
+  .right { background: var(--stone); color: var(--text); padding: 0 64px; display: flex; flex-direction: column; justify-content: center; position: relative; }
+  .right h2 { font-family: var(--f-display); font-weight: 700; font-size: 40px; line-height: 1; }
+  .right .sub { color: var(--text-2); margin: 8px 0 30px; font-size: 14.5px; }
+  form { display: flex; flex-direction: column; gap: 18px; }
+  .row-between { display: flex; justify-content: space-between; align-items: center; }
+  .right .btn.go { height: 48px; font-size: 16px; width: 100%; margin-top: 6px; }
+  .demo { position: absolute; bottom: 28px; left: 64px; right: 64px; display: flex; gap: 8px; align-items: flex-start; font-size: 12px; color: var(--text-3); border-top: 1px solid var(--rule); padding-top: 14px; }
+  .line2 { font-family: var(--f-display); font-size: 22px; font-weight: 600; letter-spacing: .02em; color: #fff; display: flex; align-items: center; gap: 10px; }
+  .line2 .dot { width: 9px; height: 9px; border-radius: 50%; background: #5BC79E; box-shadow: 0 0 0 4px rgba(91,199,158,.2); }
 </style>
 </head>
 <body>
-<main class="plate">
-  <div class="title" id="title"></div>
-  <i class="orn" aria-hidden="true"></i>
-  <form onsubmit="return false">
-    <label class="field"><span class="label">Email</span><input class="input" id="email" type="text" inputmode="email" autocomplete="username"></label>
-    <label class="field"><span class="rowx"><span class="label">Password</span><a class="link" href="#" style="font-size:14px">Forgot password?</a></span><input class="input" type="password" value="brenlow-demo-pass" autocomplete="current-password"></label>
-    <button class="btn btn-primary btn-lg" type="submit">Sign in</button>
-  </form>
-  <p class="foot" id="foot"></p>
-</main>
-<script>
-(function () {
-  const { K, esc, G, $ } = Kiku;
-  $('#title').innerHTML = `${G.mark}<h1>${esc(K.product.name)}</h1><p class="sub">${esc(K.product.tagline)}</p><p class="for">${esc(K.hotel.name)}, ${esc(K.hotel.city)}</p>`;
-  $('#foot').innerHTML = `<b>Demo data</b>${esc(K.synthetic.replace(/^Demo data\.\s*/, ''))}`;
-  const e = $('#email'); e.value = K.people.specialist.email;
-  Kiku.ready(() => { e.focus(); e.setSelectionRange(e.value.length, e.value.length); });
-})();
-</script>
+<div class="signin">
+  <section class="left">
+    <div>
+      <div class="big">Kiku</div>
+      <div class="hotelname"><b>The Brenlow, Edinburgh</b>. Voice agent console</div>
+    </div>
+    <div class="rows">
+      <div class="vscale a"></div>
+      <div class="vscale b"></div>
+      <div class="scalekey"><span><i></i>What Kiku writes</span><span><i class="h"></i>What your team says instead</span></div>
+    </div>
+    <div class="line2"><span class="dot"></span>+44 131 496 0400 is answering</div>
+  </section>
+  <section class="right">
+    <h2>Sign in</h2>
+    <p class="sub">Use your Brenlow staff email.</p>
+    <form>
+      <div class="field"><label>Email</label><div class="input focus">priya.raman@brenlow.example</div></div>
+      <div class="field">
+        <div class="row-between"><label class="lbl">Password</label><a class="link small" href="#">Forgot password?</a></div>
+        <div class="input" style="letter-spacing:.2em">••••••••••••</div>
+      </div>
+      <label style="display:flex;gap:9px;align-items:center;font-size:13.5px;color:var(--text-2)"><span class="check on"></span>Keep me signed in on this device</label>
+      <button class="btn go" type="button">Sign in</button>
+    </form>
+    <div class="demo"><i data-lucide="info" style="width:14px;height:14px;margin-top:1px"></i><span id="demo"></span></div>
+  </section>
+</div>
+<script>document.getElementById("demo").textContent = V.K.synthetic;</script>
 </body>
 </html>

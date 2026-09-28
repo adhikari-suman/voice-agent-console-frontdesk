@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku · Outbound upsell</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="icons.js"></script>
+<script src="app.js"></script>
+<style>
+  .body { grid-template-columns: 1fr 1.25fr; grid-template-rows: auto 1fr; }
+  .offers { grid-column: 1 / -1; display: grid; grid-template-columns: auto 1fr 1fr 1fr; gap: 0; background: var(--paper); border: 1px solid var(--rule); border-radius: 3px; }
+  .offers .lead { padding: 14px 18px; border-right: 1px solid var(--rule-2); display: flex; flex-direction: column; justify-content: center; width: 200px; }
+  .offers .lead b { font-size: 14px; }
+  .offers .lead span { font-size: 12.5px; color: var(--ink-3); }
+  .offer { padding: 12px 18px; display: grid; grid-template-columns: 34px 1fr; gap: 2px 12px; border-right: 1px solid var(--rule-2); align-items: center; }
+  .offer:last-child { border-right: 0; }
+  .offer .oi { grid-row: 1 / span 3; width: 34px; height: 34px; border-radius: 50%; background: var(--kiku-wash); color: var(--kiku-deep); display: grid; place-items: center; }
+  .offer b { font-size: 14px; font-weight: 600; }
+  .offer .d { font-size: 12.5px; color: var(--ink-3); }
+  .offer .p { font-size: 13px; font-weight: 600; }
+  .offer .p em { font-style: normal; font-weight: 400; color: var(--ink-3); }
+
+  .path { display: flex; flex-direction: column; }
+  .path .ph .pn { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; font-size: 11.5px; font-weight: 700; align-self: center; }
+  .inner { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; flex: 1; min-height: 0; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .match { border: 1px solid var(--kiku); background: var(--kiku-wash); border-radius: 3px; padding: 10px 12px; display: grid; grid-template-columns: 18px 1fr; gap: 10px; font-size: 13px; }
+  .match svg.lucide { color: var(--kiku-deep); margin-top: 2px; }
+  .match b { display: block; font-weight: 600; color: var(--kiku-deep); font-size: 12px; }
+  .tog { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--rule-2); font-size: 13.5px; }
+  .tog:last-child { border-bottom: 0; }
+  .tog .pr { margin-left: auto; color: var(--ink-3); font-size: 12.5px; }
+  .act { display: flex; align-items: center; gap: 10px; margin-top: auto; }
+  .rec { display: grid; grid-template-columns: 44px 1fr auto; gap: 0 12px; padding: 7px 18px; border-bottom: 1px solid var(--rule-2); font-size: 13px; }
+  .rec:last-child { border-bottom: 0; }
+  .rec .m { font-family: var(--machine); font-size: 12px; color: var(--ink-3); }
+  .rec b { font-weight: 600; }
+  .rec .o { grid-column: 2 / -1; color: var(--ink-2); font-size: 12.5px; }
+
+  table.grid td { height: 38px; padding: 0 10px; font-size: 12.5px; }
+  table.grid td:first-child, table.grid th:first-child { padding-left: 14px; }
+  tr.bad td { background: var(--red-wash); }
+  tr.bad .why { color: var(--red); font-weight: 600; display: inline-flex; gap: 6px; align-items: center; }
+  tr.gap td { height: 26px; color: var(--ink-3); font-size: 12px; text-align: center; background: repeating-linear-gradient(90deg, transparent 0 6px, var(--paper-2) 6px 12px); }
+  .miss { color: var(--red); font-style: italic; }
+  .tbl { border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; background: #fff; }
+</style></head>
+<body>
+<main class="page">
+  <div class="head"><div><h1>Outbound calls</h1><div class="sub">Kiku calls guests with upcoming stays and offers extras for their arrival.</div></div><div class="grow"></div><div id="tabs"></div></div>
+  <div class="body">
+    <section class="offers" id="offers"></section>
+    <div style="display:flex;flex-direction:column;gap:16px;min-height:0">
+      <section class="panel path" id="single"></section>
+      <section class="panel" id="recent" style="flex:1"></section>
+    </div>
+    <section class="panel path" id="csv"></section>
+  </div>
+</main>
+<script>
+  shell('admin', 'out');
+  document.getElementById('tabs').innerHTML = outboundTabs('upsell');
+  const oic = { pickup: 'car', breakfast: 'coffee', dinner: 'utensils' };
+  document.getElementById('offers').innerHTML = `<div class="lead"><b>What Kiku offers</b><span>Every upsell call covers these three.</span></div>` +
+    K.offers.map(o => `<div class="offer"><span class="oi">${ic(oic[o.id])}</span><b>${o.name}</b><span class="d">${o.detail}</span><span class="p">${o.price}${o.alt ? ` <em>· ${o.alt}</em>` : ''}</span></div>`).join('');
+
+  const S = K.upsellSingle;
+  document.getElementById('single').innerHTML = `
+    <div class="ph"><span class="pn">1</span><h2>Call one guest</h2><span class="note">For a single booking</span></div>
+    <div class="inner">
+      <div class="two">
+        <div class="field"><label>Phone</label><div class="input">${ic('phone')}${S.phone}</div></div>
+        <div class="field"><label>Confirmation number</label><div class="input"><span class="code" style="font-size:13.5px">${S.confirmation}</span></div></div>
+      </div>
+      <div class="match">${ic('circle-check')}<span><b>Booking found</b>${S.match}</span></div>
+      <div class="field"><label>Offers to mention</label>
+        <div>${K.offers.map(o => `<div class="tog"><span class="toggle ${S.offers.includes(o.id) ? 'on' : ''}"></span>${o.name}<span class="pr">${o.price}</span></div>`).join('')}</div></div>
+      <div class="act"><span class="hint">Kiku calls straight away.</span><span class="grow"></span><button class="btn ink lg">${ic('phone-outgoing')}Call now</button></div>
+    </div>`;
+
+  document.getElementById('recent').innerHTML = `<div class="ph"><h2>Upsell calls today</h2><span class="note">From the call logs</span></div><div class="scroll">` +
+    K.calls.filter(c => c.type === 'Upsell').map(c => `<div class="rec"><span class="m">${c.started}</span><b>${c.guest}</b><span>${status(c.status)}</span><span class="o">${c.outcome}${c.specialist ? ' Taken over by ' + c.specialist + '.' : ''}</span></div>`).join('') + '</div>';
+  const C = K.upsellCsv;
+  const rows = C.preview.map((r, i) => {
+    const prev = C.preview[i - 1];
+    const gap = prev && r.row - prev.row > 1 ? `<tr class="gap"><td colspan="5">rows ${prev.row + 1}–${r.row - 1}</td></tr>` : '';
+    return gap + `<tr class="${r.ok ? '' : 'bad'}"><td class="code">${r.row}</td><td>${r.phone || '<span class="miss">empty</span>'}</td><td class="code">${r.confirmation || '<span class="miss">empty</span>'}</td>
+      <td>${r.guest || '<span class="muted">No match</span>'}</td>
+      <td>${r.ok ? status('completed').replace('Completed', 'Ready') : `<span class="why">${SHAPE.failed.replace('<svg', '<svg width="12" height="12"')}${r.error}</span>`}</td></tr>`;
+  }).join('');
+  document.getElementById('csv').innerHTML = `
+    <div class="ph"><span class="pn">2</span><h2>Call from a list</h2><span class="note">CSV with columns ${C.columns.map(c => `<span class="code">${c}</span>`).join(', ')}</span></div>
+    <div class="inner">
+      <div class="file"><span class="ico">CSV</span><div><div class="nm">${C.file}</div><div class="hint">${C.size} · ${C.rows} rows</div></div><span class="grow"></span>
+        <div class="tally"><span class="ok">${SHAPE.completed.replace('<svg', '<svg width="12" height="12"')}${C.ready} ready</span><span class="bad">${SHAPE.failed.replace('<svg', '<svg width="12" height="12"')}${C.errors} errors</span></div><button class="btn sm quiet">${ic('replace')}Replace</button></div>
+      <div class="tbl"><table class="grid"><thead><tr><th>Row</th><th>Phone</th><th>Confirmation</th><th>Matched guest</th><th>Check</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="act"><span class="hint">Rows 14 and 27 will be skipped. Fix them in the file and upload again to include them.</span><span class="grow"></span><button class="btn ink lg">${ic('phone-outgoing')}Start ${C.ready} calls</button></div>
+    </div>`;
+  icons();
+</script>
+</body></html>

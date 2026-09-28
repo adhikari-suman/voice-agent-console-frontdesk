@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku, live board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Familjen+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .board { display: grid; grid-template-rows: 1fr 262px; gap: 14px; height: 100%; }
+  .lines { display: grid; grid-template-columns: 1.55fr 1fr 1fr 1fr 1fr; gap: 12px; min-height: 0; }
+  .line { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--r-lg); padding: 14px 16px 14px; display: flex; flex-direction: column; min-height: 0; }
+  .line .top { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-3); }
+  .line .top .id { margin-left: auto; }
+  .line .nm { font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: -0.02em; line-height: 1.1; margin-top: 12px; font-variation-settings: "wdth" 85; }
+  .line .pp { font-size: 13.5px; color: var(--ink-2); margin-top: 6px; }
+  .line .ty { font-size: 12.5px; color: var(--ink-3); margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+  .line .ty svg.lucide { width: 13px; height: 13px; }
+  .line .dur { font-family: var(--display); font-weight: 700; font-size: 34px; line-height: 1; margin-top: auto; padding-top: 14px; font-variation-settings: "wdth" 80; }
+  .line .dur small { font-family: var(--sans); font-size: 12px; font-weight: 400; color: var(--ink-3); display: block; margin-top: 4px; }
+  .who { margin: 14px 0 12px; display: grid; gap: 6px; font-size: 12.5px; padding-top: 12px; border-top: 1px dashed var(--rule-2); }
+  .who span { display: flex; align-items: center; gap: 8px; }
+  .who i.lamp { width: 10px; height: 10px; border-radius: 50%; background: #D9D9D2; flex: none; }
+  .who .k i.lamp { background: var(--desk); box-shadow: 0 0 0 3px rgba(242,205,43,.35), inset 0 0 0 1.5px var(--ink); }
+  .who .h i.lamp { background: var(--human); box-shadow: 0 0 0 3px rgba(200,55,42,.2); }
+  .who .off { color: var(--ink-3); }
+  .acts { display: flex; gap: 6px; }
+  .acts .btn { flex: 1; justify-content: center; }
+  /* the call that needs a person */
+  .line.need { background: var(--human); color: #fff; border-color: var(--human); }
+  .line.need .top, .line.need .ty, .line.need .dur small { color: rgba(255,255,255,.85); }
+  .line.need .status { color: #fff; }
+  .line.need .nm { font-size: 34px; margin-top: 14px; }
+  .line.need .pp { color: #fff; font-size: 16px; }
+  .line.need .reason { margin-top: 12px; background: rgba(0,0,0,.16); border-radius: var(--r); padding: 8px 10px; font-size: 13px; display: flex; gap: 8px; }
+  .line.need .reason svg.lucide { margin-top: 1px; width: 15px; height: 15px; }
+  .line.need .dur { font-size: 56px; }
+  .line.need .who { border-top-color: rgba(255,255,255,.4); }
+  .line.need .who .off { color: rgba(255,255,255,.75); }
+  .line.need .who .off i.lamp { background: rgba(255,255,255,.3); }
+  .line.need .btn.take { background: #fff; color: var(--human-ink); border-color: #fff; height: 50px; font-size: 16px; }
+  .line.mine { border: 1.5px solid var(--human); }
+
+  .lower { display: grid; grid-template-columns: 1fr 1.25fr; gap: 14px; min-height: 0; }
+  .today { padding: 18px 22px; }
+  .today p { font-size: 19px; line-height: 1.55; color: var(--ink-2); max-width: 46ch; }
+  .today p b { font-family: var(--display); font-weight: 700; color: var(--ink); font-size: 22px; font-variation-settings: "wdth" 85; }
+  .fin { display: grid; grid-template-columns: 50px 150px 1fr 110px; gap: 12px; padding: 9px 18px; border-bottom: 1px solid #E6E6E0; align-items: baseline; font-size: 13.5px; }
+  .fin .t { font-size: 12.5px; color: var(--ink-3); }
+  .fin b { font-weight: 600; }
+  .fin .o { color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+</style>
+</head>
+<body>
+<script>
+const C = K.calls, S = K.stats;
+const byId = id => C.find(c => c.id === id);
+const owen = byId("KK-24032");
+const others = ["KK-24030", "KK-24031", "KK-24029", "KK-24028"].map(byId);
+const typeLabel = c => c.direction === "inbound" ? "Inbound" : `Outbound, ${c.type}`;
+const who = c => {
+  if (c.id === "KK-24030") return `<span class="h"><i class="lamp"></i>You, speaking</span><span class="k"><i class="lamp"></i>Kiku, writing your lines</span>`;
+  if (c.id === "KK-24031") return `<span class="k"><i class="lamp"></i>Kiku, speaking</span><span class="h"><i class="lamp"></i>You, listening</span>`;
+  return `<span class="k"><i class="lamp"></i>Kiku, speaking</span><span class="off"><i class="lamp"></i>Nobody listening</span>`;
+};
+const acts = c => {
+  if (c.id === "KK-24030") return `<button class="btn human">${ic("plug")}Back to the call</button>`;
+  if (c.id === "KK-24031") return `<button class="btn">${ic("headphones")}Open</button><button class="btn">${ic("log-in")}Join</button>`;
+  return `<button class="btn">${ic("headphones")}Listen</button><button class="btn">${ic("log-in")}Join</button>`;
+};
+const card = c => `<article class="line ${c.id === "KK-24030" ? "mine" : ""}">
+  <div class="top">${status(c.status)}<span class="id">${c.id}</span></div>
+  <div class="nm">${esc(c.guest)}</div>
+  <div class="pp">${esc(c.purpose)}</div>
+  <div class="ty">${dirIcon(c.direction)}${typeLabel(c)}</div>
+  <div class="dur num">${c.duration}<small>on the line since ${c.started}</small></div>
+  <div class="who">${who(c)}</div>
+  <div class="acts">${acts(c)}</div>
+</article>`;
+const finished = C.filter(c => c.status === "completed" || c.status === "failed").slice(0, 7);
+
+shell({
+  role: "specialist", active: "live", title: "Live board",
+  crumb: `5 calls on the line now, 2 escalated`,
+  right: `<span style="display:inline-flex;align-items:center;gap:7px">${ic("circle-check")}You're available for takeovers</span>`,
+  body: `<div class="board">
+  <div class="lines">
+    <article class="line need">
+      <div class="top">${status(owen.status)}<span style="font-weight:600">Needs a specialist</span><span class="id">${owen.id}</span></div>
+      <div class="nm">${esc(owen.guest)}</div>
+      <div class="pp">${esc(owen.purpose)}</div>
+      <div class="ty">${ic("phone")}${esc(owen.phone)}, inbound</div>
+      <div class="reason">${ic("triangle-alert")}${esc(owen.escalationReason)}</div>
+      <div class="dur num">${owen.waiting}<small>waiting for a person, ${owen.duration} on the call</small></div>
+      <div class="who"><span class="k"><i class="lamp"></i>Kiku, holding the guest</span><span class="off"><i class="lamp"></i>No specialist yet</span></div>
+      <div class="acts"><button class="btn take">${ic("plug")}Take over</button></div>
+    </article>
+    ${others.map(card).join("")}
+  </div>
+  <div class="lower">
+    <section class="panel today">
+      <h3>Today so far</h3>
+      <p><b>${S.callsToday}</b> calls, <b>${S.inbound}</b> in and <b>${S.outbound}</b> out. <b>${S.completed}</b> completed, <b>${S.inProgress}</b> in progress, <b>${S.escalated}</b> escalated, <b>${S.failed}</b> failed. Specialists took over <b>${S.takeoversToday}</b> times, calls averaged <b>${S.avgHandle}</b>, and upsells added <b>${S.upsellValueToday}</b>.</p>
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Recently finished</h2><a class="aside" href="#">All call logs</a></div>
+      <div class="scroll">${finished.map(c => `<div class="fin"><span class="t">${c.started}</span><b>${esc(c.guest)}</b><span class="o">${esc(c.outcome || c.purpose)}</span>${status(c.status)}</div>`).join("")}</div>
+    </section>
+  </div>
+</div>`
+});
+done();
+</script>
+</body>
+</html>

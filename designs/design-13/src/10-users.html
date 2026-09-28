@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku users</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..800&family=Young+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+  .ug { display: grid; grid-template-columns: 1fr 392px; gap: 18px; height: 100%; }
+  .tbl { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .tbl .ph { padding-bottom: 12px; }
+  td { font-size: 13px; }
+  td:first-child, th:first-child { padding-left: 18px; }
+  .person { display: flex; gap: 10px; align-items: center; }
+  .person b { font-weight: 650; display: block; }
+  .person span.e { font-size: 12px; color: var(--ink-3); }
+  tr.deact td { color: var(--ink-3); }
+  tr.deact .av { background: var(--sheet-2); color: var(--ink-3); }
+  .role { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; font-size: 12.5px; }
+  .role.Admin { color: var(--violet); }
+  .role.Specialist { color: var(--magenta-ink); }
+  .us { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; font-size: 12.5px; }
+  .us svg { width: 13px; height: 13px; }
+  .us.Active { color: var(--ok); } .us.Invited { color: var(--ink-2); } .us.Deactivated { color: var(--ink-3); }
+  td.num { font-weight: 650; }
+  td.num .tb { display: inline-block; height: 6px; border-radius: 3px; background: var(--magenta); vertical-align: middle; margin-left: 8px; }
+  tr.new td { background: var(--violet-tint); }
+
+  .drawer { display: flex; flex-direction: column; min-height: 0; border-color: var(--line-2); }
+  .dh { padding: 16px 20px 14px; border-bottom: 3px double var(--line-2); display: flex; align-items: center; gap: 10px; }
+  .dh h2 { font-family: var(--serif); font-weight: 400; font-size: 21px; }
+  .dh button { margin-left: auto; }
+  .db { flex: 1; min-height: 0; overflow: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+  .rc { border: 1px solid var(--line-2); border-radius: var(--r); padding: 12px 14px; display: grid; grid-template-columns: 22px 1fr; gap: 10px; }
+  .rc.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+  .radio { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--line-2); margin-top: 1px; position: relative; }
+  .rc.on .radio { border-color: var(--ink); }
+  .rc.on .radio::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--ink); }
+  .rc b { font-weight: 650; display: block; margin-bottom: 4px; }
+  .rc ul { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+  .rc li { font-size: 12.5px; color: var(--ink-2); display: flex; gap: 7px; align-items: center; }
+  .rc li svg { width: 13px; height: 13px; color: var(--ok); }
+  .df { border-top: 1px solid var(--line); padding: 12px 20px; display: flex; align-items: center; gap: 10px; }
+  .df .btn.ink { margin-left: auto; }
+</style>
+</head>
+<body>
+<script>
+const body = shell({ role: "admin", page: "users", title: "Users", sub: "People who can sign in to Kiku at The Brenlow",
+  right: `<button class="btn ink">${ic("user-plus")}Invite user</button>` });
+const US = { Active: "circle-check", Invited: "mail", Deactivated: "circle-slash" };
+const RI = { Admin: "shield", Specialist: "headphones" };
+const max = Math.max(...K.users.map(u => u.takeovers30d));
+const N = K.newUserDraft;
+
+body.innerHTML = `<div class="ug">
+  <section class="panel tbl">
+    <div class="ph"><h2>${K.users.length} people</h2><span class="muted small">${K.users.filter(u => u.status === "Active").length} active, ${K.users.filter(u => u.status === "Invited").length} invited, ${K.users.filter(u => u.status === "Deactivated").length} deactivated</span></div>
+    <div class="scroll" style="flex:1">
+    <table>
+      <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last active</th><th>Takeovers, 30 days</th><th></th></tr></thead>
+      <tbody>${K.users.map(u => `<tr class="${u.status === "Deactivated" ? "deact" : ""}">
+        <td><div class="person"><span class="av ${u.role === "Admin" ? "k" : ""}">${u.initials}</span><div><b>${u.name}</b><span class="e">${u.email}</span></div></div></td>
+        <td><span class="role ${u.role}">${ic(RI[u.role])}${u.role}</span></td>
+        <td><span class="us ${u.status}">${ic(US[u.status])}${u.status}</span></td>
+        <td>${u.lastActive}</td>
+        <td class="num">${u.takeovers30d}${u.takeovers30d ? `<span class="tb" style="width:${Math.round(u.takeovers30d / max * 70)}px"></span>` : ""}</td>
+        <td style="text-align:right;padding-right:14px"><button class="btn sm ghost" aria-label="More">${ic("ellipsis")}</button></td>
+      </tr>`).join("")}
+      <tr class="new"><td><div class="person"><span class="av">GM</span><div><b>${N.name}</b><span class="e">${N.email}</span></div></div></td>
+        <td><span class="role Specialist">${ic("headphones")}Specialist</span></td><td><span class="us Invited">${ic("pencil-line")}Not sent yet</span></td><td class="muted">Drafting invite</td><td class="muted">—</td><td></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <aside class="panel drawer">
+    <div class="dh">${ic("user-plus")}<h2>Invite a user</h2><button class="btn sm ghost" aria-label="Close">${ic("x")}</button></div>
+    <div class="db">
+      <div class="field"><label>Full name</label><div class="input">${N.name}</div></div>
+      <div class="field"><label>Work email</label><div class="input">${N.email}</div><span class="hint">They'll get an email to set a password.</span></div>
+      <div class="field"><label>Role</label>
+        ${["Specialist", "Admin"].map(r => `<div class="rc ${r === N.role ? "on" : ""}"><span class="radio"></span><div><b>${r}</b><ul>${K.roles[r].map(p => `<li>${ic("check")}${p}</li>`).join("")}</ul></div></div>`).join("")}
+      </div>
+    </div>
+    <div class="df"><button class="btn">Cancel</button><button class="btn ink lg">${ic("send")}Send invite</button></div>
+  </aside>
+</div>`;
+done();
+</script>
+</body>
+</html>

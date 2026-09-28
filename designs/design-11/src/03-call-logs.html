@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku · Call logs</title>
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="styles.css">
+<script src="vendor/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script><script src="app.js"></script>
+<style>
+.hrow{display:flex;align-items:flex-end;gap:16px}
+.hrow p{color:var(--ink-2)}
+.filters{display:flex;flex-direction:column;gap:10px;flex:none}
+.frow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.search{width:360px;white-space:nowrap}
+.seg{display:flex;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.seg button{height:34px;padding:0 12px;display:flex;align-items:center;gap:7px;border-right:1px solid var(--line);font-size:13px;color:var(--ink-2);font-weight:500}
+.seg button:last-child{border-right:0}
+.seg button .n{font-size:11.5px;color:var(--ink-3);font-weight:600}
+.seg button.on{background:var(--rail);color:#fff}
+.seg button.on .n{color:var(--rail-dim)}
+.seg button .st{font-weight:500}
+.drop{height:34px;display:inline-flex;align-items:center;gap:8px;padding:0 12px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);font-size:13px}
+.drop .l{color:var(--ink-3)}
+.drop b{font-weight:600}
+.tbl{flex:1}
+td{font-size:13px;padding:8px 10px}
+th{padding:10px}
+td.t{color:var(--ink-2);width:64px}
+td.g b{font-weight:600;white-space:nowrap}
+td.g span{font-size:12px;color:var(--ink-3)}
+td.p{color:var(--ink-2);line-height:1.35}
+td.d{font-family:var(--display);font-weight:600}
+tr.sel td{background:var(--orchid-wash);border-bottom-color:var(--orchid-mid)}
+
+tr.sel .open{display:inline-flex}
+.open{display:none}
+.foot{display:flex;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);flex:none}
+</style></head>
+<body>
+<div class="app"><nav class="rail" id="rail"></nav>
+<main id="main"></main></div>
+<script>
+rail("specialist", "logs");
+const C = K.calls;
+const count = s => C.filter(c => c.status === s).length;
+const rows = C.map(c => `<tr class="${c.id === "KK-24027" ? "sel" : ""}">
+  <td class="t">${c.started}</td>
+  <td class="g"><b>${esc(c.guest)}</b></td>
+  <td style="white-space:nowrap">${c.phone}</td>
+  <td style="white-space:nowrap"><span class="tag" style="color:var(--ink)"><i data-lucide="${c.direction === "inbound" ? "phone-incoming" : "phone-outgoing"}" style="color:var(--ink-3)"></i>${c.direction === "inbound" ? "Inbound" : "Outbound · " + c.type}</span></td>
+  <td class="p">${esc(c.purpose)}</td>
+  <td>${status(c.status)}</td>
+  <td class="d">${c.duration}</td>
+  <td style="white-space:nowrap">${c.specialist ? `<span class="who human" style="font-weight:500;color:var(--ink)"><span class="dot"></span>${esc(c.specialist.replace(" (listening)", ""))}</span>${c.specialist.includes("listening") ? `<span class="small dim"> listening</span>` : ""}` : `<span class="who kiku" style="font-weight:500"><span class="dot"></span>Kiku only</span>`}</td>
+  <td style="text-align:right;width:88px;padding-left:0"><button class="btn sm primary open" aria-label="Open audit">Audit<i data-lucide="chevron-right"></i></button></td>
+</tr>`).join("");
+document.getElementById("main").innerHTML = topbar(`<b>Call logs</b>`) + `
+<div class="page">
+  <div class="hrow"><h1>Call logs</h1><p>${C.length} calls today on ${K.hotel.line} and outbound</p>
+    <button class="btn sm" style="margin-left:auto"><i data-lucide="download"></i>Export CSV</button></div>
+  <div class="filters">
+    <div class="frow">
+      <div class="input search"><i data-lucide="search" style="color:var(--ink-3)"></i><span class="dim">Search guest, phone, booking or purpose</span></div>
+      <span class="drop"><i data-lucide="calendar"></i><span class="l">Date</span><b>Today</b><i data-lucide="chevron-down"></i></span>
+      <div class="seg" role="group" aria-label="Type" style="margin-left:auto"><button class="on">All types</button><button>Inbound</button><button>Campaign</button><button>Upsell</button><button>Make a call</button></div>
+    </div>
+    <div class="frow">
+      <div class="seg" role="group" aria-label="Status">
+        <button class="on">All <span class="n">${C.length}</span></button>
+        ${["completed", "in_progress", "escalated", "failed"].map(s => `<button>${status(s)}<span class="n">${count(s)}</span></button>`).join("")}
+      </div>
+      <div class="seg" role="group" aria-label="Direction">
+        <button class="on">All directions</button><button><i data-lucide="phone-incoming"></i>Inbound</button><button><i data-lucide="phone-outgoing"></i>Outbound</button>
+      </div>
+    </div>
+  </div>
+  <section class="panel tbl">
+    <div class="scroll" style="flex:1"><table>
+      <thead><tr><th>Time</th><th>Guest</th><th>Phone</th><th>Direction · type</th><th>What the call was for</th><th>Status</th><th>Length</th><th>Specialist</th><th></th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+    <div class="foot"><span>Showing ${C.length} of ${C.length} calls today</span><span>Times in ${K.hotel.tz}</span></div>
+  </section>
+</div>`;
+icons();
+</script>
+</body></html>

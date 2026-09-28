@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku · Users</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="icons.js"></script>
+<script src="app.js"></script>
+<style>
+  .body { grid-template-columns: 1fr 440px; }
+  table.grid td { height: 58px; padding: 0 12px; }
+  table.grid td:first-child, table.grid th:first-child { padding-left: 18px; }
+  .person { display: flex; align-items: center; gap: 12px; }
+  .person b { font-weight: 600; display: block; }
+  .person span { font-size: 12.5px; color: var(--ink-3); }
+  .role { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
+  .role svg.lucide { width: 14px; height: 14px; color: var(--ink-3); }
+  .us { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; }
+  .us svg { width: 12px; height: 12px; }
+  .us.active { color: var(--kiku-deep); } .us.invited { color: var(--human-deep); } .us.deactivated { color: var(--ink-3); }
+  tr.off td { color: var(--ink-3); }
+  tr.off .person b { color: var(--ink-3); }
+  .n { font-weight: 700; font-size: 15px; }
+  .bar { height: 4px; background: #E1E4DE; width: 80px; margin-top: 4px; }
+  .bar i { display: block; height: 100%; background: var(--human); }
+  .la { font-size: 13px; color: var(--ink-2); }
+  tr.new td { background: var(--human-wash); }
+
+  .side { border: 2px solid var(--ink); }
+  .side .ph { background: var(--ink); color: #fff; border-bottom: 0; }
+  .side .ph .note { color: #B7BEB8; }
+  .side .ph .x { margin-left: auto; color: #B7BEB8; }
+  .sf { padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; overflow: auto; flex: 1; }
+  .rc { border: 1px solid var(--rule); border-radius: 3px; background: #fff; padding: 14px; display: grid; grid-template-columns: 20px 1fr; gap: 4px 12px; }
+  .rc.on { border: 2px solid var(--human-deep); padding: 13px; background: #fff; }
+  .radio { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--ink-3); margin-top: 1px; position: relative; }
+  .rc.on .radio { border-color: var(--human-deep); }
+  .rc.on .radio::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--human-deep); }
+  .rc b { font-size: 14.5px; }
+  .rc ul { grid-column: 2; list-style: none; display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
+  .rc li { font-size: 13px; color: var(--ink-2); display: flex; gap: 8px; align-items: center; }
+  .rc li svg.lucide { width: 14px; height: 14px; color: var(--kiku-deep); }
+  .sfoot { padding: 14px 20px; border-top: 1px solid var(--rule); display: flex; gap: 10px; align-items: center; }
+</style></head>
+<body>
+<main class="page">
+  <div class="head"><div><h1>Users</h1><div class="sub">People who can sign in to Kiku at The Brenlow.</div></div><div class="grow"></div><button class="btn ink" id="add"></button></div>
+  <div class="body">
+    <section class="panel"><div class="scroll"><table class="grid" id="tbl"></table></div></section>
+    <section class="panel side" id="side"></section>
+  </div>
+</main>
+<script>
+  shell('admin', 'users');
+  document.getElementById('add').innerHTML = ic('user-plus') + 'Add user';
+  const usShape = {
+    Active: '<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5.5" fill="currentColor"/></svg>',
+    Invited: '<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 1.6"/></svg>',
+    Deactivated: '<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2.6 9.4l6.8-6.8" stroke="currentColor" stroke-width="1.5"/></svg>'
+  };
+  const max = Math.max(...K.users.map(u => u.takeovers30d));
+  document.getElementById('tbl').innerHTML = `<thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last active</th><th>Takeovers, 30 days</th></tr></thead><tbody>` +
+    K.users.map(u => `<tr class="${u.status === 'Deactivated' ? 'off' : ''}">
+      <td><div class="person"><span class="av sm ${u.role === 'Admin' ? 'admin' : ''}">${u.initials}</span><div><b>${u.name}</b><span>${u.email}</span></div></div></td>
+      <td><span class="role">${ic(u.role === 'Admin' ? 'shield' : 'headset')}${u.role}</span></td>
+      <td><span class="us ${u.status.toLowerCase()}">${usShape[u.status]}${u.status}</span></td>
+      <td class="la">${u.lastActive}</td>
+      <td>${u.role === 'Admin' ? '<span class="muted">Not applicable</span>' : `<span class="n">${u.takeovers30d}</span><div class="bar"><i style="width:${u.takeovers30d / max * 100}%"></i></div>`}</td></tr>`).join('') +
+    `<tr class="new"><td><div class="person"><span class="av sm">GM</span><div><b>${K.newUserDraft.name}</b><span>${K.newUserDraft.email}</span></div></div></td><td><span class="role">${ic('headset')}${K.newUserDraft.role}</span></td><td><span class="us invited">${usShape.Invited}Not sent yet</span></td><td class="la">Draft</td><td></td></tr></tbody>`;
+
+  const N = K.newUserDraft;
+  const roleCard = r => `<div class="rc ${N.role === r ? 'on' : ''}"><span class="radio"></span><b>${r}</b>
+    <ul>${K.roles[r].map(p => `<li>${ic('check')}${p}</li>`).join('')}</ul></div>`;
+  document.getElementById('side').innerHTML = `
+    <div class="ph"><h2>Add a user</h2><span class="note">They'll get an email invite</span><span class="x">${ic('x')}</span></div>
+    <div class="sf">
+      <div class="field"><label>Full name</label><div class="input">${N.name}</div></div>
+      <div class="field"><label>Work email</label><div class="input">${N.email}</div></div>
+      <div class="field"><label>Role</label><div style="display:flex;flex-direction:column;gap:10px">${roleCard('Specialist')}${roleCard('Admin')}</div></div>
+    </div>
+    <div class="sfoot"><span class="hint">Grace chooses a password from the invite email.</span><span class="grow"></span><button class="btn">Cancel</button><button class="btn human">${ic('send')}Send invite</button></div>`;
+  icons();
+</script>
+</body></html>

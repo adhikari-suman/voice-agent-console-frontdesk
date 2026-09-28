@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Call audit KK-24027</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .page { padding: 0; display: grid; grid-template-columns: 344px minmax(0,1fr); min-height: 0; }
+  /* dossier */
+  .dossier { border-right: 1px solid var(--line); padding: 22px 26px 20px 28px; display: flex; flex-direction: column; gap: 18px; min-height: 0; overflow: hidden; }
+  .dossier h2 { font-size: 28px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.05; margin: 8px 0 6px; }
+  .dossier .ph { font-size: 13.5px; color: var(--ink-2); display: flex; gap: 10px; align-items: center; }
+  dl.facts { display: grid; grid-template-columns: 78px 1fr; gap: 8px 14px; font-size: 13px; line-height: 1.4; }
+  dl.facts dt { color: var(--ink-3); font-size: 12.5px; }
+  dl.facts dd { font-weight: 500; }
+  .why { font-size: 12.5px; color: var(--ink-2); display: grid; grid-template-columns: 16px 1fr; gap: 8px; padding: 10px 12px; background: var(--esc-soft); border-radius: 8px; }
+  .why svg { color: var(--esc); width: 15px; height: 15px; margin-top: 1px; }
+  .receipt { border-top: 1.5px solid var(--ink); padding-top: 12px; display: grid; gap: 2px; }
+  .receipt .h2 { margin-bottom: 6px; }
+  .ln { display: grid; grid-template-columns: 1fr auto; gap: 10px; font-size: 13px; padding: 6px 0; align-items: baseline; }
+  .ln .d { display: flex; gap: 7px; align-items: baseline; }
+  .ln .d svg.lucide { width: 14px; height: 14px; transform: translateY(2px); flex: none; }
+  .ln.added svg { color: var(--teal); }
+  .ln.declined { color: var(--ink-3); }
+  .ln.declined .t2 { text-decoration: line-through; }
+  .ln .amt { font-weight: 600; }
+  .tot { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px dashed var(--line); margin-top: 6px; padding-top: 10px; }
+  .tot b { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+  .rnote { display: flex; gap: 8px; font-size: 12.5px; color: var(--ink-2); margin-top: 8px; }
+  .rnote svg { width: 15px; height: 15px; color: var(--teal); flex: none; margin-top: 1px; }
+
+  /* transcript with a vertical tape */
+  .score { display: grid; grid-template-rows: auto 1fr; min-height: 0; background: var(--card); }
+  .shead { padding: 16px 28px 14px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 10px 20px; align-items: center; }
+  .shead .sum { font-size: 15px; color: var(--ink-2); }
+  .shead .sum b { color: var(--ink); font-weight: 700; }
+  .knots { display: flex; gap: 10px; align-items: flex-end; }
+  .knot { display: grid; gap: 6px; justify-items: center; font-size: 10.5px; color: var(--ink-3); }
+  .knot .mb { width: 38px; }
+  .knot.full span:last-child { color: var(--teal); font-weight: 700; }
+  .sbody { display: grid; grid-template-columns: 136px minmax(0,1fr); min-height: 0; }
+  .tape { border-right: 1px solid var(--line-2); padding: 16px 0 18px 22px; display: grid; grid-template-rows: auto 1fr; gap: 16px; min-height: 0; background: var(--paper); }
+  .tape .ctl { display: flex; align-items: center; gap: 10px; }
+  .play { width: 38px; height: 38px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; flex: none; }
+  .tape .now b { display: block; font-size: 16px; font-weight: 700; line-height: 1; }
+  .tape .now span { font-size: 11.5px; color: var(--ink-3); }
+  .reel { position: relative; min-height: 0; }
+  .reel .bars { position: absolute; inset: 0 auto 0 0; width: 40px; display: flex; flex-direction: column; gap: 1px; }
+  .reel .bars i { flex: 1; border-radius: 1px; }
+  .reel .mk { position: absolute; left: -4px; right: 10px; border-top: 1.5px solid; }
+  .reel .mk span { position: absolute; left: 52px; top: -8px; font-size: 11px; font-weight: 700; line-height: 1.25; white-space: nowrap; background: var(--paper); padding-right: 2px; }
+  .reel .mk.e { border-color: var(--esc); color: var(--esc); }
+  .reel .mk.k { border-color: var(--lime-ink); color: var(--lime-ink); }
+  .reel .mk.p { border-top: 2px solid var(--ink); right: 66px; }
+  .reel .tick { position: absolute; left: 52px; font-size: 10.5px; color: var(--ink-3); }
+  .sbody .scroll { padding: 8px 28px 14px 24px; }
+</style>
+</head>
+<body data-role="specialist">
+<div class="app">
+  <aside class="rail" id="rail"></aside>
+  <main class="main">
+    <header class="top" id="top"></header>
+    <div class="page" id="page"></div>
+  </main>
+</div>
+<script>
+const A = K.audit;
+const first = A.specialist.split(" ")[0];
+$("#rail").innerHTML = rail("specialist", "logs");
+$("#top").innerHTML = topbar("Call audit", `<a href="03-call-logs.html">Call logs</a>${ic("chevron-right")}<span>${A.id}</span>`);
+
+const secs = (t) => { const [m, s] = t.split(":").map(Number); return m * 60 + s; };
+const total = secs(A.duration);
+const spans = A.transcript.filter(t => t.speaker !== "system").map(t => ({ s: secs(t.t), who: t.speaker }));
+const whoAt = (x) => { let w = "agent"; spans.forEach(s => { if (s.s <= x) w = s.who; }); return w; };
+let bars = "", seed = 7;
+for (let i = 0; i < 96; i++) {
+  seed = (seed * 9301 + 49297) % 233280;
+  const c = { agent: "var(--teal)", guest: "#b3c1bc", specialist: "#9cc400" }[whoAt(i / 96 * total)];
+  bars += `<i style="width:${25 + seed / 233280 * 75}%;background:${c}"></i>`;
+}
+const pct = (t) => (secs(t) / total * 100).toFixed(2) + "%";
+const kl = A.transcript.filter(t => t.karaoke);
+const KS = A.karaokeSummary;
+
+$("#page").innerHTML = `
+<aside class="dossier">
+  <div>
+    <div class="row" style="gap:10px">${statusTag("completed")}<span class="id">${A.id}</span></div>
+    <h2>${esc(A.guest)}</h2>
+    <div class="ph"><span>${esc(A.phone)}</span><span class="tag">${A.booking}</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Call</dt><dd class="row" style="gap:8px">${dirTag("outbound")}<span class="tag">${A.type}</span></dd>
+    <dt>Purpose</dt><dd>${esc(A.purpose)}</dd>
+    <dt>Stay</dt><dd>${esc(A.stay)}</dd>
+    <dt>Started</dt><dd>${esc(A.started)}</dd>
+    <dt>Length</dt><dd>${A.duration}</dd>
+    <dt>Specialist</dt><dd>${esc(A.specialist)}, from ${A.takeoverAt}</dd>
+  </dl>
+  <div class="why">${ic("triangle-alert")}<span>${esc(A.escalationReason)}</span></div>
+  <section class="receipt">
+    <span class="h2">Outcome</span>
+    ${A.outcome.map(o => `<div class="ln ${o.result}"><span class="d">${ic(o.result === "added" ? "circle-plus" : "circle-minus")}<span><span class="t2">${esc(o.item)}</span>${o.result === "declined" ? " <span class='xs'>declined</span>" : ""}</span></span><span class="amt">${o.amount}</span></div>`).join("")}
+    <div class="tot"><span class="small dim">Added to ${A.booking}</span><b>${A.total}</b></div>
+    <div class="rnote">${ic("bed-single")}<span>${esc(A.note)}</span></div>
+  </section>
+</aside>
+
+<section class="score">
+  <div class="shead">
+    <div>
+      <div class="h2" style="font-size:17px;margin-bottom:3px">Message history</div>
+      <p class="sum">${first} spoke <b>${KS.lines} lines</b> that Kiku wrote for him: <b>${KS.asWritten}</b> as written, <b>${KS.improvised}</b> improvised.</p>
+    </div>
+    <div class="knots" aria-label="Share of each karaoke line kept">${kl.map(l => `<span class="knot ${l.asWritten ? "full" : ""}"><span class="mb" style="--m:${l.match}%"><i></i></span><span>${l.asWritten ? "as written" : l.t}</span></span>`).join("")}</div>
+    <div class="legend" style="grid-column:1/-1">
+      <span><span class="mb" style="--m:100%;width:24px"><i></i></span>Strands meet: Kiku's words, said</span>
+      <span><span class="sw del">struck</span>Upper strand: Kiku wrote, not said</span>
+      <span><span class="sw ins" style="background:var(--lime-soft)">added</span>Lower strand: ${first} improvised</span>
+    </div>
+  </div>
+  <div class="sbody">
+    <div class="tape">
+      <div class="ctl"><button class="play" aria-label="Play recording">${ic("play")}</button><div class="now"><b>00:54</b><span>of ${A.duration}</span></div></div>
+      <div class="reel">
+        <div class="bars">${bars}</div>
+        <span class="tick" style="top:0">00:00</span>
+        <span class="tick" style="top:${pct("01:30")}">01:30</span>
+        <span class="tick" style="bottom:0">${A.duration}</span>
+        <div class="mk e" style="top:${pct("00:36")}"><span style="top:-30px">Escalated<br>00:36</span></div>
+        <div class="mk k" style="top:${pct("00:52")}"><span style="top:4px">${first} took<br>over 00:52</span></div>
+      </div>
+    </div>
+    <div class="scroll fade2" id="tx">${transcript(A.transcript, A.specialist)}</div>
+  </div>
+</section>`;
+boot();
+const sc = $("#tx"); const e = sc.querySelector(".sys.escalation"); sc.scrollTop = e.offsetTop - sc.offsetTop - 10;
+</script>
+</body>
+</html>

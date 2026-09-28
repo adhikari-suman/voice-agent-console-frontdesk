@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku, users</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Familjen+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .two { display: grid; grid-template-columns: 1fr 420px; gap: 14px; height: 100%; }
+  td { vertical-align: middle; padding-top: 12px; padding-bottom: 12px; }
+  .person { display: flex; align-items: center; gap: 11px; }
+  .person b { font-weight: 600; display: block; }
+  .person div span { font-size: 12.5px; color: var(--ink-3); }
+  td.la { white-space: nowrap; }
+  .role { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+  .ustat { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; }
+  .ustat svg { width: 13px; height: 13px; }
+  .ustat.Active { color: var(--ok); }
+  .ustat.Invited { color: var(--warn); }
+  .ustat.Deactivated { color: var(--ink-3); }
+  tr.off td { color: var(--ink-3); }
+  .tk { display: flex; align-items: center; gap: 10px; }
+  .tk .b { width: 90px; height: 6px; background: var(--sheet-2); border-radius: 3px; overflow: hidden; }
+  .tk .b i { display: block; height: 100%; background: var(--human); }
+  .tk b { font-weight: 600; min-width: 20px; text-align: right; }
+  .newrow td { background: #FFF6CC; }
+  .side .panel-b { flex: 1; overflow: auto; }
+  .rolecard { border: 1px solid var(--rule-2); border-radius: var(--r-md); padding: 12px 14px; margin-bottom: 10px; background: #fff; }
+  .rolecard.on { border: 1.5px solid var(--ink); background: #FFFBE6; }
+  .rolecard .t { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+  .rolecard ul { list-style: none; margin: 8px 0 0 26px; }
+  .rolecard li { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--ink-2); padding: 2px 0; }
+  .rolecard li svg.lucide { width: 14px; height: 14px; color: var(--ok); margin-top: 2px; }
+  .rolecard.on li { color: var(--ink); }
+  .foot { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-top: 1px solid var(--rule); }
+  .foot .sum { font-size: 12.5px; color: var(--ink-3); margin-right: auto; }
+</style>
+</head>
+<body>
+<script>
+const US = K.users, N = K.newUserDraft, R = K.roles;
+const USVG = {
+  Active: '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="currentColor"/></svg>',
+  Invited: '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.4 2"/></svg>',
+  Deactivated: '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 11L11 3" stroke="currentColor" stroke-width="1.6"/></svg>',
+};
+const max = Math.max(...US.map(u => u.takeovers30d));
+const rows = US.map(u => `<tr class="${u.status === "Deactivated" ? "off" : ""}">
+  <td><div class="person"><span class="avatar ${u.role === "Specialist" ? "h" : ""}" style="${u.status !== "Active" ? "opacity:.55" : ""}">${u.initials}</span><div><b>${esc(u.name)}</b><span>${esc(u.email)}</span></div></div></td>
+  <td><span class="role">${ic(u.role === "Admin" ? "shield" : "headset")}${u.role}</span></td>
+  <td><span class="ustat ${u.status}">${USVG[u.status]}${u.status}</span></td>
+  <td class="la">${esc(u.lastActive)}</td>
+  <td>${u.role === "Specialist" ? `<div class="tk"><b>${u.takeovers30d}</b><span class="b"><i style="width:${u.takeovers30d / max * 100}%"></i></span></div>` : '<span class="muted">Not a specialist</span>'}</td>
+</tr>`).join("") + `<tr class="newrow"><td><div class="person"><span class="avatar lt">GM</span><div><b>${esc(N.name)}</b><span>${esc(N.email)}</span></div></div></td><td><span class="role">${ic("headset")}${N.role}</span></td><td><span class="ustat Invited">${USVG.Invited}Not sent yet</span></td><td class="muted">Draft</td><td></td></tr>`;
+
+const roleCard = (name, on) => `<div class="rolecard ${on ? "on" : ""}"><div class="t"><span class="radio ${on ? "on" : ""}"></span>${ic(name === "Admin" ? "shield" : "headset")}${name}</div>
+  <ul>${R[name].map(p => `<li>${ic("check")}${esc(p)}</li>`).join("")}</ul></div>`;
+
+shell({
+  role: "admin", active: "users", title: "Users",
+  crumb: `${US.length} people can sign in to Kiku for The Brenlow`,
+  body: `<div class="two">
+  <div class="panel">
+    <div class="panel-h"><h2>Team</h2><span class="aside">${US.filter(u => u.status === "Active").length} active, 1 invited, 1 deactivated</span></div>
+    <div class="scroll"><table>
+      <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last active</th><th>Takeovers, 30 days</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+  </div>
+  <div class="panel side">
+    <div class="panel-h"><h2>Add a user</h2><span class="aside">${ic("x")}</span></div>
+    <div class="panel-b">
+      <div class="field"><label class="fl">Full name</label><div class="input">${esc(N.name)}</div></div>
+      <div class="field"><label class="fl">Work email</label><div class="input focus">${esc(N.email)}</div></div>
+      <label class="fl" style="margin-bottom:8px">Role</label>
+      ${roleCard("Specialist", N.role === "Specialist")}
+      ${roleCard("Admin", N.role === "Admin")}
+      <p style="font-size:12.5px;color:var(--ink-3);margin-top:4px">Grace gets an email with a link to set her password. You can change her role later.</p>
+    </div>
+    <div class="foot"><span class="sum">Sent by email</span><button class="btn ghost">Cancel</button><button class="btn primary">${ic("send")}Send invite</button></div>
+  </div>
+</div>`
+});
+done();
+</script>
+</body>
+</html>

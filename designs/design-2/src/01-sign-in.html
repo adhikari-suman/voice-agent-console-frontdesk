@@ -2,64 +2,68 @@
 <html lang="en-GB">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=1440">
-<title>Kiku · Sign in</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&display=block">
-<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
-<script src="../../_shared/data.js"></script>
+<title>Kiku, sign in</title>
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
 <script src="app.js"></script>
 <style>
-  .signin { display: grid; grid-template-columns: 700px 1fr; height: 100%; }
-  .cover { background: var(--paper-2); border-right: var(--rule); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 56px 56px; }
-  .cover svg.art { position: absolute; left: 56px; top: 64px; width: 560px; height: 420px; }
-  .word { font-weight: 800; font-size: 96px; line-height: .86; letter-spacing: -.05em; font-stretch: 86%; }
-  .hotel { font-size: 24px; font-weight: 500; letter-spacing: -.015em; margin-top: 18px; }
-  .hotel-sub { display: flex; gap: 18px; margin-top: 8px; font-size: 14px; color: var(--moss); }
-  .formside { display: flex; flex-direction: column; padding: 0 96px; }
-  .form { margin: auto 0; width: 420px; display: flex; flex-direction: column; gap: 20px; }
-  .form .h1 { margin-bottom: 8px; }
-  .form .lrow { display: flex; justify-content: space-between; align-items: baseline; }
-  .form .input { height: 46px; font-size: 15px; }
-  .form .input.mono { font-size: 14px; }
-  .form .btn { height: 50px; font-size: 17px; margin-top: 6px; }
-  .foot { padding: 0 0 32px; font-size: 12.5px; color: var(--moss); display: flex; gap: 8px; align-items: center; }
-  .foot i { font-size: 15px; }
+  .signin { display: grid; grid-template-columns: 1fr 560px; height: 100vh; }
+  .stage { background: var(--ink); color: #fff; position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 56px 64px; }
+  .stage .mark { display: flex; align-items: center; gap: 14px; }
+  .stage .mark svg { width: 44px; height: 44px; }
+  .word { font-size: 148px; font-weight: 900; letter-spacing: -0.05em; line-height: .9; margin-top: auto; }
+  .hotel { font-size: 22px; color: #C7D6D0; margin-top: 18px; font-weight: 500; }
+  .rails { position: absolute; left: 0; right: 0; top: 188px; height: 220px; }
+  .stage .foot { margin-top: 48px; font-size: 13px; color: #8EA79F; max-width: 460px; line-height: 1.6; }
+  .form-side { background: var(--sheet); display: flex; flex-direction: column; justify-content: center; padding: 0 80px; position: relative; }
+  .form-side h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
+  .form-side .lede { color: var(--ink-soft); margin-top: 6px; margin-bottom: 32px; }
+  .form-side form { display: flex; flex-direction: column; gap: 18px; }
+  .row-between { display: flex; justify-content: space-between; align-items: baseline; }
+  .link { color: var(--kiku); font-weight: 700; font-size: 13px; text-decoration: none; }
+  .form-side .btn.ink { height: 44px; font-size: 15px; margin-top: 6px; }
+  .input.has-icon { padding-left: 12px; }
+  .input input { border: 0; outline: 0; flex: 1; background: none; height: 100%; }
+  .footnote { position: absolute; bottom: 28px; left: 80px; right: 80px; font-size: 11.5px; color: var(--ink-mute); display: flex; gap: 8px; align-items: center; }
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div class="signin">
+  <section class="stage">
+    <div class="mark" id="mark"></div>
+    <svg class="rails" viewBox="0 0 880 220" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 70 H250 C340 70 360 150 450 150 H560 C650 150 670 70 760 70 H880" stroke="#5B47C4" stroke-width="18" fill="none"/>
+      <path d="M0 150 H250 C340 150 360 70 450 70 H560 C650 70 670 150 760 150 H880" stroke="#CC3066" stroke-width="18" fill="none"/>
+    </svg>
+    <div class="word">Kiku</div>
+    <div class="hotel" id="hotel"></div>
+    <p class="foot">The voice agent console for the front desk team. Kiku answers the line; you step in when a guest needs a person.</p>
+  </section>
+  <section class="form-side">
+    <h1>Sign in</h1>
+    <p class="lede">Use your Brenlow staff account.</p>
+    <form onsubmit="return false">
+      <div class="field">
+        <label for="em">Email</label>
+        <div class="input"><span id="i1"></span><input id="em" type="email" value="priya.raman@brenlow.example"></div>
+      </div>
+      <div class="field">
+        <div class="row-between"><label for="pw" style="font-size:12.5px;font-weight:700;color:var(--ink-2)">Password</label><a class="link" href="#">Forgot password?</a></div>
+        <div class="input"><span id="i2"></span><input id="pw" type="password" value="correcthorse"></div>
+      </div>
+      <button class="btn ink" type="submit">Sign in</button>
+    </form>
+    <div class="footnote" id="fn"></div>
+  </section>
+</div>
 <script>
-(function () {
-  const { K, esc, ic, mis } = Kiku;
-  const me = K.people.specialist;
-  document.getElementById("app").innerHTML = `
-  <div class="signin">
-    <section class="cover" aria-label="${esc(K.product.name)}">
-      <svg class="art" viewBox="0 0 560 420" aria-hidden="true">
-        <circle cx="200" cy="210" r="196" fill="#FF3EA5"/>
-        <circle cx="360" cy="210" r="196" fill="#0078BF" style="mix-blend-mode:multiply"/>
-      </svg>
-      <div class="word mis" data-t="kiku">kiku</div>
-      <div class="hotel">${esc(K.hotel.name)}, ${esc(K.hotel.city)}</div>
-      <div class="hotel-sub"><span>${esc(K.product.tagline)}</span><span class="mono">${esc(K.hotel.line)}</span></div>
-    </section>
-    <section class="formside">
-      <form class="form" onsubmit="return false">
-        ${mis("sign in")}
-        <div class="field"><label for="em">email</label><input id="em" class="input mono is-focus" type="email" value="${esc(me.email)}" autocomplete="username"></div>
-        <div class="field"><div class="lrow"><label class="flabel" for="pw">password</label><a class="link" href="#" style="font-size:13px">forgot password?</a></div>
-          <input id="pw" class="input mono" type="password" value="brenlowdemo26" autocomplete="current-password"></div>
-        <button class="btn ink" type="submit">sign in ${ic("arrow-right")}</button>
-        <p class="hint">Accounts are set up by your admin. Ask them if you need an invite.</p>
-      </form>
-      <p class="foot">${ic("info")}${esc(K.synthetic)}</p>
-    </section>
-  </div>
-  <div class="grain"></div>`;
-})();
+  const { K, icon, brandMark } = UI;
+  document.getElementById("mark").innerHTML = brandMark(44);
+  document.getElementById("hotel").textContent = `${K.hotel.name}, ${K.hotel.city}`;
+  document.getElementById("i1").outerHTML = icon("mail");
+  document.getElementById("i2").outerHTML = icon("lock");
+  document.getElementById("fn").innerHTML = `<span class="demo">Demo data</span>${K.synthetic.replace("Demo data. ", "")}`;
+  document.querySelectorAll(".input svg").forEach(s => s.style.color = "var(--ink-mute)");
 </script>
 </body>
 </html>

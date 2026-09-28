@@ -1,108 +1,92 @@
 <!doctype html>
-<html lang="en">
-<head>
-<title>Kiku · Users</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&display=block">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css">
-<script src="../../_shared/data.js"></script>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku, users</title>
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script src="app.js"></script>
 <style>
-  .users { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; }
-  .crew .tbl { table-layout: fixed; }
-  .person > div { min-width: 0; }
-  .person .sub { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .crew .tbl td { height: 60px; }
-  .person { display: flex; align-items: center; gap: 12px; }
-  .person b { display: block; font-weight: 600; }
-  .person .sub { font-size: 13px; color: var(--text-2); }
-  .role { display: inline-flex; align-items: center; gap: 6px; }
-  .role i { font-size: 15px; color: var(--text-2); }
-  .ust { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; white-space: nowrap; }
-  .ust i { font-size: 15px; }
-  .ust--active i { color: var(--text); }
-  .ust--invited i { color: var(--text-2); }
-  .ust--deactivated { color: var(--text-2); }
-  .last { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
-  .tk { font: 600 17px/1 var(--f-cond); letter-spacing: .03em; padding-right: 8px; }
-  .tk.zero { color: var(--text-2); }
-  .tbl tr.is-off td .person b { color: var(--text-2); font-weight: 500; }
-  .crew__foot { margin-top: auto; padding: 10px 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--text-2); display: flex; gap: 16px; }
-  .crew__foot b { color: var(--text); }
-
-  .panel { display: flex; flex-direction: column; min-height: 0; border-color: var(--line-2); }
-  .panel .pane__head { background: var(--bezel); }
-  .panel__body { flex: 1; min-height: 0; overflow: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 16px; }
-  .rolepick { display: flex; flex-direction: column; gap: 8px; }
-  .ropt { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--well); cursor: pointer; }
-  .ropt:hover { border-color: var(--line-2); }
-  .ropt.is-on { background: var(--sel); border-color: var(--blue); }
-  .ropt .radio { margin-top: 1px; }
-  .ropt b { font-weight: 600; font-size: 15px; }
-  .ropt ul { margin-top: 8px; display: flex; flex-direction: column; gap: 5px; }
-  .ropt li { display: grid; grid-template-columns: 18px 1fr; gap: 6px; font-size: 13.5px; color: var(--text); line-height: 1.35; }
-  .ropt:not(.is-on) li { color: var(--text-2); }
-  .ropt li i { font-size: 15px; color: var(--text-2); position: relative; top: 1px; }
-  .panel__foot { flex: none; padding: 12px 18px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
-  .panel__foot .help { margin-right: auto; max-width: 170px; line-height: 1.35; }
-</style>
-</head>
+.content { display: grid; grid-template-columns: 1fr 440px; }
+.list { padding: 20px 28px; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.bar { display: flex; gap: 8px; align-items: center; }
+.bar .sp { flex: 1; }
+.tablewrap { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+table.grid td { height: 58px; }
+.u { display: flex; gap: 12px; align-items: center; }
+.u b { display: block; font-size: 14px; font-weight: 600; }
+.u small { color: var(--muted); font-size: 12.5px; }
+.role { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; font-weight: 600; }
+.role svg.lucide { width: 14px; height: 14px; }
+.ust { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; font-weight: 600; }
+.ust svg { width: 13px; height: 13px; }
+.ust.Active { color: var(--ok); } .ust.Invited { color: var(--kiku); } .ust.Deactivated { color: var(--faint); }
+tr.off td { color: var(--faint); } tr.off .av { opacity: .55; }
+.to { font: 700 20px/1 var(--f-count); letter-spacing: .03em; }
+.tobar { display: inline-block; height: 5px; background: var(--human-hi); border-radius: 3px; margin-left: 10px; vertical-align: middle; }
+tr.new td { background: var(--kiku-bg); }
+.side { background: var(--surface); border-left: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; box-shadow: -12px 0 24px -18px rgba(14,44,61,.35); }
+.side .sh { padding: 18px 24px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+.side .sh h2 { font-size: 18px; font-weight: 700; }
+.side .sh .x { margin-left: auto; color: var(--muted); }
+.side .body { flex: 1; padding: 18px 24px; display: flex; flex-direction: column; gap: 16px; }
+.rc { border: 1px solid var(--line); border-radius: var(--r); padding: 13px 14px; background: #fff; display: grid; grid-template-columns: 20px 1fr; gap: 4px 10px; }
+.rc.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.rc .radio { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--faint); margin-top: 1px; }
+.rc.on .radio { border: 5px solid var(--ink); }
+.rc b { font-size: 14px; }
+.rc b span { font-weight: 400; color: var(--muted); font-size: 12.5px; margin-left: 6px; }
+.rc ul { grid-column: 2; list-style: none; display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.rc li { font-size: 12.5px; display: flex; gap: 7px; align-items: center; color: var(--text); }
+.rc li svg.lucide { width: 14px; height: 14px; color: var(--ok); stroke-width: 2.2; }
+.side .foot { padding: 14px 24px; border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: center; }
+.side .foot .sp { flex: 1; }
+</style></head>
 <body>
-<script>
-  const { K, esc, ic, lamp, mount } = Kiku;
-  const N = K.newUserDraft;
-  const UST = { Active: ["active", "checkbox-circle-line"], Invited: ["invited", "mail-send-line"], Deactivated: ["deactivated", "forbid-line"] };
-  const count = (s) => K.users.filter((u) => u.status === s).length;
-
-  const rows = K.users.map((u, i) => {
-    const [k, icn] = UST[u.status];
-    const onAir = u.lastActive.startsWith("On a call");
-    const me = u.email === K.people.admin.email;
-    return `<tr class="${u.status === "Deactivated" ? "is-off" : ""}${u.name === "Tomasz Nowak" ? " is-hover" : ""}">
-      <td><div class="person"><span class="av av--lg">${esc(u.initials)}${onAir ? '<span class="dot dot--air"></span>' : ""}</span><div><b>${esc(u.name)}${me ? ' <span class="muted" style="font-weight:400">(you)</span>' : ""}</b><span class="sub">${esc(u.email)}</span></div></div></td>
-      <td><span class="role">${ic(u.role === "Admin" ? "shield-user-line" : "headphone-line")}${esc(u.role)}</span></td>
-      <td><span class="ust ust--${k}">${ic(icn)}${esc(u.status)}</span></td>
-      <td><span class="last">${onAir ? lamp("air", "On air") : ""}${esc(u.lastActive)}</span></td>
-      <td class="r"><span class="tk${u.takeovers30d ? "" : " zero"}">${u.takeovers30d}</span></td>
-    </tr>`;
-  }).join("");
-
-  const roleOpt = (r) => `<div class="ropt${N.role === r ? " is-on" : ""}" role="radio" aria-checked="${N.role === r}">
-      <span class="radio${N.role === r ? " is-on" : ""}"></span>
-      <div><b>${r}</b><ul>${K.roles[r].map((p) => `<li>${ic("check-line")}<span>${esc(p)}</span></li>`).join("")}</ul></div>
-    </div>`;
-
-  const panel = `<aside class="pane panel" aria-label="Add user">
-    <div class="pane__head"><h2>Add a user</h2><button class="iconkey end" aria-label="Close">${ic("close-line")}</button></div>
-    <div class="panel__body">
-      <div class="field"><label class="lbl" for="nm">Full name</label><input class="input" id="nm" value="${esc(N.name)}"></div>
-      <div class="field"><label class="lbl" for="em">Work email</label><input class="input is-focus" id="em" value="${esc(N.email)}"><span class="help">The invite goes here. They set their own password.</span></div>
-      <div class="field"><span class="lbl">Role</span><div class="rolepick" role="radiogroup" aria-label="Role">${roleOpt("Specialist")}${roleOpt("Admin")}</div></div>
-      <p class="help">New users show as Invited until their first sign-in.</p>
+<div class="app">
+  <nav class="spine" id="spine"></nav>
+  <main class="main">
+    <header class="top" id="top"></header>
+    <div class="content">
+      <div class="list">
+        <div class="bar" id="bar"></div>
+        <div class="tablewrap scroll"><table class="grid" id="tbl"></table></div>
+      </div>
+      <aside class="side" id="side"></aside>
     </div>
-    <div class="panel__foot"><button class="key key--lg" style="margin-left:auto">Cancel</button><button class="key key--lg key--lit">${ic("mail-send-line")}Send invite</button></div>
-  </aside>`;
+  </main>
+</div>
+<script>
+const { K, esc, icon, shell } = TT; const N = K.newUserDraft;
+shell({ role: 'admin', active: 'users', title: 'Users', after: `<span class="h3" style="font-weight:500">${K.users.length} people</span>` });
+const cnt = s => K.users.filter(u => u.status === s).length;
+document.getElementById('bar').innerHTML = `<div class="input" style="width:300px">${icon('search')}<span style="color:var(--faint)">Search name or email</span></div>
+  <button class="chip on">All <span class="n">${K.users.length}</span></button><button class="chip">Active <span class="n">${cnt('Active')}</span></button><button class="chip">Invited <span class="n">${cnt('Invited')}</span></button><button class="chip">Deactivated <span class="n">${cnt('Deactivated')}</span></button>
+  <span class="sp"></span><button class="btn ink" disabled style="opacity:.5">${icon('user-plus')}New user</button>`;
+const US = {
+  Active: '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="currentColor"/></svg>',
+  Invited: '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.4 2"/></svg>',
+  Deactivated: '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 11L11 3" stroke="currentColor" stroke-width="1.6"/></svg>'
+};
+const max = Math.max(...K.users.map(u => u.takeovers30d));
+document.getElementById('tbl').innerHTML = `<thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last active</th><th>Takeovers, 30 days</th><th></th></tr></thead><tbody>` +
+  K.users.map(u => `<tr class="${u.status === 'Deactivated' ? 'off' : ''}"><td><div class="u"><span class="av">${u.initials}</span><div><b>${esc(u.name)}</b><small>${esc(u.email)}</small></div></div></td>
+    <td><span class="role">${icon(u.role === 'Admin' ? 'shield' : 'headphones')}${u.role}</span></td>
+    <td><span class="ust ${u.status}">${US[u.status]}${u.status}</span></td>
+    <td style="font-size:12.5px">${esc(u.lastActive)}</td>
+    <td>${u.role === 'Specialist' ? `<span class="to">${u.takeovers30d}</span>${u.takeovers30d ? `<span class="tobar" style="width:${u.takeovers30d / max * 90}px"></span>` : ''}` : '<span style="color:var(--faint)">Not a specialist</span>'}</td>
+    <td style="text-align:right"><button class="btn sm ghost" aria-label="More">${icon('ellipsis')}</button></td></tr>`).join('') +
+  `<tr class="new"><td><div class="u"><span class="av" style="background:#fff">GM</span><div><b>${esc(N.name)}</b><small>${esc(N.email)}</small></div></div></td><td><span class="role">${icon('headphones')}${N.role}</span></td><td colspan="4" style="font-size:12.5px;color:var(--kiku)">${icon('pencil-line').replace('<i', '<i style="width:13px;height:13px;vertical-align:-2px"')} Being set up in the panel</td></tr></tbody>`;
 
-  mount({
-    role: "admin",
-    active: "users",
-    title: "Users",
-    meta: `Everyone who can sign in to Kiku at ${esc(K.hotel.name)}`,
-    tools: `<div class="inputwrap" style="width:280px">${ic("search-line")}<input class="input" type="search" placeholder="Search name or email" aria-label="Search users"></div><button class="key key--pfl" aria-pressed="true" style="height:38px">${ic("user-add-line")}Add user</button>`,
-    body: `<div class="users">
-      <section class="pane crew" aria-label="Users">
-        <div class="scroll">
-          <table class="tbl"><colgroup><col><col style="width:100px"><col style="width:120px"><col style="width:184px"><col style="width:108px"></colgroup><thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last active</th><th class="r">Takeovers (30 d)</th></tr></thead><tbody>${rows}</tbody></table>
-        </div>
-        <div class="crew__foot"><span><b>${K.users.length}</b> users</span><span><b>${count("Active")}</b> active</span><span><b>${count("Invited")}</b> invited</span><span><b>${count("Deactivated")}</b> deactivated</span></div>
-      </section>
-      ${panel}
-    </div>`,
-  });
+document.getElementById('side').innerHTML = `
+  <div class="sh">${icon('user-plus')}<h2>New user</h2><button class="x" aria-label="Close">${icon('x')}</button></div>
+  <div class="body scroll">
+    <div class="field"><label>Full name</label><div class="input">${esc(N.name)}</div></div>
+    <div class="field"><label>Work email</label><div class="input focus">${esc(N.email)}</div><span class="help">Grace gets an email here to set her password.</span></div>
+    <div class="field"><label>Role</label>
+      ${['Specialist', 'Admin'].map(r => `<div class="rc ${r === N.role ? 'on' : ''}"><span class="radio"></span><b>${r}<span>${r === 'Specialist' ? 'Guest services on the phones' : 'Runs the console'}</span></b>
+        <ul>${K.roles[r].map(p => `<li>${icon('check')}${esc(p)}</li>`).join('')}</ul></div>`).join('')}
+    </div>
+  </div>
+  <div class="foot"><button class="btn">Cancel</button><span class="sp"></span><button class="btn ink lg">${icon('send')}Send invite</button></div>`;
+TT.draw();
 </script>
-</body>
-</html>
+</body></html>

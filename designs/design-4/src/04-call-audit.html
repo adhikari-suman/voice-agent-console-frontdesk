@@ -1,234 +1,150 @@
 <!doctype html>
-<html lang="en">
-<head>
-<title>Kiku · Call audit KK-24027</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&display=block">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css">
-<script src="../../_shared/data.js"></script>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku, call audit KK-24027</title>
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script src="app.js"></script>
 <style>
-  .audit { height: 100%; display: grid; grid-template-columns: 344px minmax(0, 1fr); gap: 16px; }
-  .col > .pane { flex: none; }
-  .col > .hist { flex: 1; }
-  .col { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
-  .pane__head { min-height: 40px; }
+.content { display: grid; grid-template-columns: 330px 1fr; }
+/* call sheet */
+.sheet { background: var(--surface); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+.sheet section { padding: 16px 22px; border-bottom: 1px solid var(--line); }
+.sheet h2 { font-size: 25px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
+.sheet .tags { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; }
+.sheet dl { display: grid; grid-template-columns: 74px 1fr; gap: 6px 10px; font-size: 12.8px; margin-top: 12px; line-height: 1.35; }
+.sheet dt { color: var(--muted); }
+.sheet h3 { font-size: 13px; font-weight: 700; margin-bottom: 8px; display: flex; gap: 7px; align-items: center; }
+.transport { display: flex; align-items: center; gap: 12px; }
+.play { width: 38px; height: 38px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; flex: none; }
+.play svg.lucide { width: 16px; height: 16px; fill: #fff; }
+.transport .tm b { font: 700 24px/1 var(--f-count); letter-spacing: .03em; }
+.transport .tm span { font: 600 15px/1 var(--f-count); color: var(--muted); letter-spacing: .03em; }
+.transport .tm small { display: block; font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+.transport .btn { margin-left: auto; }
+.ksum { font-size: 13px; line-height: 1.5; }
+.ksum b { font: 700 20px/1 var(--f-count); letter-spacing: .02em; }
+.ksum .h { color: var(--human); } .ksum .o { color: var(--ok); }
+.kept { display: flex; gap: 4px; margin-top: 10px; }
+.kept span { flex: 1; text-align: center; padding: 5px 0 4px; font: 700 14px/1 var(--f-count); letter-spacing: .02em; border-top: 2px solid var(--kiku-edge); border-bottom: 2px solid var(--human-hi); color: var(--muted); background: var(--paper); }
+.kept span.ok { border-color: var(--ok); color: var(--ok); background: var(--ok-bg); }
+.kept span.on { color: var(--ink); background: #fff; outline: 1px solid var(--ink); }
+.out li { list-style: none; display: grid; grid-template-columns: 16px 1fr auto; gap: 8px; padding: 6px 0; font-size: 12.8px; align-items: start; line-height: 1.35; }
+.out li svg.lucide { width: 15px; height: 15px; margin-top: 1px; }
+.out li.added svg { color: var(--ok); } .out li.declined { color: var(--muted); }
+.out li .amt { font-variant-numeric: tabular-nums; font-weight: 600; }
+.total { display: flex; justify-content: space-between; align-items: baseline; padding-top: 8px; border-top: 1px dashed var(--line); margin-top: 4px; font-weight: 600; font-size: 13px; }
+.total b { font: 700 26px/1 var(--f-count); letter-spacing: .02em; }
+.note { margin-top: 8px; font-size: 12.5px; color: var(--muted); display: flex; gap: 7px; }
+.note svg.lucide { width: 14px; height: 14px; margin-top: 2px; }
 
-  .slate { display: grid; grid-template-columns: 1fr 1.3fr; gap: 12px 16px; padding: 12px 14px 14px; }
-  .slate .full { grid-column: 1 / -1; }
-  .slate dt { font: 600 11.5px/1 var(--f-cond); letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); margin-bottom: 5px; }
-  .slate dd { font-size: 14px; line-height: 1.35; }
-  .slate dd .dir, .slate dd .st { font-weight: 500; }
-
-  .ksum { padding: 12px 14px 14px; }
-  .ksum__line { font-size: 13.5px; margin: 0; }
-  .ksum__line b { font: 600 18px/1 var(--f-cond); letter-spacing: .02em; }
-  .bridge { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-  .bridge__ch { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 6px 0 5px; border: 1px solid transparent; border-radius: var(--r); }
-  .bridge__ch.is-sel { background: var(--sel); border-color: var(--blue); }
-  .bridge__pct { font: 600 13px/1 var(--f-cond); letter-spacing: .03em; }
-  .bridge__t { font: 600 11.5px/1 var(--f-cond); letter-spacing: .04em; color: var(--text-2); }
-  .bridge .meter--v b { width: 18px; height: 4px; }
-  .bridge .meter b.on { background: var(--text-2); }
-  .bridge__ch.is-exact .meter b.on { background: var(--text); }
-  .awline { display: flex; gap: 10px; align-items: flex-start; margin-top: 10px; font-size: 13px; color: var(--text-2); line-height: 1.4; }
-  .awline .aswritten { flex: none; }
-  .bridge__mark { height: 14px; font-size: 14px; color: var(--text); display: grid; place-items: center; }
-
-  .outcome { padding: 4px 14px 12px; }
-  .oc { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid #22252B; font-size: 13.5px; }
-  .oc i { font-size: 15px; position: relative; top: 2px; }
-  .oc--added i { color: var(--text); }
-  .oc--declined, .oc--declined .oc__amt { color: var(--text-2); }
-  .oc--declined .oc__amt { font: 500 13px/1 var(--f-ui); }
-  .oc__amt { font: 600 15px/1 var(--f-cond); letter-spacing: .03em; }
-  .oc__res { display: block; font-size: 12px; color: var(--text-2); }
-  .total { display: flex; align-items: baseline; gap: 10px; font-size: 13px; }
-  .total b { font: 600 22px/1 var(--f-cond); letter-spacing: .02em; color: var(--text); }
-  .note { margin-top: 10px; display: flex; gap: 8px; font-size: 13.5px; color: var(--text); background: var(--well); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 10px; }
-  .note i { color: var(--text-2); font-size: 16px; }
-
-  .player { flex: none; padding: 12px 14px 10px; display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: 18px; flex-direction: row; }
-  .player__ctl { display: flex; flex-direction: column; gap: 10px; padding-right: 16px; border-right: 1px solid var(--line); }
-  .events { display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
-  .events li { display: flex; align-items: center; gap: 8px; }
-  .events b { margin-left: auto; font: 600 14px/1 var(--f-cond); letter-spacing: .04em; }
-  .player__row { display: flex; align-items: center; gap: 8px; }
-  .player__row .key { width: 36px; padding: 0; }
-  .player__row .key--lit { width: 44px; }
-  .player__tc { font: 600 24px/1 var(--f-cond); letter-spacing: .03em; margin-left: 8px; white-space: nowrap; }
-  .player__tc span { color: var(--text-2); font-size: 18px; }
-  .player__row .end { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 12.5px; color: var(--text-2); }
-  .lg { display: inline-flex; align-items: center; gap: 6px; }
-  .lg b { width: 14px; height: 6px; border-radius: 1px; }
-  .tl { position: relative; display: grid; grid-template-columns: 58px minmax(0, 1fr); row-gap: 5px; align-content: center; }
-  .tl__lab { font: 600 11.5px/10px var(--f-cond); letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); }
-  .tl__lane { position: relative; height: 10px; background: #0F1114; border-radius: 1px; }
-  .tl__lane--tally { height: 6px; margin: 2px 0; }
-  .seg-b { position: absolute; top: 0; bottom: 0; border-radius: 1px; }
-  .tl__flags { position: relative; height: 18px; }
-  .flag { position: absolute; bottom: 0; transform: translateX(-8px); display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
-  .flag span { font: 600 11px/1 var(--f-cond); letter-spacing: .03em; color: var(--text); }
-  .tl__ruler { position: relative; height: 14px; }
-  .tl__ruler span { position: absolute; font: 600 11px/1 var(--f-cond); letter-spacing: .04em; color: var(--text-2); transform: translateX(-50%); top: 3px; }
-  .tl__ruler span:first-child { transform: none; }
-  .playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--blue); pointer-events: none; }
-  .playhead::before { content: ""; position: absolute; top: -2px; left: -4px; width: 10px; height: 8px; background: var(--blue); clip-path: polygon(0 0, 100% 0, 50% 100%); }
-  .mark-line { position: absolute; top: 0; bottom: 0; width: 1px; opacity: .8; }
-
-  .hist { flex: 1; }
-  .hist .pane__head .legend { margin-left: auto; }
-  .earlier { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 14px; background: var(--bezel); border-bottom: 1px solid var(--line); font-size: 12.5px; color: var(--text-2); }
-  .earlier i { font-size: 15px; }
-  .colhead { position: sticky; top: 30px; z-index: 2; display: grid; grid-template-columns: 46px 1fr 1fr; gap: 12px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); }
-  .colhead > div { display: flex; align-items: center; gap: 8px; }
-  .colhead .cap { color: var(--text); font-size: 13px; }
-  .colhead .muted { font-size: 12.5px; }
-  .kr { display: grid; grid-template-columns: 46px 1fr 1fr; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #1F2227; align-items: start; }
-  .kr .tx__t { display: flex; flex-direction: column; gap: 6px; }
-  .kr .match { flex-direction: column; align-items: flex-start; gap: 4px; }
-  .kr .match .meter b { width: 3px; }
-  .kr__wrote { font-size: 14px; line-height: 1.5; padding: 6px 0 0; }
-  .cap-box { background: #000; border-radius: 2px; padding: 6px 10px 7px; font-size: 14px; line-height: 1.5; color: #fff; }
-  .cap-box .who { font: 600 13px/1 var(--f-cond); letter-spacing: .06em; text-transform: uppercase; color: var(--umd); margin-right: 6px; }
-  .kr.is-sel { background: var(--sel); box-shadow: inset 0 0 0 1px var(--blue); }
-  .kr .aswritten { margin-top: 8px; }
-  .tx__row .txt { font-size: 14px; line-height: 1.5; }
-</style>
-</head>
+/* the score */
+.score { display: flex; flex-direction: column; min-height: 0; }
+.heads { display: grid; grid-template-columns: 1fr 76px 1fr; padding: 12px 28px 8px; border-bottom: 1px solid var(--line); background: var(--surface); align-items: end; }
+.heads > div { font-size: 12.5px; font-weight: 700; display: flex; gap: 8px; align-items: center; }
+.heads > div small { font-weight: 400; color: var(--muted); }
+.heads .l { justify-content: flex-end; color: var(--kiku); }
+.heads .m { justify-content: center; color: var(--muted); font-weight: 600; }
+.heads .r { color: var(--human); }
+.rows { flex: 1; padding: 6px 28px 24px; position: relative; }
+.row { display: grid; grid-template-columns: 1fr 76px 1fr; position: relative; }
+.row .sp { position: relative; display: flex; justify-content: center; }
+.row .sp::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; margin-left: -1px; background: var(--kiku); }
+.row.after .sp::before { background: var(--human-hi); margin-left: 2px; }
+.row.after .sp::after { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; margin-left: -4px; width: 0; border-left: 2px dashed var(--kiku-edge); }
+.tc2 { position: relative; z-index: 1; margin-top: 12px; height: 22px; padding: 0 6px; background: var(--paper); font: 700 14px/22px var(--f-count); letter-spacing: .04em; color: var(--muted); }
+.row .cell { padding: 8px 0; display: flex; }
+.row .cell.l { justify-content: flex-end; }
+.bub { z-index: 1; max-width: 440px; padding: 9px 13px 10px; border-radius: 3px; font-size: 13.5px; line-height: 1.55; position: relative; }
+.bub .lab { display: block; font-size: 11.5px; font-weight: 700; margin-bottom: 2px; font-family: var(--f-ui); font-style: normal; }
+.bub.kiku { background: var(--kiku-bg); color: #1d4c68; }
+.bub.kiku .lab { color: var(--kiku); }
+.bub.guest { background: #fff; border: 1px solid var(--line); font: 400 15px/1.45 var(--f-voice); }
+.bub.guest .lab { color: var(--text); }
+.bub.wrote { background: var(--paper); border: 1.5px dashed var(--kiku-edge); color: #1d4c68; }
+.bub.wrote .lab { color: var(--kiku); }
+.bub.said { background: #fff; border: 1px solid var(--human-edge); font: 400 15px/1.55 var(--f-voice); }
+.bub.said .lab { color: var(--human); }
+.bub.said .k { text-decoration-color: var(--human-edge); }
+.splice { position: relative; z-index: 1; margin-top: 12px; width: 50px; height: 50px; border-radius: 50%; background: #fff; border: 2px solid var(--human-hi); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; line-height: 1; }
+.splice b { font: 700 16px/1 var(--f-count); letter-spacing: .02em; display: block; }
+.splice small { font-size: 9.5px; color: var(--muted); font-weight: 600; display: block; margin-top: 1px; }
+.splice.ok { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); }
+.splice.ok small { color: var(--ok); }
+.splice.ok svg.lucide { width: 16px; height: 16px; stroke-width: 2.6; }
+.row.sys { grid-template-columns: 1fr; }
+.row.sys .band { margin: 6px 0; display: flex; justify-content: center; align-items: center; font-size: 12.5px; font-weight: 600; color: var(--muted); position: relative; }
+.row.sys .band span { background: var(--paper); padding: 4px 12px; display: inline-flex; gap: 7px; align-items: center; border: 1px solid var(--line); border-radius: 14px; position: relative; z-index: 1; }
+.row.sys .band::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 5px; margin-top: -2px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.row.sys.escalation .band span, .row.sys.takeover .band span { color: var(--human); border-color: var(--human-edge); background: var(--human-bg); }
+.row.sys .t { font: 700 13px/1 var(--f-count); letter-spacing: .04em; }
+.row.playing::after { content: ""; position: absolute; left: -28px; right: -28px; top: 37px; height: 0; border-top: 1.5px solid var(--ink); z-index: 0; }
+.row.playing .splice { box-shadow: 0 0 0 3px var(--paper), 0 0 0 4.5px var(--ink); }
+.phead { position: absolute; left: -28px; top: 28px; background: var(--ink); color: #fff; font: 700 12px/18px var(--f-count); letter-spacing: .04em; padding: 0 7px 0 5px; border-radius: 0 9px 9px 0; z-index: 2; display: flex; gap: 3px; align-items: center; }
+.phead svg.lucide { width: 10px; height: 10px; fill: #fff; stroke: none; }
+.legend { display: flex; gap: 18px; justify-content: center; font-size: 11.5px; color: var(--muted); padding: 8px 0 0; grid-column: 1 / -1; font-weight: 400; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+</style></head>
 <body>
-<script>
-  const { K, esc, ic, st, dir, meter, matchMeter, wroteHTML, saidHTML, mount } = Kiku;
-  const A = K.audit;
-  const secs = (t) => { const [m, s] = t.split(":").map(Number); return m * 60 + s; };
-  const total = secs(A.duration);
-  const pos = (t) => (secs(t) / total) * 100;
-  const first = A.specialist.split(" ")[0];
-  const karaoke = A.transcript.filter((x) => x.karaoke);
-  const selT = "00:54";
-
-  /* slate */
-  const slate = `<section class="pane" aria-label="Call details">
-    <div class="pane__head"><h2>Call details</h2><span class="end">${st(A.status)}</span></div>
-    <dl class="slate">
-      <div><dt>Phone</dt><dd>${esc(A.phone)}</dd></div>
-      <div><dt>Booking</dt><dd>${esc(A.booking)}</dd></div>
-      <div class="full"><dt>Stay</dt><dd>${esc(A.stay)}</dd></div>
-      <div><dt>Direction · type</dt><dd>${dir(A.direction)} · ${esc(A.type)}</dd></div>
-      <div><dt>Started · duration</dt><dd>${esc(A.started)} · ${A.duration}</dd></div>
-      <div class="full"><dt>Specialist</dt><dd>${esc(A.specialist)}, took over from ${esc(A.agent)} at ${A.takeoverAt}</dd></div>
-    </dl>
-  </section>`;
-
-  /* karaoke summary */
-  const bridge = karaoke.map((k) => `<div class="bridge__ch${k.t === selT ? " is-sel" : ""}${k.asWritten ? " is-exact" : ""}" title="${k.t}: ${k.match}% of Kiku's words spoken">
-      <span class="bridge__pct">${k.match}%</span>${meter(k.match / 100, "mono", 10, true)}<span class="bridge__t">${k.t}</span>
-      <span class="bridge__mark">${k.asWritten ? ic("check-double-line") : ""}</span></div>`).join("");
-  const ks = A.karaokeSummary;
-  const aw = karaoke.find((k) => k.asWritten);
-  const summary = `<section class="pane" aria-label="Karaoke summary">
-    <div class="pane__head"><h2>Karaoke</h2><p class="end ksum__line"><b>${ks.lines}</b> lines · <b>${ks.asWritten}</b> as written · <b>${ks.improvised}</b> improvised</p></div>
-    <div class="ksum">
-      <div class="bridge">${bridge}</div>
-      <p class="awline"><span class="aswritten">${ic("check-double-line")}As written</span><span>The ${aw.t} line was read word for word. The other ${ks.improvised} were improvised.</span></p>
-    </div>
-  </section>`;
-
-  /* outcome */
-  const oc = A.outcome.map((o) => `<div class="oc oc--${o.result}">${ic(o.result === "added" ? "check-line" : "close-line")}<span>${esc(o.item)}</span><span class="oc__amt">${o.result === "added" ? esc(o.amount) : "Declined"}</span></div>`).join("");
-  const outcome = `<section class="pane" aria-label="Outcome">
-    <div class="pane__head"><h2>Outcome</h2><span class="end total"><span class="muted">Added to ${esc(A.booking)}</span><b>${esc(A.total)}</b></span></div>
-    <div class="outcome">${oc}
-      <p class="note">${ic("sticky-note-line")}<span>${esc(A.note)}</span></p>
-    </div>
-  </section>`;
-
-  /* player */
-  const turns = A.transcript;
-  const nextT = (i) => (turns[i + 1] ? turns[i + 1].t : A.duration);
-  const laneOf = { agent: "kiku", guest: "guest", specialist: "human" };
-  const laneColor = { kiku: "var(--green)", guest: "#3DA5FF", human: "var(--red)" };
-  const segs = (lane) => turns.map((x, i) => (laneOf[x.speaker] === lane ? `<span class="seg-b" style="left:${pos(x.t)}%;width:${pos(nextT(i)) - pos(x.t)}%;background:${laneColor[lane]}"></span>` : "")).join("");
-  const sysMarks = turns.filter((x) => x.speaker === "system" && x.kind !== "end");
-  const markKind = { escalation: ["esc", "var(--amber)"], join: ["pfl", "var(--blue)"], takeover: ["air", "var(--red)"] };
-  const flags = sysMarks.map((x) => `<span class="flag" style="left:${pos(x.t)}%">${Kiku.lamp(markKind[x.kind][0], x.text)}</span>`).join("");
-  const markLines = sysMarks.map((x) => `<span class="mark-line" style="left:${pos(x.t)}%;background:${markKind[x.kind][1]}"></span>`).join("");
-  const ruler = ["00:00", "00:30", "01:00", "01:30", "02:00", "02:30"].map((t) => `<span style="left:${pos(t)}%">${t}</span>`).join("");
-  const player = `<section class="pane player" aria-label="Recording">
-    <div class="player__ctl">
-      <div class="player__row">
-        <button class="key" aria-label="Back 5 seconds">${ic("replay-5-line")}</button>
-        <button class="key key--lit" aria-label="Play">${ic("play-fill")}</button>
-        <button class="key" aria-label="Forward 5 seconds">${ic("forward-5-line")}</button>
-        <span class="player__tc">${selT}<span> / ${A.duration}</span></span>
+<div class="app">
+  <nav class="spine" id="spine"></nav>
+  <main class="main">
+    <header class="top" id="top"></header>
+    <div class="content">
+      <aside class="sheet scroll" id="sheet"></aside>
+      <div class="score">
+        <div class="heads" id="heads"></div>
+        <div class="rows scroll" id="rows"></div>
       </div>
-      <ul class="events">
-        <li>${Kiku.lamp("esc")}Escalated<b>${turns.find((x) => x.kind === "escalation").t}</b></li>
-        <li>${Kiku.lamp("pfl")}${esc(first)} joined<b>${turns.find((x) => x.kind === "join").t}</b></li>
-        <li>${Kiku.lamp("air")}${esc(first)} took over<b>${A.takeoverAt}</b></li>
-      </ul>
     </div>
-    <div class="tl">
-      <span></span><div class="tl__flags">${flags}</div>
-      <span class="tl__lab">On line</span>
-      <div class="tl__lane tl__lane--tally"><span class="seg-b" style="left:0;width:${pos(A.takeoverAt)}%;background:var(--green)"></span><span class="seg-b" style="left:${pos(A.takeoverAt)}%;width:${100 - pos(A.takeoverAt)}%;background:var(--red)"></span></div>
-      <span class="tl__lab">Kiku</span><div class="tl__lane">${segs("kiku")}</div>
-      <span class="tl__lab">Guest</span><div class="tl__lane">${segs("guest")}</div>
-      <span class="tl__lab">${esc(first)}</span><div class="tl__lane">${segs("human")}</div>
-      <span></span><div class="tl__ruler">${ruler}</div>
-      <div style="position:absolute;left:58px;right:0;top:18px;bottom:19px;pointer-events:none">${markLines}<span class="playhead" style="left:${pos(selT)}%"></span></div>
-    </div>
+  </main>
+</div>
+<script>
+const { K, esc, icon, status, shell, sides } = TT; const A = K.audit;
+shell({ role: 'specialist', active: 'logs', crumb: `<a href="03-call-logs.html">Call logs</a>${icon('chevron-right')}`, title: 'Call audit', after: `<span class="id" style="font-size:13px">${A.id}</span>` });
+const ks = A.transcript.filter(e => e.karaoke);
+document.getElementById('sheet').innerHTML = `
+  <section>
+    <h2>${esc(A.guest)}</h2>
+    <div class="tags">${status('completed')}<span class="dir">${icon('phone-outgoing')}Outbound, Upsell</span></div>
+    <dl><dt>Phone</dt><dd class="num">${esc(A.phone)}</dd><dt>Booking</dt><dd>${A.booking}</dd><dt>Stay</dt><dd>${esc(A.stay)}</dd><dt>Purpose</dt><dd>${esc(A.purpose)}</dd><dt>Started</dt><dd>${esc(A.started)}, ${A.duration}</dd><dt>Specialist</dt><dd>${esc(A.specialist)}</dd></dl>
+  </section>
+  <section><div class="transport"><button class="play" aria-label="Pause">${icon('pause')}</button><div class="tm"><b>01:12</b> <span>/ ${A.duration}</span><small>The playhead runs down the score</small></div><button class="btn sm ghost" aria-label="Download recording">${icon('download')}</button></div></section>
+  <section>
+    <h3>${icon('audio-lines')}Karaoke</h3>
+    <p class="ksum">Kiku prompted <b>${A.karaokeSummary.lines}</b> lines. Tomasz said <b class="o">${A.karaokeSummary.asWritten}</b> as written and improvised <b class="h">${A.karaokeSummary.improvised}</b>.</p>
+    <div class="kept">${ks.map(e => `<span class="${e.asWritten ? 'ok' : ''}${e.t === '01:12' ? ' on' : ''}" title="${e.t}">${e.match}</span>`).join('')}</div>
+    <p class="help" style="margin-top:6px">Percent of Kiku's words kept, line by line.</p>
+  </section>
+  <section style="border:0">
+    <h3>${icon('receipt')}Outcome</h3>
+    <ul class="out">${A.outcome.map(o => `<li class="${o.result}">${icon(o.result === 'added' ? 'circle-check' : 'circle-minus')}<span>${esc(o.item)}</span><span class="amt">${o.result === 'added' ? o.amount : 'Declined'}</span></li>`).join('')}</ul>
+    <div class="total"><span>Added to ${A.booking}</span><b>${A.total}</b></div>
+    <p class="note">${icon('notebook-pen')}${esc(A.note)}</p>
   </section>`;
 
-  /* message history */
-  const sysIcon = { escalation: "alert-line", join: "headphone-line", takeover: "mic-line", end: "stop-circle-line" };
-  const who = { agent: ["kiku", "record-circle-line", "Kiku"], guest: ["guest", "user-line", "Guest"] };
-  const rows = turns.map((x) => {
-    if (x.speaker === "system") {
-      const row = `<div class="tx__row tx__row--sys" data-t="${x.t}"><span class="tx__t">${x.t}</span><span class="sys sys--${x.kind}">${ic(sysIcon[x.kind])}${esc(x.text)}</span></div>`;
-      return x.kind === "takeover" ? row + `<div class="colhead" role="row"><span></span>
-        <div>${Kiku.lamp("live")}<span class="cap">Prompter</span><span class="muted">Kiku wrote</span></div>
-        <div>${Kiku.lamp("air")}<span class="cap">On air</span><span class="muted">${esc(first)} said</span></div></div>` : row;
-    }
-    if (x.karaoke) {
-      return `<div class="kr${x.t === selT ? " is-sel" : ""}" data-t="${x.t}">
-        <div class="tx__t">${x.t}${matchMeter(x.match)}</div>
-        <p class="kr__wrote">${wroteHTML(x.diff)}</p>
-        <div><p class="cap-box"><span class="who">${esc(first)}</span>${saidHTML(x.diff)}</p>${x.asWritten ? `<span class="aswritten">${ic("check-double-line")}Spoken as written</span>` : ""}</div>
-      </div>`;
-    }
-    const w = who[x.speaker];
-    return `<div class="tx__row" data-t="${x.t}"><span class="tx__t">${x.t}</span><span class="tx__who tx__who--${w[0]}">${ic(w[1])}${w[2]}</span><p class="txt">${esc(x.text)}</p></div>`;
-  }).join("");
-  const hist = `<section class="pane hist" aria-label="Message history">
-    <div class="pane__head"><h2>Message history</h2><span class="muted">${turns.length} entries</span>
-      <span class="legend"><span><s class="skip">struck</s> Kiku wrote, not spoken</span><span><mark class="adlib">underlined</mark> ad-lib</span></span></div>
-    <div class="scroll tx" id="tx" style="flex:1;position:relative">
-      <div class="earlier">${ic("arrow-up-line")}${turns.findIndex((x) => x.t === "00:31")} earlier entries from 00:00. Scroll up to read the opening.</div>
-      ${rows}
-    </div>
-  </section>`;
+document.getElementById('heads').innerHTML = `<div class="l"><small>Written or spoken by</small>Kiku<span class="dotk"></span></div><div class="m">${icon('disc-3')}</div><div class="r"><span class="doth"></span>On the line<small>Eleanor Vance, then Tomasz</small></div>
+  <div class="legend"><span><span class="k">matched</span>said as Kiku wrote it</span><span><span class="x">struck</span>Kiku wrote, not said</span><span><span class="n">rose</span>improvised</span><span>${icon('minus').replace('<i', '<i style="color:var(--human-hi)"')}spine turns rose at the takeover</span></div>`;
 
-  mount({
-    role: "specialist",
-    active: "logs",
-    back: { href: "03-call-logs.html", label: "Call logs" },
-    title: esc(A.guest),
-    after: `<span class="id">${A.id}</span>${st(A.status)}<span class="dir dir--out" style="color:var(--text-2)">${ic("arrow-right-up-line")}Outbound · ${esc(A.type)}</span>`,
-    meta: `${esc(A.purpose)} · <b>${A.duration}</b> · specialist <b>${esc(A.specialist)}</b>`,
-    body: `<div class="audit">
-      <div class="col">${slate}${summary}${outcome}</div>
-      <div class="col">${player}${hist}</div>
-    </div>`,
-  });
-  const tx = document.getElementById("tx");
-  const toStart = () => { tx.scrollTop = tx.querySelector('[data-t="00:31"]').offsetTop - tx.querySelector(".earlier").offsetHeight; };
-  toStart();
-  document.fonts.ready.then(toStart);
+const sec = t => { const [m, s] = t.split(':').map(Number); return m * 60 + s; };
+document.getElementById('rows').innerHTML = A.transcript.map(e => {
+  const after = sec(e.t) >= 52 ? ' after' : '';
+  if (e.speaker === 'system') {
+    const ic = { escalation: 'triangle-alert', join: 'headphones', takeover: 'mic', end: 'phone-off' }[e.kind];
+    return `<div class="row sys ${e.kind}"><div class="band"><span><b class="t">${e.t}</b>${icon(ic)}${esc(e.text)}</span></div></div>`;
+  }
+  if (e.karaoke) {
+    const d = sides(e.diff);
+    return `<div class="row${after}${e.t === '01:12' ? ' playing' : ''}">${e.t === '01:12' ? `<span class="phead">${icon('play')}01:12</span>` : ''}
+      <div class="cell l"><div class="bub wrote"><span class="lab">Kiku wrote, ${e.t}</span>${d.wrote}</div></div>
+      <div class="sp"><div class="splice ${e.asWritten ? 'ok' : ''}">${e.asWritten ? `${icon('check')}<small>as<br>written</small>` : `<b>${e.match}%</b><small>kept</small>`}</div></div>
+      <div class="cell"><div class="bub said"><span class="lab">Tomasz said</span>${d.said}</div></div></div>`;
+  }
+  const left = e.speaker === 'agent';
+  const b = `<div class="bub ${left ? 'kiku' : 'guest'}"><span class="lab">${left ? 'Kiku said' : 'Eleanor Vance'}</span>${esc(e.text)}</div>`;
+  return `<div class="row${after}"><div class="cell l">${left ? b : ''}</div><div class="sp"><span class="tc2">${e.t}</span></div><div class="cell">${left ? '' : b}</div></div>`;
+}).join('');
+TT.draw();
+const r = document.getElementById('rows'); const tgt = [...r.children].find(n => n.classList.contains('escalation'));
+r.scrollTop = tgt.offsetTop - 20;
 </script>
-</body>
-</html>
+</body></html>

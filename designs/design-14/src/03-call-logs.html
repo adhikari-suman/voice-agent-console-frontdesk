@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku · Call logs</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="icons.js"></script>
+<script src="app.js"></script>
+<style>
+  .body { grid-template-rows: auto 1fr; gap: 12px; }
+  .filters { display: flex; align-items: center; gap: 10px; }
+  .search { width: 230px; height: 34px; white-space: nowrap; overflow: hidden; }
+  .chip { height: 34px; display: inline-flex; align-items: center; gap: 7px; padding: 0 12px; border: 1px solid var(--rule); background: var(--paper); border-radius: 3px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .chip.on { border-color: var(--ink); background: var(--ink); color: #fff; }
+  .chip .n { font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .chip.on .n { color: #B7BEB8; }
+  .chip .st { font-weight: 500; font-size: 13px; }
+  .grp { display: flex; gap: 4px; }
+  .sep { width: 1px; height: 22px; background: var(--rule); }
+  table.grid td { padding: 0 10px; height: 43px; }
+  table.grid tr td:first-child, table.grid tr th:first-child { padding-left: 16px; }
+  .guest b { font-weight: 600; }
+  .ph-n { color: var(--ink-2); font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .purpose { color: var(--ink-2); max-width: 340px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .t { font-family: var(--machine); font-size: 12.5px; }
+  tr.sel td { background: var(--human-wash); }
+  tr.sel .open { display: inline-flex; }
+  .open { display: none; }
+  .spec { font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
+  .spec.none { color: var(--ink-3); display: inline-flex; gap: 6px; align-items: center; }
+  .foot { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-top: 1px solid var(--rule-2); font-size: 12.5px; color: var(--ink-3); }
+</style></head>
+<body>
+<main class="page">
+  <div class="head">
+    <div><h1>Call logs</h1><div class="sub">Every call on the hotel line and every outbound call, with its audit.</div></div>
+  </div>
+  <div class="body">
+    <div class="filters" id="filters"></div>
+    <section class="panel">
+      <div class="scroll"><table class="grid" id="tbl"></table></div>
+      <div class="foot"><span id="ct"></span><span>Select a call to open its audit</span></div>
+    </section>
+  </div>
+</main>
+<script>
+  shell('specialist', 'logs');
+  const calls = K.calls;
+  const count = s => calls.filter(c => c.status === s).length;
+  document.getElementById('filters').innerHTML = `
+    <div class="input search">${ic('search')}<span class="muted">Search calls</span></div>
+    <span class="chip">${ic('calendar')}Today<span class="n">27 Sep</span></span>
+    <span class="sep"></span>
+    <div class="grp">
+      <span class="chip on">All<span class="n">${calls.length}</span></span>
+      ${['completed', 'in_progress', 'escalated', 'failed'].map(s => `<span class="chip">${status(s)}<span class="n">${count(s)}</span></span>`).join('')}
+    </div>
+    <span class="sep"></span>
+    <span class="chip">${ic('arrow-down-up')}Direction</span>
+    <span class="chip">${ic('shapes')}Type</span>`;
+  const rows = calls.map(c => `
+    <tr class="${c.id === 'KK-24027' ? 'sel' : ''}">
+      <td class="t">${c.started}</td>
+      <td class="guest"><b>${c.guest}</b></td>
+      <td class="ph-n">${c.phone}</td>
+      <td><span class="tag">${ic(c.direction === 'inbound' ? 'phone-incoming' : 'phone-outgoing')}${c.direction === 'inbound' ? 'Inbound' : 'Outbound'}</span></td>
+      <td>${c.direction === 'inbound' ? '<span class="muted">Inbound</span>' : `<span class="tag" style="color:var(--ink);font-weight:500">${c.type}</span>`}</td>
+      <td><div class="purpose">${c.purpose}</div></td>
+      <td>${status(c.status)}</td>
+      <td class="t">${c.duration}</td>
+      <td>${c.specialist ? `<span class="spec">${c.specialist}</span>` : `<span class="spec none">${mark(14, false)}Kiku alone</span>`}</td>
+      <td style="text-align:right"><a class="btn sm human open" href="04-call-audit.html">Open audit</a></td>
+    </tr>`).join('');
+  document.getElementById('tbl').innerHTML = `<thead><tr><th>Time</th><th>Guest</th><th>Phone</th><th>Direction</th><th>Type</th><th>Purpose</th><th>Status</th><th>Duration</th><th>Specialist</th><th></th></tr></thead><tbody>${rows}</tbody>`;
+  document.getElementById('ct').textContent = `${calls.length} calls today`;
+  icons();
+</script>
+</body></html>

@@ -2,83 +2,96 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<title>Kiku · Call logs</title>
 <meta name="viewport" content="width=1440">
-<title>Call logs · Kiku</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&family=Geist+Mono:wght@400;500&display=block">
-<script src="https://cdn.jsdelivr.net/npm/lucide@1.48.0/dist/umd/lucide.min.js"></script>
-<script src="../../_shared/data.js"></script>
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
 <script src="app.js"></script>
+<style>
+  .content { gap: 16px; }
+  .filters { display: flex; align-items: center; gap: 12px; flex-wrap: nowrap; }
+  .seg { display: flex; background: var(--surface); border: 1.5px solid var(--rule-2); border-radius: 999px; padding: 3px; gap: 2px; }
+  .seg button { height: 30px; padding: 0 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+  .seg button .n { font-weight: 500; color: var(--muted); }
+  .seg button.on { background: var(--night); color: #fff; }
+  .seg button.on .n { color: #B7ADE6; }
+  .seg .st { font-size: 13px; }
+  .seg .st span { color: var(--ink-2); }
+  .dd { height: 36px; border: 1.5px solid var(--rule-2); background: var(--surface); border-radius: 999px; padding: 0 12px 0 14px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .dd .k { color: var(--muted); font-weight: 500; }
+  .dd .i { width: 14px; height: 14px; color: var(--muted); }
+  .search { flex: 1; min-width: 180px; height: 36px; border-radius: 999px; }
+  .search input { border: 0; outline: 0; background: none; width: 100%; font-size: 13.5px; }
+  .search input::placeholder { color: var(--faint); }
+
+  .tablewrap { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  thead th { position: sticky; top: 0; background: var(--surface); text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 12px 12px 10px; border-bottom: 1px solid var(--rule-2); z-index: 1; white-space: nowrap; }
+  tbody td { padding: 10px 12px; border-bottom: 1px solid var(--rule); vertical-align: middle; font-size: 13.5px; }
+  th:first-child, td:first-child { padding-left: 20px; }
+  th:last-child, td:last-child { padding-right: 20px; }
+  td.time { color: var(--muted); width: 56px; }
+  td.guest b { display: block; font-weight: 600; white-space: nowrap; }
+  td.guest span { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+  td.purpose { font: 400 15px/1.35 var(--voice); color: var(--ink); width: 34%; }
+  td.dt { white-space: nowrap; }
+  td.dt .tag { margin-left: 8px; }
+  td.dur { font-weight: 600; white-space: nowrap; }
+  td.spec { white-space: nowrap; color: var(--ink-2); }
+  td.spec .none { color: var(--faint); }
+  td.go { width: 120px; text-align: right; }
+  tr.sel td { background: var(--violet-wash); border-bottom-color: #D6CEF6; }
+  tr.sel td .tag { background: #fff; }
+  .open { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 999px; background: var(--violet); color: #fff; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+  .open .i { width: 14px; height: 14px; }
+  .kmini { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--amber-ink); font-weight: 600; margin-top: 2px; }
+  .kmini i { width: 16px; height: 8px; position: relative; }
+  .kmini i::before { content: ""; position: absolute; left: 0; right: 0; top: 3.5px; height: 1.5px; background: var(--violet); }
+  .kmini i::after { content: ""; position: absolute; left: 4px; top: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--amber); border: 1px solid var(--amber-ink); box-sizing: border-box; }
+  .tfoot { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-top: 1px solid var(--rule); font-size: 12.5px; color: var(--muted); background: var(--surface); }
+</style>
 </head>
 <body>
-<div id="app" class="app"></div>
 <script>
-const { K, ic, status, shape, topbar, mount, esc, STATUS } = UI;
-const calls = K.calls;
-const count = (s) => calls.filter((c) => c.status === s).length;
-const SELECTED = K.audit.id;
-const HOVER = "KK-24029";
+const { K, icon, status, mount, dir, mark } = Kiku;
+const counts = {}; K.calls.forEach(c => counts[c.status] = (counts[c.status] || 0) + 1);
+const seg = `<div class="seg" role="tablist" aria-label="Status">
+  <button class="on">All <span class="n">${K.calls.length}</span></button>
+  ${['completed', 'in_progress', 'escalated', 'failed'].map(s => `<button>${status(s)}<span class="n">${counts[s]}</span></button>`).join('')}
+</div>`;
 
-const stabs = `<nav class="stabs" aria-label="Status">
-  <a class="stab on" href="#">All <b>${calls.length}</b></a>
-  ${Object.keys(STATUS).map((s) => `<a class="stab" href="#">${`<span class="st">${shape(s)}</span>`}${STATUS[s]} <b>${count(s)}</b></a>`).join("")}
-</nav>`;
-
-const spec = (c) => {
-  if (!c.specialist) return `<span class="muted">Kiku only</span>`;
-  const m = c.specialist.match(/^(.*?)\s*\((.*)\)$/);
-  return m ? `<span class="st">${esc(m[1])}<span class="muted" title="${esc(m[2])}">${ic("headphones")}</span></span>` : esc(c.specialist);
-};
-const dirCell = (c) => c.direction === "inbound"
-  ? `<span class="st">${ic("phone-incoming")}Inbound</span>`
-  : `<span class="st">${ic("phone-outgoing")}Outbound <span class="muted">·</span> ${esc(c.type)}</span>`;
-
-const rows = calls.map((c) => {
-  const cls = c.id === SELECTED ? "is-selected" : c.id === HOVER ? "is-hover" : "";
-  return `<tr class="${cls}"${c.id === SELECTED ? ' aria-selected="true"' : ""}>
-    <td><span class="mono" style="font-size:14px">${c.started}</span></td>
-    <td class="strong">${esc(c.guest)}</td>
-    <td><span class="mono">${esc(c.phone)}</span></td>
-    <td>${dirCell(c)}</td>
-    <td class="clip" title="${esc(c.purpose)}">${esc(c.purpose)}</td>
+const rows = K.calls.map(c => {
+  const sel = c.id === 'KK-24027';
+  const spec = c.specialist ? c.specialist : '<span class="none">Kiku only</span>';
+  return `<tr class="${sel ? 'sel' : ''}">
+    <td class="time">${c.started}</td>
+    <td class="guest"><b>${c.guest}</b><span>${c.phone}</span></td>
+    <td class="dt">${dir(c.direction)}${c.direction === 'outbound' ? `<span class="tag">${c.type}</span>` : ''}</td>
+    <td class="purpose">${c.purpose}</td>
     <td>${status(c.status)}</td>
-    <td class="r"><span class="mono" style="font-size:14px">${c.duration}</span></td>
-    <td>${spec(c)}</td>
-    <td class="r">${c.id === SELECTED ? `<a class="go" href="04-call-audit.html">Audit${ic("arrow-right")}</a>` : ""}</td>
+    <td class="dur">${c.duration}</td>
+    <td class="spec">${spec}${sel ? `<div class="kmini"><i></i>Karaoke, 7 lines</div>` : ''}</td>
+    <td class="go">${sel ? `<a class="open" href="04-call-audit.html">Open audit${icon('chevright')}</a>` : ''}</td>
   </tr>`;
-}).join("");
+}).join('');
 
-mount(`
-${topbar("specialist", "Call logs")}
-<main class="page">
-  <header class="ph logs-ph">
-    <h1 class="h52" style="grid-column:1/4">Call logs</h1>
-    <div class="field" style="grid-column:4/7"><label class="label" for="q">Search</label>
-      <div class="input-icon">${ic("search")}<input class="input" id="q" placeholder="Guest, phone, booking or call ID"></div></div>
-    <div class="field" style="grid-column:7/10"><span class="label">Direction</span>
-      <div class="seg"><button class="on">All</button><button>${ic("phone-incoming")}Inbound</button><button>${ic("phone-outgoing")}Outbound</button></div></div>
-    <div class="field" style="grid-column:10/11"><span class="label">Type</span>
-      <div class="select">All${ic("chevron-down")}</div></div>
-    <div class="field" style="grid-column:11/13"><span class="label">Date</span>
-      <div class="select"><span class="st">${ic("calendar")}Today, 27 Sep</span>${ic("chevron-down")}</div></div>
-  </header>
-  <section class="panel logs-panel">
-    <div class="logs-strip">${stabs}
-      <div class="pager"><span class="muted">Page 1 of 1</span>
-        <button class="btn sm" disabled aria-label="Previous page">${ic("chevron-left")}</button>
-        <button class="btn sm" disabled aria-label="Next page">${ic("chevron-right")}</button></div>
-    </div>
-    <div class="logs-scroll">
-      <table class="tbl logs">
-        <colgroup><col style="width:68px"><col style="width:144px"><col style="width:144px"><col style="width:188px"><col><col style="width:124px"><col style="width:80px"><col style="width:132px"><col style="width:72px"></colgroup>
-        <thead><tr><th>Time</th><th>Guest</th><th>Phone</th><th>Direction · type</th><th>What the call was for</th><th>Status</th><th class="r">Duration</th><th>Specialist</th><th></th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-  </section>
-</main>
+mount({ role: 'specialist', active: 'logs', title: 'Call logs', sub: `${K.calls.length} calls today` }, `
+<div class="filters">
+  ${seg}
+  <span class="dd"><span class="k">Direction</span>All${icon('chevdown')}</span>
+  <span class="dd"><span class="k">Type</span>All${icon('chevdown')}</span>
+  <span class="dd">${icon('calendar')}Today${icon('chevdown')}</span>
+  <label class="input search">${icon('search')}<input placeholder="Search guest, phone, booking or purpose"></label>
+</div>
+<section class="panel tablewrap">
+  <div class="scroll" style="flex:1">
+    <table>
+      <thead><tr><th>Time</th><th>Guest</th><th>Direction and type</th><th>What the call was for</th><th>Status</th><th>Length</th><th>Specialist</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>
+  <div class="tfoot"><span>Showing all ${K.calls.length} calls from ${K.hotel.today}</span><span>Times in ${K.hotel.tz}</span></div>
+</section>
 `);
 </script>
 </body>

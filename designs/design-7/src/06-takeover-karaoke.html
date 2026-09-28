@@ -1,148 +1,128 @@
 <!doctype html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1440">
-<title>Kiku · On the line with Margaret Doyle</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=block">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<script src="../../_shared/data.js"></script>
+<title>Kiku, on the line with Margaret Doyle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script src="app.js"></script>
 <style>
-  .main { display: grid; grid-template-columns: 372px 1fr 404px; gap: 20px; }
-  .hist { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
-  .hist .pane { flex: 1; padding-right: 4px; }
-  .compact .ln { grid-template-columns: 40px 1fr; row-gap: 3px; padding: 7px 2px; font-size: 13.5px; }
-  .compact .ln p { grid-column: 2; }
-  .compact .kst .half { grid-template-columns: 40px 1fr; row-gap: 5px; padding: 10px 14px 10px 2px; font-size: 13.5px; }
-  .compact .kst .half.a { padding-bottom: 12px; }
-  .compact .kst .half.b { padding-top: 12px; }
-  .compact .kst .t { padding-left: 10px; }
-  .compact .kst .k-txt { grid-column: 2; }
-  .compact .evt { padding: 6px 2px; }
-  .compact .evt::before { flex-basis: 12px; }
-  .compact .evt-tag { white-space: normal; font-size: 12px; align-items: flex-start; }
-  .compact .evt-tag > span:last-child { display: none; }
-  .compact .strip { margin: 6px 0; }
-
-  .np { padding: 20px 24px 22px; display: flex; flex-direction: column; gap: 16px; }
-  .np .top { display: flex; align-items: center; justify-content: space-between; }
-  .np .top p { font-size: 13.5px; font-weight: 600; margin-top: 6px; }
-  .onair { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 4px; background: var(--plum); color: var(--white); font-stretch: 70%; font-weight: 800; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
-  .onair i.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--red); animation: pulse 1.4s ease-out infinite; }
-  @keyframes pulse { 50% { opacity: .35; } }
-  .big { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
-  .big .half { display: block; padding: 20px 24px; }
-  .big .half.b { flex: 1; }
-  .big .half.a { padding-bottom: 22px; }
-  .big .half.b { padding-top: 24px; padding-bottom: 22px; }
-  .big .k-lab { font-size: 15px; margin-bottom: 12px; }
-  .big .k-key { width: 24px; height: 24px; font-size: 17px; }
-  .big .k-lab .t { font-stretch: 100%; font-weight: 600; letter-spacing: 0; color: var(--ink-2); margin-left: 4px; text-transform: none; font-size: 13px; }
-  .big .a .k-txt { font-size: 23px; line-height: 1.45; font-weight: 500; }
-  .big .b .k-txt { font-size: 31px; line-height: 1.42; font-weight: 600; }
-  .big .tear-tag { font-size: 13px; }
-  .caret { display: inline-block; width: 3px; height: 1.05em; background: var(--blue); vertical-align: -.15em; margin-left: 4px; animation: pulse 1s steps(1) infinite; }
-  .livechip { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; color: var(--blue); font-size: 12.5px; letter-spacing: .06em; }
-  .livechip i { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
-  .cued { background: var(--white); border-top: 2px solid var(--red); border-radius: 3px 3px 0 0; padding: 14px 22px 16px; position: relative; box-shadow: var(--shadow); }
-  .cued::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: -2px; border-bottom: 2px dotted var(--chrome); }
-  .cued .k-lab { margin-bottom: 8px; }
-  .cued .k-txt { font-size: 19px; font-weight: 500; color: var(--plum); }
-  .np .legend { margin-top: -2px; }
-  .np .legend .k-txt { font-size: 13px; }
-
-  .air { padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; }
-  .air .who { display: grid; grid-template-columns: 136px 1fr; gap: 16px; align-items: center; }
-  .air h2 { font-size: 30px; color: var(--white); }
-  .air .who p { color: var(--on-plum-2); font-size: 13.5px; font-weight: 500; margin-top: 8px; }
-  .air .lv { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: center; font-size: 13px; font-weight: 600; }
-  .air .lv .meter { height: 18px; }
-  .air .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .air .btns .btn-danger { grid-column: 1 / -1; }
-  .air .rule { border-top: 2px dotted rgba(216, 198, 228, .5); }
-  .air .reason { display: flex; gap: 10px; font-size: 13.5px; line-height: 1.4; }
-  .air .reason .tile { margin-top: 1px; }
-  .air dl.facts dt { color: var(--on-plum-2); }
-  .air .fl { display: grid; gap: 6px; font-size: 13.5px; }
-  .air .fl li { display: flex; gap: 8px; align-items: flex-start; }
-  .air .fl .bi { color: var(--violet); margin-top: 2px; }
+.onbar { background: var(--apricot); color: var(--aub); display: flex; align-items: center; gap: 18px; padding: 14px 28px; flex: none; position: relative; }
+.onbar::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 6px; background: repeating-linear-gradient(-69deg, var(--apricot) 0 6px, transparent 6px 12px); }
+.onbar .live { display: inline-flex; align-items: center; gap: 7px; background: var(--aub); color: var(--apricot); font-weight: 700; font-size: 12px; padding: 4px 10px 4px 8px; clip-path: polygon(5px 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,0 100%,0 5px); }
+.onbar .live b { width: 8px; height: 8px; border-radius: 50%; background: var(--apricot); animation: blink 1.4s steps(2) infinite; }
+.onbar h1 { font: 700 23px/1.1 var(--display); letter-spacing: -0.015em; }
+.onbar .sub { font-size: 13px; opacity: .85; margin-top: 2px; }
+.onbar .timer { font: 700 26px/1 var(--display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.onbar .timer small { display: block; font: 500 11.5px var(--ui); letter-spacing: 0; opacity: .8; margin-top: 3px; }
+.onbar .meter i { background: var(--aub); }
+.ctl { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.ctl .btn-line { background: rgba(255,255,255,.55); box-shadow: inset 0 0 0 1px rgba(43,30,39,.25); }
+.grid6 { display: grid; grid-template-columns: 1fr 348px; gap: 16px; height: 100%; }
+.leftc { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.prompter { background: var(--aub); color: #fff; border-radius: 12px; padding: 20px 26px 22px; position: relative; overflow: hidden; }
+.pr-h { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #C9B8C2; }
+.pr-h .kdot { width: 10px; height: 10px; background: var(--mauve); transform: rotate(45deg); }
+.pr-h .hdot { width: 10px; height: 10px; background: var(--apricot); border-radius: 50%; }
+.wrote { font: 500 27px/1.32 var(--display); letter-spacing: -0.012em; margin: 8px 0 18px; color: #F4EEF1; max-width: 30em; }
+.said { margin-top: 6px; max-width: 40em; color: #F4EEF1; }
+.said .il.lg { font-size: 22px; }
+.said .il .add, .said .il .pair .m { color: var(--apricot); background: rgba(255,153,102,.14); box-shadow: 0 0 0 2px rgba(255,153,102,.14); }
+.said .il .pair .m { box-shadow: none; }
+.said .il .pair .g, .said .il .drop { color: #C9B3BD; }
+.said .il .pair .g { background: linear-gradient(#8E7680, #8E7680) left bottom / 100% 1px no-repeat, linear-gradient(#8E7680, #8E7680) left bottom / 1px 5px no-repeat, linear-gradient(#8E7680, #8E7680) right bottom / 1px 5px no-repeat; }
+.said .livecaret { background: var(--apricot); }
+.said .caret { display: inline-block; width: 2px; height: 22px; background: var(--apricot); vertical-align: -3px; margin-left: 3px; animation: blink 1s steps(2) infinite; }
+.pr-foot { display: flex; align-items: center; gap: 14px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--aub-3); font-size: 12.5px; color: #C9B8C2; }
+.pr-foot .match { color: #E9E0E5; }
+.pr-foot .match b { color: #fff; }
+.pr-foot .match .g { background: rgba(255,153,102,.3); }
+.pr-foot .match .g i { background: #C9B3BD; }
+.next { display: flex; gap: 14px; align-items: flex-start; padding: 14px 18px; background: var(--panel); border: 1px dashed var(--mauve); border-radius: 10px; }
+.next .lbl2 { font-size: 12px; font-weight: 700; color: var(--mauve-d); white-space: nowrap; display: flex; gap: 6px; align-items: center; padding-top: 2px; }
+.next .tx { font: 500 16px/1.4 var(--display); }
+.earlier { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.earlier .hist { flex: 1; padding: 0 18px 12px; }
+.side6 { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.reason6 { padding: 14px 16px; background: var(--esc-t); border: 1px solid #F5C5A6; border-radius: 10px; color: #7A3309; font-size: 13px; }
+.reason6 .status { background: #fff; margin-bottom: 8px; }
+.factlist { list-style: none; display: flex; flex-direction: column; }
+.factlist li { display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid var(--hair); font-size: 13px; }
+.factlist li svg { width: 15px; height: 15px; color: var(--mauve); margin-top: 2px; }
+.who { display: flex; flex-direction: column; gap: 10px; padding: 4px 16px 16px; }
+.who-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.who-row .meter { margin-left: auto; height: 18px; }
+.who-row .state { font-size: 12px; color: var(--ink-3); }
+.steps { list-style: none; padding: 0 16px 14px; }
+.steps li { display: grid; grid-template-columns: 44px 1fr; gap: 8px; font-size: 12.5px; color: var(--ink-2); padding: 6px 0 6px 14px; position: relative; border-left: 2px solid var(--hair); margin-left: 4px; }
+.steps li::before { content: ""; position: absolute; left: -6px; top: 10px; width: 10px; height: 10px; background: var(--panel); box-shadow: inset 0 0 0 2px var(--mauve); transform: rotate(45deg); }
+.steps li.now { color: var(--apricot-d); font-weight: 600; border-left-color: var(--apricot); }
+.steps li.now::before { background: var(--apricot); box-shadow: none; }
+.steps li span { color: var(--ink-3); font-weight: 500; }
 </style>
-</head>
-<body>
-<header class="band"></header>
-<main class="main">
-  <section class="hist" aria-labelledby="hist-h">
-    <h2 class="h3" id="hist-h">Earlier in this call</h2>
-    <div class="pane compact" id="pane"><div class="tx" id="tx"></div></div>
-  </section>
-  <section class="panel np on-violet" id="np" aria-label="Karaoke prompter"></section>
-  <aside class="panel-plum air on-plum" id="air" aria-label="You are on the line"></aside>
-</main>
+</head><body>
 <script>
-  const { K, esc, icon, status, tile, record, first, meter, diffSide } = UI;
-  UI.mountBand("specialist", "live");
-  const T = K.takeover;
-  const me = first(T.specialist);
-  const g = first(T.guest);
-  const liveTurn = T.transcript.find((x) => x.live);
-  const earlier = T.transcript.filter((x) => !x.live);
+const { K, esc, status, ic, transcript, stave, matchGauge, meter, mount } = UI;
+const t = K.takeover;
+const turns = t.transcript;
+const cur = turns.find(r => r.live);
+const earlier = turns.filter(r => !r.live);
+const first = t.specialist.split(" ")[0];
 
-  const tx = document.getElementById("tx");
-  tx.innerHTML = UI.transcript(earlier, g, me);
-  const pane = document.getElementById("pane");
-  UI.pinEnd(pane);
-
-  const lineNo = T.transcript.filter((x) => x.karaoke).indexOf(liveTurn) + 1;
-  document.getElementById("np").innerHTML = `
-    <div class="top">
-      <div><h1 class="h1">Now playing</h1><p>${esc(T.guest)} · karaoke line ${lineNo}</p></div>
-      <span class="onair"><i class="dot"></i>Live</span>
-    </div>
-    <article class="strip kst big">
-      <div class="half a">
-        <div class="k-lab"><span class="k-key a">A</span>Kiku wrote <span class="t num">${liveTurn.t}</span></div>
-        <p class="k-txt">${diffSide(liveTurn.diff, "a", true)}</p>
+mount("specialist", "live", `
+<div class="onbar">
+  <span class="live"><b></b>You're live</span>
+  <div><h1>You're speaking with ${esc(t.guest)}</h1><div class="sub">Kiku is muted and writing lines for you. Took over at ${t.takeoverAt}, call ${t.id}.</div></div>
+  ${meter(14, false, 3)}
+  <div class="timer">${t.duration}<small>on the call</small></div>
+  <div class="ctl">
+    <button class="btn btn-line">${ic("mic-off")}Mute</button>
+    <button class="btn btn-line">${ic("bot")}Hand back to Kiku</button>
+    <button class="btn btn-danger">${ic("phone-off")}End call</button>
+  </div>
+</div>
+<div class="body" style="padding-top:24px"><div class="grid6">
+  <div class="leftc">
+    <section class="prompter">
+      <div class="pr-h"><span class="kdot"></span>Kiku wrote at ${cur.t}. Read it, or say it your way.</div>
+      <div class="wrote">${esc(cur.wrote)}</div>
+      <div class="pr-h"><span class="hdot"></span>You're saying, live. Kiku's words you replaced sit above yours.</div>
+      <div class="said">${UI.gloss(cur.diff, { caret: true, lg: true })}</div>
+      <div class="pr-foot">${matchGauge(cur.match)}<span>so far</span><span style="margin-left:auto;display:flex;align-items:center;gap:6px">${ic("pen-line")}Improvising is fine. Kiku keeps the facts in sync.</span></div>
+    </section>
+    <div class="next"><span class="lbl2">${ic("list-end")}Up next</span><div class="tx">${esc(t.nextLine)}</div></div>
+    <section class="panel earlier">
+      <div class="panel-h"><h2>Earlier in this call</h2><span class="aside">Your own words in apricot, the Kiku words they replaced struck above</span></div>
+      <div class="hist scroll"><div class="tl">${transcript(earlier, t.specialist)}</div></div>
+    </section>
+  </div>
+  <aside class="side6">
+    <div class="reason6">${status("escalated")}<div>${esc(t.escalationReason)}</div></div>
+    <section class="panel">
+      <div class="panel-h"><h2>On the line</h2></div>
+      <div class="who">
+        <div class="who-row"><span class="avatar h">PR</span><div><div style="font-weight:600">${esc(t.specialist)} (you)</div><div class="state">Speaking</div></div>${meter(12, true, 2)}</div>
+        <div class="who-row"><span class="avatar" style="background:var(--panel-2);box-shadow:inset 0 0 0 1px var(--hair-2)">MD</span><div><div style="font-weight:600">${esc(t.guest)}</div><div class="state num">${t.phone}</div></div>${meter(12, false, 5)}</div>
+        <div class="who-row"><span class="avatar" style="background:var(--aub);color:#fff">${UI.mark(18)}</span><div><div style="font-weight:600">Kiku</div><div class="state">Muted, writing lines</div></div><span class="state" style="margin-left:auto;display:flex;gap:5px;align-items:center">${ic("mic-off")}</span></div>
       </div>
-      <div class="tear"><span class="tear-tag"><span class="match">${liveTurn.match}%</span> match so far</span></div>
-      <div class="half b">
-        <div class="k-lab"><span class="k-key b">B</span>You're saying <span class="livechip"><i></i>Live</span></div>
-        <p class="k-txt">${diffSide(liveTurn.diff, "b")}<span class="caret"></span></p>
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Booking ${t.booking}</h2></div>
+      <div style="padding:0 16px 14px" class="scroll">
+        <div class="small soft" style="margin-bottom:10px">${esc(t.stay.replace(/ · /g, ", "))}</div>
+        <div class="small muted" style="margin-bottom:10px">${esc(t.purpose)}</div>
+        <ul class="factlist">${t.facts.map(f => `<li>${ic(/card/i.test(f) ? "credit-card" : "receipt")}<span>${esc(f)}</span></li>`).join("")}</ul>
       </div>
-    </article>
-    <div class="cued">
-      <div class="k-lab"><span class="k-key a">A</span>Next line, cued</div>
-      <p class="k-txt">${esc(T.nextLine)}</p>
-    </div>
-    <div class="legend"><span class="k-txt"><del>struck</del> you skipped it</span><span class="k-txt"><ins>tinted</ins> your own words</span><span class="k-txt"><span class="ahead">grey</span> still ahead in Kiku's line</span></div>`;
-
-  const escEvt = T.transcript.find((x) => x.kind === "escalation");
-  document.getElementById("air").innerHTML = `
-    <div class="who">
-      ${record({ size: 136, top: "On air", main: T.duration, disc: "#14041D", ring: "#DC45FE" })}
-      <div>
-        <h2 class="h2">You're on the line</h2>
-        <p>${esc(g)} ${esc(T.guest.split(" ")[1])} hears you, not Kiku. You took over at <span class="num">${T.takeoverAt}</span>.</p>
-      </div>
-    </div>
-    <div class="lv"><span class="row" style="gap:6px;white-space:nowrap">${icon("mic-fill")}Your mic</span>${meter(26, 19, 3)}</div>
-    <div class="btns">
-      <button class="btn btn-plumline">${icon("mic-mute-fill")}Mute mic</button>
-      <button class="btn btn-plumline">${icon("arrow-return-left")}Hand back to Kiku</button>
-      <button class="btn btn-danger">${icon("telephone-x-fill")}End call</button>
-    </div>
-    <div class="rule"></div>
-    <p class="reason"><span class="tile esc">${icon("arrow-up")}</span><span><b>Escalated at <span class="num">${escEvt.t}</span>.</b> ${esc(T.escalationReason)}</span></p>
-    <dl class="facts">
-      <div><dt>Booking</dt><dd class="num">${T.booking}</dd></div>
-      <div><dt>Phone</dt><dd class="num">${esc(T.phone)}</dd></div>
-      <div class="full"><dt>Stay</dt><dd>${esc(T.stay)}</dd></div>
-      <div class="full"><dt>Purpose</dt><dd>${esc(T.purpose)}</dd></div>
-    </dl>
-    <ul class="fl">${T.facts.map((f) => `<li>${icon("credit-card-fill")}<span>${esc(f)}</span></li>`).join("")}</ul>`;
+    </section>
+    <section class="panel" style="flex:1;min-height:0">
+      <div class="panel-h"><h2>How you got here</h2></div>
+      <ol class="steps">${turns.filter(r => r.speaker === "system").map(r => `<li><span class="num">${r.t}</span>${esc(r.text)}</li>`).join("")}<li class="now"><span class="num">${cur.t}</span>Line ${turns.filter(r => r.karaoke).length} of karaoke, in progress</li></ol>
+    </section>
+  </aside>
+</div></div>`);
+const h = document.querySelector(".earlier .hist"); h.scrollTop = h.scrollHeight;
 </script>
-</body>
-</html>
+</body></html>

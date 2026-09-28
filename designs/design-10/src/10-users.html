@@ -2,110 +2,119 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kiku · Users</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,300..800;1,400..500&display=block">
-<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Shippori+Mincho+B1:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="styles.css">
-<script src="app.js"></script>
 <style>
-  .utbl td { vertical-align: middle; height: var(--s89); padding-top: var(--s5); padding-bottom: var(--s5); white-space: nowrap; }
-  .person b { font-size: var(--f16); line-height: 26px; }
-  .utbl tbody tr:hover td { background: rgba(32, 36, 74, 0.55); }
-  .person { display: flex; align-items: center; gap: var(--s13); }
-  .person b { display: block; font-weight: 600; }
-  .person span.muted { display: block; }
-  .ustat { display: inline-flex; align-items: center; gap: var(--s5); font-weight: 500; white-space: nowrap; }
-  .ustat.active { color: var(--leaf); }
-  .ustat.invited { color: var(--gold); }
-  .ustat.deactivated { color: var(--failed); }
-  .row-off td { color: var(--text-2); }
-  .row-off .avatar { opacity: 0.6; }
-  .row-new td { background: var(--gold-wash); }
-  .tk { display: flex; align-items: center; gap: var(--s8); }
-  .tk .bar { width: 34px; }
-  .utbl th.wrap { white-space: normal; width: 89px; line-height: 1.3; padding-top: 5px; padding-bottom: 5px; }
-  .la small { display: block; color: var(--text-2); font-size: var(--f13); }
-  .tk .bar > i { background: var(--pink); }
-  .tk .n { width: 21px; text-align: right; }
-  .role-tag { display: inline-flex; align-items: center; gap: var(--s5); }
-  .role-tag .ic { color: var(--text-2); }
+  .wrap { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0,1fr) 452px; }
+  .left { min-height: 0; display: flex; flex-direction: column; gap: 14px; padding: 18px 24px 18px 28px; }
+  .ttl { display: flex; align-items: baseline; gap: 12px; }
+  .ttl h1 { font-size: 26px; }
+  .ttl .spacer { flex: 1; }
+  .tablep { flex: none; }
+  table.grid th { padding-top: 12px; }
+  table.grid td { font-size: 13.5px; padding: 12px 12px; }
+  table.grid td:first-child, table.grid th:first-child { padding-left: 18px; }
+  .who { display: flex; align-items: center; gap: 10px; }
+  .who b { display: block; }
+  .who .meta { font-size: 12.5px; }
+  .role { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
+  .us { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; }
+  .us.active { color: var(--kiku); } .us.invited { color: var(--human); } .us.deactivated { color: var(--ink-3); }
+  .us svg { width: 14px; height: 14px; }
+  tr.off td { color: var(--ink-3); }
+  tr.off .avatar { background: #DDE3D8; color: var(--ink-3); }
+  tr.new td { background: var(--human-wash); }
+  .tk { display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .tk .b { width: 70px; height: 6px; background: var(--paper-2); border-radius: 1px; overflow: hidden; }
+  .tk .b i { display: block; height: 100%; background: var(--human); }
+  .tk.zero { color: var(--ink-3); font-weight: 400; }
+  .note { font-size: 12.5px; color: var(--ink-3); display: flex; gap: 8px; align-items: center; }
 
-  .side { padding: 0 var(--s21) var(--s21); display: flex; flex-direction: column; gap: var(--s21); flex: 1; min-height: 0; }
-  .roles { display: flex; flex-direction: column; gap: var(--s8); }
-  .role-opt { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--s5) var(--s13); padding: var(--s13); border: 1px solid var(--line-2); border-radius: var(--r-ctl); background: var(--night); cursor: pointer; }
-  .role-opt.on { border-color: var(--gold); background: var(--gold-wash); }
-  .role-opt .radio { margin-top: 3px; }
-  .role-opt .nm { font: 600 var(--f16)/21px var(--font); }
-  .role-opt ul { grid-column: 2; display: flex; flex-direction: column; gap: var(--s2); }
-  .role-opt li { display: flex; align-items: center; gap: var(--s8); font-size: var(--f13); line-height: 21px; color: var(--text); }
-  .role-opt li .ic { width: 13px; height: 13px; color: var(--leaf); }
-  .role-opt:not(.on) li { color: var(--text-2); }
-  .role-opt:not(.on) li .ic { color: var(--text-2); }
-  .side-foot { margin-top: auto; display: flex; flex-direction: column; gap: var(--s8); }
-  .side-foot .row { display: flex; gap: var(--s8); }
-  .side-foot .row .primary { flex: 1.618; }
-  .side-foot .row .btn:not(.primary) { flex: 1; }
+  .sidep { background: var(--sheet); border-left: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; box-shadow: -12px 0 24px -20px rgba(28,39,33,.4); }
+  .sh { padding: 18px 24px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: flex-start; gap: 12px; }
+  .sh h2 { font-family: var(--serif); font-size: 21px; font-weight: 700; }
+  .sh .x { margin-left: auto; width: 32px; height: 32px; border: 1px solid var(--line); border-radius: var(--r); background: transparent; display: grid; place-items: center; }
+  .sb { flex: 1; min-height: 0; padding: 18px 24px; display: flex; flex-direction: column; gap: 16px; }
+  .rolecards { display: flex; flex-direction: column; gap: 10px; }
+  .rc { border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; background: #fff; display: grid; grid-template-columns: 22px 1fr; gap: 4px 10px; }
+  .rc.on { border-color: var(--human); box-shadow: 0 0 0 3px var(--human-soft); }
+  .radio { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--ink-3); margin-top: 1px; display: grid; place-items: center; }
+  .rc.on .radio { border-color: var(--human); }
+  .rc.on .radio::after { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--human); }
+  .rc b { font-size: 14.5px; }
+  .rc ul { grid-column: 2; list-style: none; display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+  .rc li { display: flex; gap: 7px; align-items: center; font-size: 13px; color: var(--ink-2); }
+  .rc li svg { width: 14px; height: 14px; color: var(--kiku); }
+  .rc li.karaoke { color: var(--human-deep); font-weight: 500; }
+  .rc li.karaoke svg { color: var(--human); }
+  .sf { padding: 14px 24px; border-top: 1px solid var(--line); background: var(--paper-2); display: flex; gap: 10px; align-items: center; }
+  .sf .meta { margin-right: auto; }
 </style>
 </head>
 <body>
-<script>
-  const { K, esc, ic, shell, avatar } = Kiku;
-  const N = K.newUserDraft;
-  const maxT = Math.max(...K.users.map((u) => u.takeovers30d));
-  const counts = { Active: 0, Invited: 0, Deactivated: 0 };
-  K.users.forEach((u) => { counts[u.status]++; });
-  const USTAT = { Active: 'circle-check', Invited: 'mail', Deactivated: 'ban' };
-
-  const row = (u) => `<tr class="${u.status === 'Deactivated' ? 'row-off' : ''}">
-    <td><div class="person">${avatar(u, (u.role === 'Specialist' && u.status !== 'Deactivated' ? 'spec ' : '') + 'lg')}<div><b>${esc(u.name)}</b><span class="muted">${esc(u.email)}</span></div></div></td>
-    <td><span class="role-tag">${ic(u.role === 'Admin' ? 'shield-check' : 'headphones', 'ic-13')}${u.role}</span></td>
-    <td><span class="ustat ${u.status.toLowerCase()}">${ic(USTAT[u.status], 'ic-13')}${u.status}</span></td>
-    <td class="la">${u.lastActive.includes('(') ? `${esc(u.lastActive.split(' (')[0])}<small>${esc(u.lastActive.split(' (')[1].replace(')', ''))}</small>` : esc(u.lastActive)}</td>
-    <td>${u.role === 'Specialist'
-      ? `<div class="tk"><span class="n">${u.takeovers30d}</span><span class="bar" aria-hidden="true"><i style="width:${(u.takeovers30d / maxT) * 100}%"></i></span></div>`
-      : `<div class="tk"><span class="n">${u.takeovers30d}</span></div>`}</td>
-  </tr>`;
-
-  const roleOpt = (name) => `<label class="role-opt ${N.role === name ? 'on' : ''}"><span class="radio ${N.role === name ? 'on' : ''}" role="radio" aria-checked="${N.role === name}"></span>
-      <span class="nm">${name}</span>
-      <ul>${K.roles[name].map((p) => `<li>${ic('check')}${esc(p)}</li>`).join('')}</ul></label>`;
-
-  shell({
-    role: 'admin', active: 'users', title: 'Users',
-    sub: `${K.users.length} people · ${counts.Active} active, ${counts.Invited} invited, ${counts.Deactivated} deactivated`,
-    right: `<button class="btn pressed">${ic('user-plus')}Invite user</button>`,
-    content: `
-    <div class="split">
-      <section class="panel" aria-label="All users">
-        <table class="tbl utbl">
-          <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last active</th><th class="wrap">Takeovers, 30 days</th></tr></thead>
-          <tbody>${K.users.map(row).join('')}</tbody>
-        </table>
-        <p class="panel-foot" style="flex:1;align-items:flex-end;padding-bottom:13px">${ic('info', 'ic-13')}Showing all ${K.users.length} users</p>
-      </section>
-      <section class="panel" aria-label="Invite a user">
-        <div class="panel-head"><h2 class="lg">Invite a user</h2><button class="icon-btn" aria-label="Close">${ic('x')}</button></div>
-        <div class="side">
-          <div class="field"><label class="label" for="nm">Full name</label><input class="input lg-text" id="nm" value="${esc(N.name)}"></div>
-          <div class="field"><label class="label" for="em">Work email</label><input class="input lg-text is-focus" id="em" type="email" value="${esc(N.email)}"></div>
-          <div class="field"><label class="label" for="jt">Job title <span class="opt">optional</span></label><input class="input lg-text" id="jt" placeholder="For example, Guest Services"></div>
-          <div class="field">
-            <p class="label">Role</p>
-            <div class="roles" role="radiogroup" aria-label="Role">${roleOpt('Specialist')}${roleOpt('Admin')}</div>
-          </div>
-          <div class="side-foot">
-            <p class="help">${esc(Kiku.first(N.name))} gets an email at ${esc(N.email)} with a link to set a password.</p>
-            <div class="row"><button class="btn primary lg">${ic('send')}Send invite</button><button class="btn lg">Cancel</button></div>
-          </div>
+<div class="app">
+  <div id="shell"></div>
+  <main class="main">
+    <section class="wrap">
+      <div class="left">
+        <div class="ttl"><h1 class="h-serif">Users</h1><span class="meta" id="sub"></span><span class="spacer"></span><button class="btn human"><i data-lucide="user-plus"></i>Invite user</button></div>
+        <div class="panel tablep scroll">
+          <table class="grid">
+            <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last active</th><th>Takeovers, 30 days</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
         </div>
-      </section>
-    </div>`,
-  });
-  Kiku.done();
+        <div class="note"><i data-lucide="info" style="width:14px;height:14px"></i>Deactivated users keep their call history. They can't sign in.</div>
+      </div>
+      <aside class="sidep" id="side"></aside>
+    </section>
+  </main>
+</div>
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<script>
+const { K, esc } = TT;
+TT.shell({ role: "admin", active: "10-users.html" });
+const users = K.users;
+const cnt = s => users.filter(u => u.status === s).length;
+document.getElementById("sub").textContent = `${cnt("Active")} active, ${cnt("Invited")} invited, ${cnt("Deactivated")} deactivated`;
+const max = Math.max(...users.map(u => u.takeovers30d));
+const ust = s => ({
+  Active: `<span class="us active"><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="currentColor"/></svg>Active</span>`,
+  Invited: `<span class="us invited"><i data-lucide="mail"></i>Invited</span>`,
+  Deactivated: `<span class="us deactivated"><i data-lucide="ban"></i>Deactivated</span>`,
+}[s]);
+const d = K.newUserDraft;
+document.getElementById("rows").innerHTML = users.map(u => `
+  <tr class="${u.status === "Deactivated" ? "off" : ""}">
+    <td><div class="who"><span class="avatar ${u.role === "Admin" ? "admin" : ""}">${u.initials}</span><div><b>${u.name}</b><span class="meta">${u.email}</span></div></div></td>
+    <td><span class="role"><i data-lucide="${u.role === "Admin" ? "shield" : "headphones"}" style="width:14px;height:14px"></i>${u.role}</span></td>
+    <td>${ust(u.status)}</td>
+    <td>${u.lastActive}</td>
+    <td>${u.role === "Admin" ? '<span class="meta">Not a specialist</span>' : u.takeovers30d ? `<span class="tk">${u.takeovers30d}<span class="b"><i style="width:${u.takeovers30d / max * 100}%"></i></span></span>` : `<span class="tk zero">0</span>`}</td>
+  </tr>`).join("") + `
+  <tr class="new"><td><div class="who"><span class="avatar" style="background:#fff;border:1.5px dashed var(--human)">GM</span><div><b>${d.name}</b><span class="meta">${d.email}</span></div></div></td>
+    <td><span class="role"><i data-lucide="headphones" style="width:14px;height:14px"></i>${d.role}</span></td>
+    <td><span class="us invited"><i data-lucide="pencil"></i>Not sent yet</span></td><td class="meta">Being set up</td><td></td></tr>`;
+
+const perm = r => K.roles[r].map(p => `<li class="${p.includes("karaoke") ? "karaoke" : ""}"><i data-lucide="${p.includes("karaoke") ? "mic" : "check"}"></i>${p}</li>`).join("");
+document.getElementById("side").innerHTML = `
+  <div class="sh"><div><h2>Invite a user</h2><div class="meta">They get an email to set a password.</div></div><button class="x" aria-label="Close"><i data-lucide="x"></i></button></div>
+  <div class="sb scroll">
+    <div class="field"><label>Full name</label><div class="input">${d.name}</div></div>
+    <div class="field"><label>Work email</label><div class="input focus">${d.email}</div></div>
+    <div class="field"><label>Role</label>
+      <div class="rolecards">
+        ${["Specialist", "Admin"].map(r => `<div class="rc${d.role === r ? " on" : ""}"><span class="radio"></span><b>${r}</b><ul>${perm(r)}</ul></div>`).join("")}
+      </div>
+    </div>
+  </div>
+  <div class="sf"><span class="meta">Invite goes to ${d.name.split(" ")[0]}</span><button class="btn">Cancel</button><button class="btn human"><i data-lucide="send"></i>Send invite</button></div>`;
+TT.icons();
 </script>
 </body>
 </html>

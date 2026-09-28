@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku call logs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..800&family=Young+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+  .wrap { display: flex; flex-direction: column; gap: 14px; height: 100%; }
+  .filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .search { width: 340px; height: 36px; border-radius: 18px; }
+  .search svg { color: var(--ink-3); }
+  .search span { color: var(--ink-3); font-size: 13px; }
+  .dd { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px 0 14px; border: 1px solid var(--line-2); border-radius: 17px; background: var(--sheet); font-size: 13px; font-weight: 500; }
+  .dd .l { color: var(--ink-3); }
+  .dd svg { width: 14px; height: 14px; color: var(--ink-3); }
+  .seg button .st { font-size: 13px; font-weight: 500; color: inherit; }
+  .seg button.on .st svg { color: #fff; }
+  .seg button .st svg { width: 12px; height: 12px; }
+  .table { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .table .scroll { flex: 1; }
+  td { font-size: 13px; padding: 8px 8px; }
+  th { padding-left: 8px; padding-right: 8px; }
+  td:first-child, th:first-child { padding-left: 16px; }
+  td.dt .tag { display: flex; }
+  td.time { color: var(--ink-2); width: 58px; }
+  td.guest { white-space: nowrap; }
+  td.guest b { font-weight: 650; display: block; font-size: 13.5px; }
+  td.guest span { color: var(--ink-3); font-size: 12px; }
+  td.phone { color: var(--ink-2); white-space: nowrap; }
+  td.purpose { color: var(--ink-2); min-width: 230px; }
+  td.dur { white-space: nowrap; }
+  td.dt .ty { display: block; font-size: 12px; color: var(--ink-3); margin: 1px 0 0 22px; white-space: nowrap; }
+  td.spec { white-space: nowrap; color: var(--ink-2); }
+  td.spec .chan { vertical-align: -1px; margin-right: 6px; }
+  td.spec .lis { display: block; font-size: 12px; color: var(--ink-3); margin-left: 19px; }
+  td.go { width: 118px; text-align: right; padding-right: 14px; }
+  tr.sel td.purpose { color: var(--ink); }
+  .foot { display: flex; justify-content: space-between; padding: 10px 16px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<script>
+const body = shell({ role: "specialist", page: "logs", title: "Call logs", sub: "Every call Kiku answered or placed, with its audit",
+  right: `<label class="input search">${ic("search")}<span>Search guest, phone, booking or purpose</span></label>` });
+const calls = K.calls;
+const count = s => calls.filter(c => c.status === s).length;
+const dir = c => c.direction === "inbound" ? `${ic("phone-incoming")}Inbound` : `${ic("phone-outgoing")}Outbound`;
+const spec = c => c.specialist
+  ? `<span class="chan"><i class="k"></i><i class="h"></i></span>${c.specialist.replace(" (listening)", "")}${/listening/.test(c.specialist) ? `<span class="lis">Listening</span>` : ""}`
+  : `<span class="chan"><i class="k"></i></span><span class="muted">Kiku only</span>`;
+
+body.innerHTML = `<div class="wrap">
+  <div class="filters">
+    <div class="seg">
+      <button class="on">All <span class="c">${calls.length}</span></button>
+      ${["completed","in_progress","escalated","failed"].map(s => `<button>${st(s)}<span class="c">${count(s)}</span></button>`).join("")}
+    </div>
+    <div class="seg"><button class="on">Any direction</button><button>${ic("phone-incoming")}Inbound</button><button>${ic("phone-outgoing")}Outbound</button></div>
+    <span class="dd"><span class="l">Type</span>All types${ic("chevron-down")}</span>
+    <span class="dd">${ic("calendar")}Today${ic("chevron-down")}</span>
+    
+  </div>
+  <section class="panel table">
+    <div class="scroll">
+    <table>
+      <thead><tr><th>Time</th><th>Guest</th><th>Phone</th><th>Direction and type</th><th>What the call was for</th><th>Status</th><th>Length</th><th>Handled by</th><th></th></tr></thead>
+      <tbody>
+      ${calls.map(c => `<tr class="${c.id === "KK-24027" ? "sel" : ""}">
+        <td class="time">${c.started}</td>
+        <td class="guest"><b>${c.guest}</b><span>${c.id}</span></td>
+        <td class="phone">${c.phone}</td>
+        <td class="dt"><span class="tag">${dir(c)}</span>${c.direction === "outbound" ? `<span class="ty">${c.type}${c.promo ? ", " + c.promo : ""}</span>` : `<span class="ty">Hotel line</span>`}</td>
+        <td class="purpose">${c.purpose}</td>
+        <td>${st(c.status)}</td>
+        <td class="dur">${c.duration}</td>
+        <td class="spec">${spec(c)}</td>
+        <td class="go">${c.id === "KK-24027" ? `<button class="btn sm ink">Open audit${ic("arrow-right")}</button>` : ""}</td>
+      </tr>`).join("")}
+      </tbody>
+    </table>
+    </div>
+    <div class="foot"><span>${calls.length} calls, newest first</span><span>Times in ${K.hotel.tz}</span></div>
+  </section>
+</div>`;
+done();
+</script>
+</body>
+</html>

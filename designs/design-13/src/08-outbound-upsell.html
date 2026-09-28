@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku upsell calls</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..800&family=Young+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<link rel="stylesheet" href="outbound.css">
+</head>
+<body>
+<script>
+const U = K.upsellSingle, C = K.upsellCsv;
+const body = shell({ role: "admin", page: "upsell", title: "Upsell calls", sub: "Kiku calls guests with a booking and offers extras for their stay" });
+const OI = { pickup: "car", breakfast: "coffee", dinner: "utensils" };
+
+body.innerHTML = `<div class="ob">
+  <section class="offers">
+    <span class="olab">Offers Kiku can make</span>
+    ${K.offers.map(o => `<div class="offer"><span class="oi">${ic(OI[o.id])}</span><div><b>${o.name}</b><span>${o.detail}</span></div><div class="price">${o.price}${o.alt ? `<small>${o.alt}</small>` : ""}</div></div>`).join("")}
+  </section>
+  <div class="paths">
+    <section class="panel path">
+      <div class="pth"><span class="pn">${ic("phone-outgoing")}</span><div><h2>Call one guest</h2><p>Enter a phone number and confirmation number</p></div></div>
+      <div class="pbody">
+        <div class="two">
+          <div class="field"><label>Phone</label><div class="input">${U.phone}</div></div>
+          <div class="field"><label>Confirmation number</label><div class="input">${U.confirmation}</div></div>
+        </div>
+        <div class="match-card">${ic("circle-check")}<div><b>Booking found</b><span>${U.match.replace(/ · /g, ", ")}</span></div></div>
+        <div class="field"><label>Offers to make on this call</label>
+          <div class="toggles">${K.offers.map(o => `<div class="tg"><span class="sw-t on"><i></i></span><div><b>${o.name}</b><span>${o.price}${o.alt ? `, ${o.alt.toLowerCase()}` : ""}</span></div></div>`).join("")}</div>
+        </div>
+      </div>
+      <div class="pfoot"><span class="small muted">Kiku calls straight away and adds anything the guest accepts to <span style="white-space:nowrap">${U.confirmation}</span>.</span><button class="btn ink lg">${ic("phone-call")}Call now</button></div>
+    </section>
+
+    <section class="panel path">
+      <div class="pth"><span class="pn">${ic("file-spreadsheet")}</span><div><h2>Upload a list</h2><p>A CSV with columns ${C.columns.map(c => `<code>${c}</code>`).join(" and ")}</p></div></div>
+      <div class="pbody">
+        <div class="file"><span class="fi">${ic("file-spreadsheet")}</span><div><b>${C.file}</b><span class="sm">${C.size}, ${C.rows} rows</span></div><button class="btn sm">${ic("upload")}Replace</button></div>
+        <div class="rows"><span class="ok">${ic("circle-check")}${C.ready} ready</span><span class="er">${ic("circle-x")}${C.errors} errors, skipped</span><span class="muted small" style="margin-left:auto">All three offers on each call</span></div>
+        <div class="prev">
+          <table><thead><tr><th>Row</th><th>phone</th><th>confirmation</th><th>Matched guest</th></tr></thead>
+          <tbody>${C.preview.map(r => `<tr class="${r.ok ? "" : "bad"}"><td class="rn">${r.row}</td><td>${r.phone || "<span class='empty'>empty</span>"}</td><td>${r.confirmation || "<span class='empty'>empty</span>"}</td>
+            <td>${r.ok ? `<span class="okg">${ic("circle-check")}${r.guest}</span>` : `<span class="err">${ic("circle-x")}${r.error}</span>`}</td></tr>`).join("")}
+          <tr class="more"><td colspan="4">${C.rows - C.preview.length} more rows, all ready</td></tr></tbody></table>
+        </div>
+      </div>
+      <div class="pfoot"><span class="small muted">Fix the two rows and upload again, or start without them.</span><button class="btn ink lg">${ic("phone-outgoing")}Start ${C.ready} calls</button></div>
+    </section>
+  </div>
+</div>`;
+done();
+</script>
+</body>
+</html>

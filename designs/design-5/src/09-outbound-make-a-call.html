@@ -1,96 +1,88 @@
 <!doctype html>
 <html lang="en">
 <head>
+<title>Kiku · Make a call</title>
 <meta charset="utf-8">
-<title>Kiku · Outbound, make a call</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=block">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/iconoir@7.12.1/css/iconoir.css">
-<script src="../../_shared/data.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
 <script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <style>
-  .head { margin-bottom: 18px; }
-  .paths { flex: 1; min-height: 0; display: grid; grid-template-columns: 430px 1fr; gap: 22px; }
-  .path { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
-  .path-head { display: flex; align-items: center; gap: 10px; padding: 14px 20px 12px; border-bottom: 1px solid var(--rule); }
-  .path-head .ico { font-size: 20px; }
-  .path-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0; }
-  .path-foot { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-top: 1px solid var(--rule); }
-  .path-foot .help { flex: 1; }
-  .cols { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--label); }
-  .tpl { display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid var(--rule); }
-  .tpl p { font-size: 13px; color: var(--graphite); flex: 1; }
-  .tpl p b { color: var(--dark); font-weight: 600; }
-  .prev { border-radius: 10px; background: var(--face); border: 1px solid var(--rule-2); overflow: hidden; }
-  .prev .tbl th { background: var(--panel); padding-top: 8px; padding-bottom: 7px; }
-  .prev .tbl td { font-size: 13px; padding-top: 7px; padding-bottom: 7px; line-height: 1.4; }
-  .prev .tbl tr.is-error td { background: #F7EEEA; }
-  .prev .why { display: block; font-size: 12px; color: var(--graphite); margin-top: 2px; }
-  .prev .gap td { text-align: center; color: var(--label); font-size: 12px; padding: 3px; background: var(--panel); }
-  .none { color: var(--label); }
-  .purpose-in { min-height: 118px; }
+  .main { flex-direction: column; gap: 16px; }
+  .paths { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .path-b { padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .recent { margin-top: auto; border-top: 1px solid var(--rule-2); padding-top: 12px; }
+  .recent h3 { font-size: 12.5px; font-weight: 650; color: var(--ink-2); margin-bottom: 4px; }
+  .rc { display: grid; grid-template-columns: 44px 130px minmax(0,1fr) 112px; gap: 10px; align-items: baseline; padding: 7px 0; font-size: 12.5px; line-height: 18px; border-bottom: 1px solid var(--rule-2); }
+  .rc:last-child { border-bottom: 0; }
+  .rc .o { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pfoot { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-top: 1px solid var(--rule); flex: none; }
+  .purpose { font-size: 15px; line-height: 24px; min-height: 120px; border-color: var(--slate); }
+  .brief { border-radius: var(--r-m); background: var(--kiku-soft); padding: 12px 14px; display: flex; gap: 10px; font-size: 13px; line-height: 19px; color: var(--kiku); }
+  table.grid td { height: auto; padding-top: 9px; padding-bottom: 9px; font-size: 12.5px; line-height: 18px; vertical-align: top; }
+  .rn { color: var(--ink-3); width: 36px; }
+  .tmpl { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px dashed var(--slate); border-radius: var(--r-m); font-size: 12.5px; color: var(--ink-2); }
+  .tmpl a { color: var(--kiku); font-weight: 650; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; margin-left: auto; white-space: nowrap; }
 </style>
 </head>
 <body>
-<div class="shell">
-  <aside class="column" id="column"></aside>
-  <main class="face">
-    <header class="head">
-      <div class="grow head-title"><h1 class="h1">Outbound calls</h1><span class="meta">A general call for any purpose you describe.</span></div>
-      <div id="tabs"></div>
-    </header>
-    <div class="paths">
-      <section class="display path" id="single" aria-label="Place one call"></section>
-      <section class="display path" id="csv" aria-label="Upload a list"></section>
-    </div>
-  </main>
+<div class="app">
+  <div id="shell"></div>
+  <main class="main" id="main"></main>
 </div>
 <script>
-  const { K, esc, ico, lamp } = Kiku;
-  Kiku.shell({ role: 'admin', active: 'out' });
-  document.querySelector('#tabs').innerHTML = Kiku.outboundTabs('make');
-  const m = K.makeCallSingle, v = K.makeCallCsv;
+const { K, esc } = D;
+D.mount(D.shell({ role: "admin", active: "make" }));
+const S = K.makeCallSingle, C = K.makeCallCsv;
+const failSq = `<svg width="13" height="13" viewBox="0 0 14 14" style="flex:none"><rect x=".8" y=".8" width="12.4" height="12.4" rx="2" fill="currentColor"/><path d="M4.6 4.6l4.8 4.8M9.4 4.6l-4.8 4.8" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+const rows = C.preview.map(r => `<tr class="${r.ok ? "" : "rowerr"}">
+  <td class="rn num">${r.row}</td>
+  <td class="num" style="white-space:nowrap">${r.phone ? esc(r.phone) : `<span class="why">${failSq}Missing</span>`}</td>
+  <td style="white-space:nowrap">${r.name ? esc(r.name) : '<span class="muted">No name</span>'}</td>
+  <td>${esc(r.purpose)}${r.ok ? "" : `<div class="why" style="margin-top:2px">${esc(r.error)}. Add a number or the row is skipped.</div>`}</td>
+</tr>`).join("");
 
-  document.querySelector('#single').innerHTML = `
-    <div class="path-head">${ico('phone-outcome')}<h2 class="h3">Place one call</h2></div>
-    <div class="path-body">
-      <div class="field"><label class="field-lbl" for="pu">purpose<span class="opt">what Kiku should get done</span></label>
-        <textarea class="input purpose-in" id="pu" rows="4">${esc(m.purpose)}</textarea>
-        <p class="help">Write it the way you'd brief a colleague. Kiku opens the call with it.</p></div>
-      <div class="field"><label class="field-lbl" for="nm">name<span class="opt">optional</span></label><input class="input" id="nm" value="${esc(m.name)}" placeholder="Leave blank if you don't know it"></div>
-      <div class="field"><label class="field-lbl" for="ph">phone</label><input class="input" id="ph" value="${esc(m.phone)}"></div>
-    </div>
-    <div class="path-foot"><p class="help">Kiku calls straight away.</p><button class="key key--orange key--lg">${ico('phone-outcome')}place call</button></div>`;
-
-  const bad = v.preview.filter(r => !r.ok);
-  const rows = v.preview.map((r, i) => {
-    const prev = v.preview[i - 1];
-    const gap = prev && r.row - prev.row > 1 ? `<tr class="gap"><td colspan="5">${r.row - prev.row > 2 ? `rows ${prev.row + 1}–${r.row - 1}` : `row ${prev.row + 1}`} ready</td></tr>` : '';
-    return gap + `<tr class="${r.ok ? '' : 'is-error'}">
-      <td>${r.row}</td>
-      <td>${r.phone ? esc(r.phone) : `<span class="err">${ico('warning-circle')}${esc(r.error)}</span><span class="why">Add a number, or delete the row.</span>`}</td>
-      <td>${r.name ? esc(r.name) : '<span class="none">no name</span>'}</td>
-      <td>${esc(r.purpose)}</td>
-      <td>${r.ok ? `<span class="ok" aria-label="Ready">${ico('check')}</span>` : ''}</td></tr>`;
-  }).join('') + (v.preview.at(-1).row < v.rows ? `<tr class="gap"><td colspan="5">rows ${v.preview.at(-1).row + 1}–${v.rows} ready</td></tr>` : '');
-
-  document.querySelector('#csv').innerHTML = `
-    <div class="path-head">${ico('multiple-pages')}<h2 class="h3">Upload a list</h2><span class="cols" style="margin-left:auto">columns${v.columns.map(c => `<span class="token">${esc(c)}</span>`).join('')}</span></div>
-    <div class="path-body">
-      <div class="drop">
-        <div class="cart"><span class="cart-ico">${ico('page')}</span>
-          <div class="grow"><div class="cart-name">${esc(v.file)}</div><div class="tally" style="margin-top:3px"><span class="muted">${v.size} · ${v.rows} rows</span><span>${ico('check')}<b>${v.ready}</b> ready</span><span class="err">${ico('warning-circle')}${v.errors} error</span></div></div>
-          <button class="key key--sm">${ico('upload')}replace</button></div>
+const recent = (type) => K.calls.filter(c => c.type === type).map(c => `<div class="rc"><span class="num muted">${c.started}</span><b style="font-weight:600">${esc(c.guest)}</b><span class="o">${esc(c.outcome || c.purpose)}</span>${D.status(c.status)}</div>`).join("");
+document.getElementById("main").innerHTML = `
+<div><h1 class="page">Make a call</h1><div class="page-sub">Tell Kiku why it's calling. It handles the conversation and logs the result.</div></div>
+<div class="paths">
+  <section class="panel">
+    <div class="panel-h"><i data-lucide="phone"></i><h2>One call</h2><span class="sub">Write the purpose in plain words</span></div>
+    <div class="path-b">
+      <div class="field"><label>Purpose</label><textarea class="input purpose" rows="4">${esc(S.purpose)}</textarea></div>
+      <div class="two">
+        <div class="field"><label>Name <span class="opt">optional</span></label><div class="input filled">${esc(S.name)}</div></div>
+        <div class="field"><label>Phone</label><div class="input filled num">${S.phone}</div></div>
       </div>
-      <div class="prev"><table class="tbl">
-        <colgroup><col style="width:56px"><col style="width:196px"><col style="width:128px"><col><col style="width:42px"></colgroup>
-        <thead><tr><th>row</th><th>phone</th><th>name</th><th>purpose</th><th></th></tr></thead>
-        <tbody>${rows}</tbody></table></div>
-      <div class="tpl"><p>Starting a new list? The template has the <b>phone</b>, <b>name</b> and <b>purpose</b> columns ready. Leave name blank when you don't have one.</p><button class="key key--sm">${ico('download')}template.csv</button></div>
+      <div class="brief"><i data-lucide="message-square-quote" style="margin-top:2px"></i><div>Kiku opens by name when you give one, then explains the purpose and asks what the guest would like.</div></div>
+      <div class="recent"><h3>Placed today</h3>${recent("Make a call")}</div>
     </div>
-    <div class="path-foot"><p class="help">Row ${bad.map(r => r.row).join(', ')} is skipped until it has a phone number.</p><button class="key key--dark key--lg">${ico('phone-outcome')}start ${v.ready} calls</button></div>`;
+    <div class="pfoot"><span class="muted" style="font-size:12.5px">The call appears on the Live board once it connects.</span><button class="btn primary" style="margin-left:auto"><i data-lucide="phone-outgoing"></i>Place call</button></div>
+  </section>
+  <section class="panel">
+    <div class="panel-h"><i data-lucide="file-spreadsheet"></i><h2>Many calls from a CSV</h2><span class="sub">One purpose per row</span></div>
+    <div class="path-b">
+      <div class="file">
+        <div class="ico"><i data-lucide="file-spreadsheet"></i></div>
+        <div style="flex:1"><b>${C.file}</b><div class="meta num">${C.size}, ${C.rows} rows</div></div>
+        <div class="tally num"><span class="ok"><i data-lucide="circle-check"></i>${C.ready} ready</span><span class="bad">${failSq}${C.errors} error</span></div>
+        <button class="btn sm ghost">Replace</button>
+      </div>
+      <div class="scroll">
+        <table class="grid">
+          <thead><tr><th>Row</th><th>Phone</th><th>Name</th><th>Purpose</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div class="tmpl"><i data-lucide="table-2"></i><span>Columns: <b class="code">${C.columns.join(", ")}</b></span><a href="#"><i data-lucide="download"></i>Download template</a></div>
+    </div>
+    <div class="pfoot"><span class="muted" style="font-size:12.5px">Showing 4 of ${C.ready} ready rows and the error.</span><button class="btn primary" style="margin-left:auto"><i data-lucide="phone-outgoing"></i>Place ${C.ready} calls</button></div>
+  </section>
+</div>`;
+D.icons();
 </script>
 </body>
 </html>

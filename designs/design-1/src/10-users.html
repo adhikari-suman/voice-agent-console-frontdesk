@@ -2,67 +2,103 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<title>Kiku · Users</title>
 <meta name="viewport" content="width=1440">
-<title>Users · Kiku</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&family=Geist+Mono:wght@400;500&display=block">
-<script src="https://cdn.jsdelivr.net/npm/lucide@1.48.0/dist/umd/lucide.min.js"></script>
-<script src="../../_shared/data.js"></script>
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
 <script src="app.js"></script>
+<style>
+  .grid { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) 380px; gap: 20px; }
+  .tbl { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--rule-2); white-space: nowrap; }
+  td { padding: 12px 12px; border-bottom: 1px solid var(--rule); font-size: 13.5px; vertical-align: middle; }
+  th:first-child, td:first-child { padding-left: 20px; }
+  th:last-child, td:last-child { padding-right: 20px; }
+  .usr { display: flex; gap: 12px; align-items: center; }
+  .usr b { display: block; font-weight: 600; }
+  .usr span.e { font-size: 12.5px; color: var(--muted); }
+  .av.adm { background: var(--night); color: #fff; }
+  .role { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 6px; font-size: 12px; font-weight: 600; background: var(--sunk); color: var(--ink-2); }
+  .role.admin { background: var(--night); color: #fff; }
+  .us { display: inline-flex; gap: 7px; align-items: center; font-weight: 600; font-size: 13px; }
+  .us svg { width: 13px; height: 13px; }
+  .us.active { color: var(--green); }
+  .us.invited { color: var(--violet); }
+  .us.deact { color: var(--muted); }
+  tr.off td { color: var(--muted); }
+  tr.off .av { filter: grayscale(1); opacity: .6; }
+  .tk { display: flex; align-items: center; gap: 10px; }
+  .tk b { width: 22px; text-align: right; font-weight: 600; }
+  .tk i { height: 6px; border-radius: 3px; background: var(--amber); display: block; }
+  .tk i.z { width: 6px; background: var(--rule-2); }
+  .last { color: var(--ink-2); white-space: nowrap; }
+
+  .drawer { display: flex; flex-direction: column; min-height: 0; overflow: hidden; border: 1.5px solid var(--violet); }
+  .dh { padding: 18px 22px 14px; border-bottom: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: flex-start; }
+  .dh h2 { font: 500 24px/1.1 var(--voice); }
+  .dh p { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .db { flex: 1; min-height: 0; overflow: auto; padding: 16px 22px; display: flex; flex-direction: column; gap: 14px; }
+  .rolec { border: 1.5px solid var(--rule-2); border-radius: 14px; padding: 14px 16px; position: relative; }
+  .rolec.on { border-color: var(--violet); background: #FAF8FF; }
+  .rolec .top1 { display: flex; align-items: center; gap: 10px; }
+  .radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--rule-2); flex: none; position: relative; }
+  .rolec.on .radio { border-color: var(--violet); }
+  .rolec.on .radio::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--violet); }
+  .rolec b { font-weight: 700; }
+  .rolec ul { list-style: none; margin: 10px 0 0 28px; display: flex; flex-direction: column; gap: 5px; }
+  .rolec li { display: flex; gap: 7px; align-items: flex-start; font-size: 13px; color: var(--ink-2); }
+  .rolec li .i { width: 14px; height: 14px; margin-top: 2px; color: var(--green); }
+  .df { padding: 14px 22px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center; }
+  .df .muted { font-size: 12.5px; }
+</style>
 </head>
 <body>
-<div id="app" class="app"></div>
 <script>
-const { K, ic, topbar, mount, esc, firstName } = UI;
-const users = K.users;
+const { K, icon, mount, avatar } = Kiku;
 const N = K.newUserDraft;
-const me = K.people.admin;
-const by = (s) => users.filter((u) => u.status === s).length;
-const U_ST = { Active: "circle-check", Invited: "mail", Deactivated: "circle-slash" };
+const ust = s => ({
+  Active: `<span class="us active"><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="currentColor"/></svg>Active</span>`,
+  Invited: `<span class="us invited"><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.4 2"/></svg>Invited</span>`,
+  Deactivated: `<span class="us deact"><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 11 11 3" stroke="currentColor" stroke-width="1.6"/></svg>Deactivated</span>`,
+})[s];
+const max = Math.max(...K.users.map(u => u.takeovers30d));
+const rows = K.users.map(u => `<tr class="${u.status === 'Deactivated' ? 'off' : ''}">
+  <td><div class="usr">${avatar(u.initials, u.role === 'Admin' ? 'adm' : '')}<div><b>${u.name}</b><span class="e">${u.email}</span></div></div></td>
+  <td><span class="role ${u.role === 'Admin' ? 'admin' : ''}">${u.role}</span></td>
+  <td>${ust(u.status)}</td>
+  <td class="last">${u.lastActive}</td>
+  <td><div class="tk"><b>${u.takeovers30d}</b>${u.takeovers30d ? `<i style="width:${Math.round(u.takeovers30d / max * 48)}px"></i>` : '<i class="z"></i>'}</div></td>
+</tr>`).join('');
 
-const last = (u) => esc(u.lastActive).replace(/(KK-\d+)/, '<span class="mono">$1</span>');
-const rows = users.map((u) => `<tr class="${u.status === "Deactivated" ? "off" : ""}">
-  <td><div class="u-cell"><span class="avatar${u.name === me.name ? " ink" : ""}">${u.initials}</span><div><div class="nm">${esc(u.name)}${u.name === me.name ? ' <span class="muted" style="font-weight:400">(you)</span>' : ""}</div><div class="em">${esc(u.email)}</div></div></div></td>
-  <td>${u.role}</td>
-  <td><span class="st">${ic(U_ST[u.status])}${u.status}</span>${u.status === "Invited" ? `<a class="link t12" style="display:block;margin-top:2px" href="#">Resend invite</a>` : ""}</td>
-  <td class="wrap">${last(u)}</td>
-  <td class="r"><span class="num strong">${u.takeovers30d}</span></td>
-</tr>`).join("");
+const roleCard = (r, on) => `<div class="rolec ${on ? 'on' : ''}">
+  <div class="top1"><span class="radio"></span><b>${r}</b></div>
+  <ul>${K.roles[r].map(p => `<li>${icon('check')}${p}</li>`).join('')}</ul>
+</div>`;
 
-const roleOpt = (r) => `<label class="roleopt${N.role === r ? " on" : ""}">
-  <span class="radio${N.role === r ? " on" : ""}" role="radio" aria-checked="${N.role === r}"></span>
-  <span class="rn">${r}<span class="cnt t14">${K.roles[r].length} permissions</span></span>
-  <ul>${K.roles[r].map((p) => `<li>${ic("check", "i12")}${esc(p)}</li>`).join("")}</ul>
-</label>`;
-
-mount(`
-${topbar("admin", "Users")}
-<main class="page" style="grid-template-rows:minmax(0,1fr)">
-  <div class="col" style="grid-column:1/9;min-height:0">
-    <header class="ph" style="padding-bottom:24px"><h1 class="h52">Users</h1>
-      <span class="t20 cnt" style="padding-bottom:6px">${users.length} people · ${by("Active")} active · ${by("Invited")} invited · ${by("Deactivated")} deactivated</span>
-      <button class="btn pressed aside" aria-pressed="true" style="margin-bottom:4px">${ic("user-plus")}New user</button></header>
-    <section class="panel" style="margin-bottom:24px;overflow:auto">
-      <table class="tbl users">
-        <colgroup><col><col style="width:112px"><col style="width:144px"><col style="width:208px"><col style="width:128px"></colgroup>
-        <thead><tr><th>Name and email</th><th>Role</th><th>Status</th><th>Last active</th><th class="r">Takeovers, 30 days</th></tr></thead>
+mount({ role: 'admin', active: 'users', crumb: 'Team', title: 'Users', sub: `${K.users.length} people at ${K.hotel.name}` }, `
+<div class="grid">
+  <section class="panel tbl">
+    <div class="panel-h"><h2>Everyone with access</h2><span class="hint">Takeovers are counted over the last 30 days</span></div>
+    <div class="scroll" style="flex:1">
+      <table>
+        <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last active</th><th>Takeovers</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
-    </section>
-  </div>
-
-  <aside class="side" style="grid-column:9/13" aria-label="New user">
-    <div style="display:flex;align-items:center;justify-content:space-between"><h2 class="h32">New user</h2><button class="icon-btn" aria-label="Close panel">${ic("x", "i20")}</button></div>
-    <div class="field"><label class="label" for="n">Full name</label><input class="input" id="n" value="${esc(N.name)}"></div>
-    <div class="field"><label class="label" for="e">Work email</label><input class="input" id="e" type="email" value="${esc(N.email)}"></div>
-    <div class="field" role="radiogroup" aria-label="Role"><span class="label">Role</span>
-      <div class="rolepick">${["Specialist", "Admin"].map(roleOpt).join("")}</div></div>
-    <div class="side-foot"><p class="help">${esc(firstName(N.name))} gets an email invite and shows as Invited until she sets a password.</p>
-      <div style="display:flex;gap:8px"><button class="btn primary lg">${ic("send")}Send invite</button><button class="btn ghost lg">Cancel</button></div></div>
+    </div>
+  </section>
+  <aside class="panel drawer">
+    <div class="dh"><div><h2>Invite a user</h2><p>They get an email to set a password.</p></div><button class="icon-btn" aria-label="Close">${icon('x')}</button></div>
+    <div class="db">
+      <div class="field"><label>Full name</label><div class="input">${N.name}</div></div>
+      <div class="field"><label>Work email</label><div class="input is-focus">${icon('mail')}${N.email}</div></div>
+      <div class="lbl">Role</div>
+      ${roleCard('Specialist', N.role === 'Specialist')}
+      ${roleCard('Admin', N.role === 'Admin')}
+    </div>
+    <div class="df"><button class="btn btn-quiet">Cancel</button><button class="btn btn-primary">${icon('userplus')}Send invite</button></div>
   </aside>
-</main>
+</div>
 `);
 </script>
 </body>

@@ -2,46 +2,53 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<title>Kiku · Sign in</title>
 <meta name="viewport" content="width=1440">
-<title>Sign in · Kiku</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&family=Geist+Mono:wght@400;500&display=block">
-<script src="https://cdn.jsdelivr.net/npm/lucide@1.48.0/dist/umd/lucide.min.js"></script>
-<script src="../../_shared/data.js"></script>
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
 <script src="app.js"></script>
+<style>
+  body { background: var(--paper); }
+  .stage { position: relative; height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .wire { position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: var(--violet); }
+  .wire i { position: absolute; top: -6px; width: 14px; height: 14px; border-radius: 50%; background: var(--paper); border: 2px solid var(--violet); }
+  .wire i.a { background: var(--amber); border-color: var(--amber-ink); }
+  .card { position: relative; width: 420px; background: var(--surface); border: 1.5px solid var(--violet); border-radius: 28px; padding: 40px 40px 32px; box-shadow: 0 24px 48px -28px rgba(28,24,48,.28); }
+  .brand { display: flex; align-items: center; gap: 12px; color: var(--violet); }
+  .brand .glyph { --glyph-line: var(--amber); }
+  .brand span { font: italic 500 46px/1 var(--voice); color: var(--ink); letter-spacing: -.02em; }
+  .hotel { margin-top: 8px; color: var(--muted); font-size: 14px; padding-left: 50px; }
+  form { margin-top: 32px; display: flex; flex-direction: column; gap: 16px; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; }
+  .row a { font-size: 12.5px; font-weight: 600; color: var(--violet); }
+  .input { height: 44px; }
+  .input input { border: 0; outline: 0; background: none; width: 100%; font-size: 14.5px; }
+  .dots { letter-spacing: 3px; font-size: 18px; color: var(--ink); }
+  .btn-lg { width: 100%; margin-top: 8px; height: 48px; }
+  .note { position: absolute; bottom: 24px; left: 0; right: 0; text-align: center; font-size: 12px; color: var(--muted); }
+  .note b { font-weight: 600; color: var(--ink-2); }
+  .corner { position: absolute; top: 28px; left: 32px; font-size: 12.5px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+  .corner .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin: 0;  }
+</style>
 </head>
 <body>
-<main id="app" class="signin"></main>
 <script>
-const { K, ic, mount, esc } = UI;
-mount(`
-  <section class="left">
-    <div class="mark-xl">${esc(K.product.name)}</div>
-    <div class="t20 strong">${esc(K.hotel.name)}, ${esc(K.hotel.city)}</div>
-    <div class="muted t14">${esc(K.product.tagline)}</div>
-  </section>
-  <div class="spine-rule"></div>
-  <section class="right">
+const { K, icon, glyph } = Kiku;
+document.body.innerHTML = `
+<div class="stage">
+  <div class="wire" aria-hidden="true"><i style="left:8%"></i><i style="left:17%"></i><i class="a" style="left:24%"></i><i style="left:76%"></i><i class="a" style="left:84%"></i><i style="left:92%"></i></div>
+  <div class="corner"><span class="pulse"></span>${K.hotel.line} is being answered by Kiku</div>
+  <main class="card">
+    <div class="brand">${glyph(38)}<span>${K.product.name}</span></div>
+    <div class="hotel">${K.hotel.name}, ${K.hotel.city}</div>
     <form onsubmit="return false">
-      <h1 class="h32">Sign in</h1>
-      <div class="field">
-        <label class="label" for="em">Work email</label>
-        <input class="input" id="em" type="email" autocomplete="username" value="${esc(K.people.specialist.email)}">
-      </div>
-      <div class="field">
-        <div class="label" style="justify-content:space-between"><label for="pw">Password</label><a class="link t12" href="#">Forgot password?</a></div>
-        <input class="input is-focus" id="pw" type="password" autocomplete="current-password" value="brenlow-demo">
-      </div>
-      <button class="btn primary lg block" type="submit">Sign in${ic("arrow-right")}</button>
+      <div class="field"><label for="em">Email</label><div class="input is-focus">${icon('mail')}<input id="em" value="${K.people.specialist.email}"></div></div>
+      <div class="field"><div class="row"><label for="pw">Password</label><a href="#">Forgot password?</a></div><div class="input">${icon('lock')}<span class="dots">••••••••••</span></div></div>
+      <a class="btn btn-primary btn-lg" href="02-live-overview.html">Sign in</a>
     </form>
-  </section>
-  <div class="ticks" aria-hidden="true">
-    <span class="tick tc" style="top:348px">${K.hotel.now} ${K.hotel.tz}</span>
-  </div>
-  <p class="foot"><span>${esc(K.synthetic)}</span><span>${esc(K.hotel.today)}</span></p>
-`);
+  </main>
+  <div class="note"><b>Demo data.</b> ${K.synthetic.replace('Demo data. ', '')}</div>
+</div>`;
 </script>
 </body>
 </html>

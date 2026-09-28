@@ -1,66 +1,73 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
 <title>Kiku · Sign in</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=block">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/iconoir@7.12.1/css/iconoir.css">
-<script src="../../_shared/data.js"></script>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
 <script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <style>
-  body { display: grid; place-items: center; }
-  .wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; }
-  .unit {
-    width: 800px; display: grid; grid-template-columns: 280px 1fr; gap: 0;
-    background: var(--face); border-radius: 16px; padding: 28px;
-    box-shadow: 0 1px 2px rgba(43,43,42,.16), 0 10px 28px rgba(43,43,42,.09), inset 0 1px 0 #fff;
-  }
-  .plate { display: flex; flex-direction: column; padding: 4px 32px 2px 0; border-right: 1px solid var(--rule-2); }
-  .plate .hotel { font-size: 22px; font-weight: 600; letter-spacing: -.01em; line-height: 1.2; margin-top: 22px; }
-  .plate .tag { font-size: 13px; color: var(--graphite); margin-top: 4px; }
-  .plate .spec { margin-top: auto; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13px; }
-  .plate .spec dt { font-size: 12px; color: var(--label); letter-spacing: .02em; }
-  .panel { padding: 4px 4px 2px 36px; display: flex; flex-direction: column; gap: 16px; }
-  .panel .h1 { font-size: 24px; margin-bottom: 2px; }
-  .panel .key--orange { margin-top: 6px; }
+  body { display: grid; grid-template-columns: 1fr 1fr; }
+  .left { background: var(--ink); color: #fff; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: 48px 56px; }
+  .brand { font-size: 132px; line-height: 120px; font-weight: 800; font-variation-settings: var(--casual); letter-spacing: -0.045em; }
+  .hotel { font-size: 20px; color: #C9D1E0; margin-top: 18px; }
+  .hotel b { color: #fff; font-weight: 650; }
+  .staff { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-40%); height: 180px; }
+  .foot { font-size: 13px; color: #8E9AB2; display: flex; gap: 24px; }
+  .right { display: flex; align-items: center; justify-content: center; background: var(--paper); position: relative; }
+  form { width: 380px; }
+  form h1 { font-size: 26px; font-weight: 750; letter-spacing: -0.02em; line-height: 32px; margin-bottom: 6px; font-variation-settings: var(--casual); }
+  form p.sub { color: var(--ink-2); margin-bottom: 28px; }
+  .field { margin-bottom: 16px; }
+  .input { height: 44px; background: var(--surface); }
+  .row { display: flex; justify-content: space-between; align-items: baseline; }
+  .row a { font-size: 12.5px; color: var(--kiku); font-weight: 600; text-decoration: none; }
+  .signin { width: 100%; height: 46px; justify-content: center; margin-top: 8px; font-size: 15px; }
+  .demo { position: absolute; bottom: 28px; left: 0; right: 0; text-align: center; }
+  .caret { display: inline-block; width: 1.5px; height: 18px; background: var(--ink); vertical-align: -3px; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <main class="unit">
-    <div class="plate" id="plate"></div>
-    <form class="panel" onsubmit="return false">
-      <h1 class="h1">Sign in</h1>
-      <div class="field">
-        <label class="field-lbl" for="email">email</label>
-        <input class="input" id="email" type="email" autocomplete="username">
-      </div>
-      <div class="field">
-        <div class="field-lbl"><label for="pw">password</label><a href="#">Forgot password?</a></div>
-        <input class="input is-focus" id="pw" type="password" value="brenlow-desk-2026" autocomplete="current-password">
-      </div>
-      <a class="key key--orange key--lg key--block" href="02-live-overview.html">sign in</a>
-    </form>
-  </main>
-  <p class="foot" id="foot"></p>
-</div>
+<section class="left">
+  <div>
+    <div class="brand">Kiku</div>
+    <div class="hotel"><b id="hn"></b>, <span id="hc"></span></div>
+  </div>
+  <svg class="staff" viewBox="0 0 720 180" preserveAspectRatio="none" aria-hidden="true">
+    <line x1="0" y1="90" x2="720" y2="90" stroke="#A5B0BF" stroke-width="1.5"/>
+    <line x1="0" y1="40" x2="720" y2="40" stroke="#2E3854" stroke-width="1"/>
+    <line x1="0" y1="140" x2="720" y2="140" stroke="#2E3854" stroke-width="1"/>
+    <g fill="#A5B0BF"><rect x="60" y="84" width="58" height="12" rx="6"/><rect x="128" y="84" width="34" height="12" rx="6"/><rect x="330" y="84" width="72" height="12" rx="6"/><rect x="556" y="84" width="44" height="12" rx="6"/></g>
+    <g fill="#8FA6D6"><rect x="172" y="34" width="46" height="12" rx="6"/><rect x="226" y="34" width="28" height="12" rx="6"/><rect x="480" y="34" width="64" height="12" rx="6"/></g>
+    <g fill="#E5608E"><rect x="262" y="134" width="60" height="12" rx="6"/><rect x="412" y="134" width="30" height="12" rx="6"/><rect x="450" y="134" width="22" height="12" rx="6"/><rect x="610" y="134" width="52" height="12" rx="6"/></g>
+    <g stroke-width="1"><line x1="172" y1="46" x2="172" y2="90" stroke="#8FA6D6"/><line x1="480" y1="46" x2="480" y2="90" stroke="#8FA6D6"/><line x1="262" y1="90" x2="262" y2="134" stroke="#E5608E"/><line x1="412" y1="90" x2="412" y2="134" stroke="#E5608E"/><line x1="610" y1="90" x2="610" y2="134" stroke="#E5608E"/></g>
+  </svg>
+  <div class="foot"><span id="tag"></span><span class="num" id="line"></span></div>
+</section>
+<section class="right">
+  <form onsubmit="return false">
+    <h1>Sign in</h1>
+    <p class="sub">Use your Brenlow staff account.</p>
+    <div class="field"><label for="e">Email</label><div class="input filled" id="e"><span id="em"></span><span class="caret"></span></div></div>
+    <div class="field">
+      <div class="row"><label for="p" style="font-size:12.5px;font-weight:600;color:var(--ink-2)">Password</label><a href="#">Forgot password?</a></div>
+      <div class="input" id="p" style="margin-top:6px"><span class="muted" style="letter-spacing:.2em">••••••••••</span><i data-lucide="eye" style="margin-left:auto;color:var(--ink-3)"></i></div>
+    </div>
+    <button class="btn primary lg signin">Sign in</button>
+  </form>
+  <p class="demo demo-note" id="demo"></p>
+</section>
 <script>
-  const { K, esc } = Kiku;
-  document.querySelector('#email').value = K.people.specialist.email;
-  document.querySelector('.key--orange').innerHTML = Kiku.ico('log-in') + 'sign in';
-  const [day, dd, mon, yr] = K.hotel.today.split(' ');
-  document.querySelector('#plate').innerHTML = `
-    <div><span class="badge badge--lg">kiku</span></div>
-    <p class="hotel">${esc(K.hotel.name)}, ${esc(K.hotel.city)}</p>
-    <p class="tag">${esc(K.product.tagline)}</p>
-    <dl class="spec">
-      <dt>hotel line</dt><dd>${esc(K.hotel.line)}</dd>
-      <dt>local time</dt><dd>${K.hotel.now} ${K.hotel.tz} · ${day.slice(0,3)} ${dd} ${mon.slice(0,3)}</dd>
-    </dl>`;
-  document.querySelector('#foot').textContent = K.synthetic;
+const K = window.KIKU;
+hn.textContent = K.hotel.name; hc.textContent = K.hotel.city;
+tag.textContent = K.product.tagline;
+line.textContent = "Hotel line " + K.hotel.line;
+em.textContent = K.people.specialist.email;
+demo.textContent = K.synthetic;
+D.icons();
 </script>
 </body>
 </html>

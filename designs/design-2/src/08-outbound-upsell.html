@@ -2,114 +2,87 @@
 <html lang="en-GB">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=1440">
-<title>Kiku · Upsell calls</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&display=block">
-<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
-<script src="../../_shared/data.js"></script>
+<title>Kiku, upsell calls</title>
 <link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
 <script src="app.js"></script>
 <style>
-  .offers { display: grid; grid-template-columns: repeat(3, 1fr); border-top: var(--rule); border-bottom: var(--rule); }
-  .offer { padding: 10px 16px 11px; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; }
-  .offer + .offer { border-left: 1px solid var(--hair); }
-  .offer:first-child { padding-left: 0; }
-  .offer b { font-weight: 700; font-size: 15px; text-transform: lowercase; }
-  .offer .pr { font: 600 13px var(--mono); text-align: right; }
-  .offer .dt { font-size: 12.5px; color: var(--moss); }
-  .offer .alt { font: 400 12px var(--mono); color: var(--moss); text-align: right; }
-  .paths { flex: 1; min-height: 0; display: grid; grid-template-columns: 440px 56px 1fr; margin-top: 22px; }
-  .or { position: relative; display: flex; justify-content: center; }
-  .or::before { content: ""; position: absolute; top: 0; bottom: 20px; left: 50%; width: 1.5px; background: var(--ink); }
-  .or span { position: relative; margin-top: 180px; width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-weight: 700; font-size: 13px; }
-  .path { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
-  .path-head { display: flex; align-items: baseline; gap: 12px; padding-bottom: 8px; border-bottom: var(--rule); }
-  .path-head .aside { margin-left: auto; font-size: 12.5px; color: var(--moss); }
+  .content { display: flex; flex-direction: column; gap: 16px; }
+  .offers { display: grid; grid-template-columns: 150px repeat(3, 1fr); background: var(--sheet); border: 1px solid var(--line); flex: none; }
+  .offers .lead { padding: 14px 18px; border-right: 1px solid var(--line); }
+  .offer { padding: 14px 18px; border-right: 1px solid var(--line-soft); display: grid; grid-template-columns: 36px 1fr; gap: 12px; }
+  .offer:last-child { border-right: 0; }
+  .offer .ic { width: 36px; height: 36px; background: var(--kiku-tint); color: var(--kiku); display: grid; place-items: center; }
+  .offer .n { font-weight: 700; font-size: 15px; }
+  .offer .dt { font-size: 12.5px; color: var(--ink-soft); }
+  .offer .pr { font-size: 13px; font-weight: 700; margin-top: 2px; }
+  .offer .alt { font-weight: 400; color: var(--ink-soft); }
+  .paths { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 36px 1.25fr; }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .found { display: grid; grid-template-columns: 24px 1fr; gap: 8px; background: var(--paper-2); padding: 10px 12px; border: var(--rule); font-size: 13.5px; }
-  .found b { display: block; font-weight: 700; font-size: 12.5px; text-transform: lowercase; }
-  .tlist { display: flex; flex-direction: column; }
-  .trow { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--hair); font-size: 14px; }
-  .trow .pr { font: 500 12.5px var(--mono); }
-  .trow .dt { font-size: 12.5px; color: var(--moss); display: block; }
-  .go { display: flex; gap: 12px; align-items: center; margin-top: 4px; }
-  .colchips { display: inline-flex; gap: 6px; align-items: center; }
-  .prev td { padding: 6px 10px; font-size: 13px; }
-  .prev td.mono, .prev .mono { font-size: 12px; }
-  .prev .rn { font: 500 12px var(--mono); color: var(--moss); }
-  .prev tr.err .rn { color: var(--ink); }
-  .bad { background: var(--pink-35); padding: 1px 4px; }
-  .empty { color: var(--moss); font-size: 12.5px; }
-  .why td { background: var(--pink-15); padding-top: 0 !important; font-size: 12.5px; }
-  .why .x { display: flex; gap: 7px; align-items: center; }
-  .checks { display: flex; gap: 16px; font-size: 13px; align-items: center; }
-  .checks span { display: inline-flex; gap: 6px; align-items: center; }
-  .cbx { width: 16px; height: 16px; background: var(--ink); color: var(--paper); display: inline-grid; place-items: center; font-size: 11px; }
+  .match { display: grid; grid-template-columns: 22px 1fr; gap: 10px; background: var(--ok-tint); padding: 10px 12px; font-size: 13.5px; }
+  .match .k { font-size: 11.5px; color: var(--ok); font-weight: 700; }
+  .toggles { border: 1px solid var(--line); }
+  .tg { display: grid; grid-template-columns: 1fr auto 40px; gap: 12px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--line-soft); font-size: 13.5px; }
+  .tg:last-child { border-bottom: 0; }
+  .tg .p { color: var(--ink-soft); font-size: 12.5px; }
+  .sw { width: 36px; height: 20px; background: var(--ink); position: relative; }
+  .sw::after { content: ""; position: absolute; top: 3px; right: 3px; width: 14px; height: 14px; background: #fff; }
+  .sw.off { background: var(--line); }
+  .sw.off::after { right: auto; left: 3px; }
+  .prev .r { grid-template-columns: 36px 1fr 1fr 1fr; }
 </style>
 </head>
 <body>
-<div id="app"></div>
 <script>
-(function () {
-  const { K, esc, ic, mis } = Kiku;
-  const S = K.upsellSingle, C = K.upsellCsv;
-  const offerById = Object.fromEntries(K.offers.map((o) => [o.id, o]));
+  const { K, icon, mount, SHAPE } = UI;
+  const s = K.upsellSingle, u = K.upsellCsv;
+  const offIc = { pickup: "call", breakfast: "clock", dinner: "bed" };
+  const offIcons = { pickup: '<path d="M5 17h14M6 17l1.5-6h9L18 17M8 11l1-4h6l1 4"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="18" r="1.5"/>', breakfast: '<path d="M4 10h13v4a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6z"/><path d="M17 11h1.5a2.5 2.5 0 0 1 0 5H17M8 3v3M12 3v3"/>', dinner: '<path d="M7 3v8M5 3v4a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 2-2 6 0 8v10"/>' };
+  const offers = K.offers.map(o => `<div class="offer"><span class="ic"><svg class="i" viewBox="0 0 24 24" style="width:20px;height:20px">${offIcons[o.id]}</svg></span><div><div class="n">${o.name}</div><div class="dt">${o.detail}</div><div class="pr">${o.price}${o.alt ? ` <span class="alt">or accessible vehicle ${o.alt.replace("Accessible vehicle ", "")}</span>` : ""}</div></div></div>`).join("");
+  const toggles = K.offers.map(o => `<div class="tg"><span>${o.name}</span><span class="p">${o.price}</span><span class="sw ${s.offers.includes(o.id) ? "" : "off"}" role="switch" aria-checked="true"></span></div>`).join("");
+  const sm = (k) => SHAPE[k].replace("<svg", '<svg width="11" height="11"');
+  const prev = u.preview.map((r, i) => {
+    const gap = i > 0 && r.row - u.preview[i - 1].row > 1 ? `<div class="gap">Rows ${u.preview[i - 1].row + 1}–${r.row - 1} ready</div>` : "";
+    return gap + (r.ok
+      ? `<div class="r"><span class="faint num">${r.row}</span><span class="num">${r.phone}</span><span>${r.confirmation}</span><span style="display:flex;gap:6px;align-items:center;color:var(--ok)">${sm("completed")}<span style="color:var(--ink)">${r.guest}</span></span></div>`
+      : `<div class="r bad"><span class="faint num">${r.row}</span><span class="num">${r.phone || '<span class="faint">empty</span>'}</span><span>${r.confirmation || '<span class="faint">empty</span>'}</span><span class="err">${sm("failed")}${r.error}</span></div>`);
+  }).join("") + `<div class="gap">Rows 28–${u.rows} ready</div>`;
 
-  const offers = K.offers.map((o) => `<div class="offer"><b>${esc(o.name)}</b><span class="pr">${esc(o.price)}</span><span class="dt">${esc(o.detail)}</span><span class="alt">${o.alt ? esc(o.alt) : ""}</span></div>`).join("");
-  const toggles = S.offers.map((id, i) => { const o = offerById[id]; return `<div class="trow"><span class="tog on ${i === 0 ? "" : ""}" role="switch" aria-checked="true" aria-label="Offer ${esc(o.name)}"></span><span>${esc(o.name)}<span class="dt">${esc(o.detail)}</span></span><span class="pr">${esc(o.price)}</span></div>`; }).join("");
-
-  let prevHtml = "";
-  let prevRow = 0;
-  C.preview.forEach((r) => {
-    if (r.row - prevRow > 1) prevHtml += `<tr class="gap"><td></td><td colspan="4">Rows ${prevRow + 1}–${r.row - 1} ready</td></tr>`;
-    prevRow = r.row;
-    if (r.ok) {
-      prevHtml += `<tr><td class="rn">${r.row}</td><td class="mono">${esc(r.phone)}</td><td class="mono">${esc(r.confirmation)}</td><td>${esc(r.guest)}</td><td><span class="st st-done"><span class="st-mark">${Kiku.ic("check")}</span><span>Ready</span></span></td></tr>`;
-    } else {
-      const phoneBad = /phone/i.test(r.error), confBad = /confirmation/i.test(r.error);
-      prevHtml += `<tr class="err"><td class="rn">${r.row}</td><td class="mono">${phoneBad ? `<span class="bad">${esc(r.phone || "empty")}</span>` : esc(r.phone)}</td><td class="mono">${confBad ? `<span class="bad">${r.confirmation ? esc(r.confirmation) : "empty"}</span>` : esc(r.confirmation)}</td><td><span class="empty">not matched</span></td><td><span class="st st-esc"><span class="st-mark">${ic("exclamation-mark")}</span><span>Error</span></span></td></tr>
-        <tr class="why err"><td></td><td colspan="4"><span class="x"><b>${esc(r.error)}.</b> ${phoneBad ? "Use the full number with country code." : "Add the BRN number for this guest."} Fix it in the file and upload again, or this row is skipped.</span></td></tr>`;
-    }
-  });
-  if (prevRow < C.rows) prevHtml += `<tr class="gap"><td></td><td colspan="4">Rows ${prevRow + 1}–${C.rows} ready</td></tr>`;
-
-  Kiku.shell({
-    role: "admin", active: "upsell", html: `
-    <header class="page-head">
-      ${mis("upsell")}
-      <span class="moss" style="padding-bottom:6px;font-size:14px">Kiku calls guests who have a booking and offers extras</span>
-    </header>
-    <section class="offers" aria-label="What Kiku offers">${offers}</section>
+  mount({ role: "admin", active: "upsell", title: "Upsell calls", crumb: "Outbound" }, `
+    <section class="offers">
+      <div class="lead"><div class="h2">Offers</div><p class="small muted" style="margin-top:4px">What Kiku can add to a booking</p></div>
+      ${offers}
+    </section>
     <div class="paths">
-      <section class="path">
-        <div class="path-head"><h2 class="h2">one booking</h2><span class="aside">phone and confirmation number</span></div>
-        <div class="two">
-          <div class="field"><label>guest phone</label><input class="input mono" value="${esc(S.phone)}"></div>
-          <div class="field"><label>confirmation number</label><input class="input mono" value="${esc(S.confirmation)}"></div>
+      <section class="pane">
+        <div class="pane-head"><span class="path">1</span><span class="t">Call one guest</span></div>
+        <div class="pane-body">
+          <div class="two">
+            <div class="field"><label>Phone</label><div class="input num">${s.phone}</div></div>
+            <div class="field"><label>Confirmation number</label><div class="input">${s.confirmation}</div></div>
+          </div>
+          <div class="match"><span style="color:var(--ok)">${icon("check")}</span><div><div class="k">Booking found</div>${s.match}</div></div>
+          <div class="field"><label>Offers to make</label><div class="toggles">${toggles}</div></div>
         </div>
-        <div class="found"><span class="st st-done"><span class="st-mark">${ic("check")}</span></span><div><b>booking found</b>${esc(S.match)}</div></div>
-        <div class="field"><label>offers to make</label><div class="tlist">${toggles}</div></div>
-        <div class="go"><button class="btn pink big">${ic("phone-outgoing")}call now</button><span class="hint">Kiku calls <span class="mono">${esc(S.phone)}</span> straight away.</span></div>
+        <div class="pane-foot"><span class="small faint">Kiku calls straight away from the hotel line.</span><span style="flex:1"></span><button class="btn ink">${icon("call")}Call now</button></div>
       </section>
-      <div class="or" aria-hidden="true"><span>or</span></div>
-      <section class="path">
-        <div class="path-head"><h2 class="h2">a list of bookings</h2><span class="aside colchips">CSV columns <span class="tag mono">${C.columns[0]}</span><span class="tag mono">${C.columns[1]}</span></span></div>
-        <div class="slip">${ic("file-csv")}<div><div class="slip-name">${esc(C.file)}</div><div class="slip-meta">${esc(C.size)} · ${C.rows} rows</div></div>
-          <div class="counts-line" style="margin-left:auto"><span class="st st-done"><span class="st-mark">${ic("check")}</span><span><b>${C.ready}</b> ready</span></span><span class="st st-esc"><span class="st-mark">${ic("exclamation-mark")}</span><span><b>${C.errors}</b> errors</span></span></div>
-          <a class="link" href="#" style="margin-left:14px">replace</a></div>
-        <table class="ruled prev">
-          <colgroup><col style="width:48px"><col style="width:170px"><col style="width:130px"><col><col style="width:108px"></colgroup>
-          <thead><tr><th>row</th><th>phone</th><th>confirmation</th><th>guest on the booking</th><th>check</th></tr></thead>
-          <tbody>${prevHtml}</tbody>
-        </table>
-        <div class="checks"><span class="moss">offer to every guest:</span>${S.offers.map((id) => `<span><span class="cbx">${ic("check")}</span>${esc(offerById[id].name)}</span>`).join("")}</div>
-        <div class="go"><button class="btn pink big">${ic("phone-outgoing")}start ${C.ready} calls</button><span class="hint">The ${C.errors} rows with errors are skipped.</span></div>
+      <div class="or">or</div>
+      <section class="pane">
+        <div class="pane-head"><span class="path">2</span><span class="t">Call a list</span><span style="flex:1"></span><span class="cols">Columns ${u.columns.map(c => `<span class="col-chip">${c}</span>`).join("")}</span></div>
+        <div class="pane-body">
+          <div class="filecard"><span class="fic">${icon("file")}</span>
+            <div><div class="fname">${u.file} <span class="faint" style="font-weight:400">${u.size}, ${u.rows} rows</span></div>
+              <div class="qbar"><span style="width:${u.ready / u.rows * 100}%;background:var(--ok)"></span><span style="width:${u.errors / u.rows * 100}%;background:var(--fail)"></span></div>
+              <div class="qlegend"><span style="color:var(--ok)">${sm("completed")}<b class="num">${u.ready}</b>&nbsp;ready</span><span style="color:var(--fail)">${sm("failed")}<b class="num">${u.errors}</b>&nbsp;errors, fix or skip</span></div></div>
+            <button class="btn sm">${icon("upload")}Replace</button></div>
+          <div class="prev scroll">
+            <div class="r h"><span>Row</span><span>Phone</span><span>Confirmation</span><span>Matched booking</span></div>
+            ${prev}
+          </div>
+        </div>
+        <div class="pane-foot"><span class="small faint">Same offers as the single call. Rows with errors are skipped.</span><span style="flex:1"></span><button class="btn ink">${icon("call")}Start ${u.ready} calls</button></div>
       </section>
-    </div>`
-  });
-})();
+    </div>`);
 </script>
 </body>
 </html>

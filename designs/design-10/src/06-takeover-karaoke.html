@@ -2,136 +2,182 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kiku · Karaoke takeover</title>
+<title>Kiku · On the line with Margaret Doyle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,300..800;1,400..500&display=block">
-<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
-<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Shippori+Mincho+B1:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="styles.css">
-<script src="app.js"></script>
 <style>
-  .head-num { font: 600 var(--f21)/1 var(--font); font-variant-numeric: tabular-nums; color: var(--pink); }
-  .on-line { display: inline-flex; align-items: center; gap: var(--s8); height: var(--ctl); padding: 0 var(--s13); border-radius: var(--r-ctl); background: var(--pink); color: var(--night); font: 700 var(--f13)/1 var(--font); }
+  .main { flex-direction: column; background: var(--human-deep); background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.07) 1px, transparent 1.2px); background-size: 14px 14px; color: #E8EBFA; }
+  .onair { flex: none; height: 64px; display: flex; align-items: center; gap: 20px; padding: 0 28px; border-bottom: 1px solid rgba(255,255,255,.12); }
+  .live-dot { display: inline-flex; align-items: center; gap: 10px; background: #fff; color: var(--human-deep); font-weight: 900; font-size: 13px; padding: 7px 14px 7px 10px; border-radius: 3px; }
+  .live-dot svg { width: 18px; height: 18px; }
+  @keyframes blink { 50% { opacity: .25 } }
+  .live-dot .rec { width: 9px; height: 9px; border-radius: 50%; background: #E0464F; animation: blink 1.2s steps(2) infinite; }
+  .onair h1 { font-family: var(--serif); font-weight: 700; font-size: 24px; color: #fff; }
+  .onair .facts { display: flex; gap: 18px; font-size: 13px; color: #B7BEE6; align-items: center; }
+  .onair .facts b { color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .onair .spacer { flex: 1; }
+  .st-dark { color: #F2C77A; }
 
-  .prompter { border-color: var(--pink); }
-  .prompter-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--s13); padding: var(--s13) var(--s21); background: var(--pink-wash); border-bottom: 1px solid rgba(255, 111, 158, 0.4); }
-  .prompter-bar p { display: flex; align-items: center; gap: var(--s8); font: 600 var(--f16)/21px var(--font); color: var(--pink); }
-  .prompter-bar p span.muted { font-weight: 400; font-size: var(--f13); }
-  .pr-body { padding: var(--s21) var(--s34) var(--s21); display: flex; flex-direction: column; gap: var(--s5); flex: 1; min-height: 0; }
-  .pr-lab { display: flex; align-items: center; gap: var(--s8); font: 600 var(--f13)/21px var(--font); }
-  .pr-lab.gold { color: var(--gold); }
-  .pr-lab.pink { color: var(--pink); }
-  .pr-lab .muted { font-weight: 400; }
-  .pr-script { font-size: var(--f21); line-height: 34px; color: var(--gold); margin-bottom: var(--s13); }
-  .pr-script .cut { color: var(--gold-dim); text-decoration: line-through; text-decoration-thickness: 1px; }
-  .pr-script .ahead { color: var(--gold-dim); }
-  .pr-said { font: 500 var(--f34)/1.3 var(--font); letter-spacing: -0.015em; color: var(--text); }
-  .pr-said .imp { color: var(--pink); text-decoration: underline dotted rgba(255, 111, 158, 0.6); text-decoration-thickness: 2px; text-underline-offset: 8px; }
-  .pr-said .caret { display: inline-block; width: 3px; height: 0.95em; background: var(--pink); vertical-align: -0.12em; margin-left: var(--s5); border-radius: 2px; animation: blink 1s steps(2, start) infinite; }
-  @keyframes blink { to { visibility: hidden; } }
-  .pr-kept { font-size: var(--f13); line-height: 21px; color: var(--text-2); font-variant-numeric: tabular-nums; margin-top: var(--s5); }
-  .pr-next { margin-top: auto; padding-top: var(--s13); border-top: 1px dashed var(--line-2); display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--s13); align-items: baseline; }
-  .pr-next p:last-child { font-size: var(--f16); line-height: 1.5; color: var(--gold-dim); }
+  .stage { flex: 1; min-height: 0; display: grid; grid-template-columns: 372px minmax(0,1fr) 318px; }
+  .col { min-height: 0; display: flex; flex-direction: column; }
+  .col-head { padding: 16px 22px 10px; font-size: 13px; font-weight: 700; color: #C9CFF0; display: flex; justify-content: space-between; align-items: center; }
+  .col-head .aside { font-weight: 400; color: #8F97C9; font-size: 12px; }
 
-  .lc { display: flex; flex-direction: column; gap: var(--s13); }
-  .me { display: flex; align-items: center; gap: var(--s13); }
-  .me p { font-size: var(--f13); line-height: 21px; }
-  .mic { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--s13); padding: var(--s13); border: 1px solid rgba(255, 111, 158, 0.4); border-radius: var(--r-ctl); background: var(--night); font-size: var(--f13); line-height: 21px; }
-  .mic .meter { justify-content: space-between; }
-  .mic .ic { color: var(--pink); }
-  .ctl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s8); }
-  .ctl-grid .wide { grid-column: 1 / -1; }
-  .events li { display: grid; grid-template-columns: 44px 16px minmax(0, 1fr); gap: var(--s8); align-items: start; font-size: var(--f13); line-height: 21px; padding: var(--s3) 0; }
-  .events .t { color: var(--text-2); font-variant-numeric: tabular-nums; }
-  .events .ic { margin-top: 2px; color: var(--text-2); }
-  .events li.pink .ic { color: var(--pink); }
-  .reason { font-size: var(--f16); line-height: 1.5; margin-bottom: var(--s8); }
-  .facts-list li { display: flex; gap: var(--s8); align-items: flex-start; font-size: var(--f13); line-height: 21px; padding: var(--s3) 0; }
-  .facts-list .ic { color: var(--text-2); margin-top: 2px; }
+  /* earlier */
+  .earlier { border-right: 1px solid rgba(255,255,255,.12); }
+  .ex { flex: 1; min-height: 0; padding: 0 22px 20px; }
+  .er { padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 13px; }
+  .er .who { font-size: 11.5px; font-weight: 700; color: #8F97C9; margin-bottom: 3px; display: flex; gap: 8px; }
+  .er .who .t { font-weight: 400; font-variant-numeric: tabular-nums; }
+  .er.agent .txt { font-family: var(--serif); color: #CFDDB0; }
+  .er.guest .txt { color: #fff; }
+  .er.sys { display: flex; gap: 8px; align-items: center; font-weight: 700; font-size: 12px; }
+  .er.sys.escalation { color: #F2C77A; } .er.sys.join { color: #B7BEE6; } .er.sys.takeover { color: #fff; }
+  .er.sys .t { font-weight: 400; color: #8F97C9; font-variant-numeric: tabular-nums; }
+  .er .stitch { font-size: 12.5px; }
+  .er .stitch .txt { line-height: 1.55; }
+  .stitch.dark { --thread: #C9CFF0; }
+  .stitch.dark .col.w .cap { color: #B5D17A; } .stitch.dark .col.s .cap { color: #C3CAFF; }
+  .stitch.dark .col.w .txt { color: #D6E6B0; } .stitch.dark .col.s .txt { color: #fff; }
+  .stitch.dark .kept { border-bottom-color: rgba(255,255,255,.55); }
+  .stitch.dark .dl { background: rgba(207,224,168,.10); color: #AFC48A; text-decoration-color: rgba(207,221,176,.7); }
+  .stitch.dark .in { background: rgba(169,180,255,.18); color: #fff; box-shadow: inset 0 -2px 0 #A9B4FF; }
+  .stitch.dark .ahead { color: #D6E6B0; opacity: .55; }
+  .stitch.big { grid-template-columns: minmax(0,1fr) 84px minmax(0,1fr); }
+  .stitch.big .cap { font-size: 12.5px; margin-bottom: 10px; }
+  .stitch.big .col.w .txt { font-size: 27px; line-height: 1.6; font-weight: 600; }
+  .stitch.big .col.s .txt { font-size: 27px; line-height: 1.6; }
+  .dark .match { color: #B7BEE6; }
+  .dark .match .bar { background: rgba(169,180,255,.25); }
+  .dark .match .bar i { background: #9DBB5C; }
+
+  /* prompter */
+  .prompter { padding: 18px 34px 0; display: flex; flex-direction: column; min-height: 0; }
+  .pr-label { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #B7BEE6; }
+  .pr-label b { color: #fff; }
+  .lane-tag { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; }
+  .lane-tag i.sq { width: 18px; height: 10px; display: inline-block; }
+  .lane-tag.k { color: #CFDDB0; } .lane-tag.k i.sq { border-top: 2px solid #9DBB5C; background: rgba(207,224,168,.12); }
+  .lane-tag.h { color: #fff; } .lane-tag.h i.sq { border-bottom: 2px solid #A9B4FF; background: rgba(169,180,255,.2); }
+  .card { margin-top: 14px; background: rgba(9,14,48,.45); border: 1px solid rgba(255,255,255,.14); border-radius: 4px; padding: 28px 30px 22px; }
+  .caret { display: inline-block; width: 3px; height: 26px; background: #fff; vertical-align: -5px; margin-left: 4px; }
+  .heard { display: flex; gap: 10px; align-items: baseline; margin-top: 12px; font-size: 14px; color: #B7BEE6; }
+  .heard b { color: #fff; font-weight: 500; font-size: 16px; }
+  .pkey { display: flex; gap: 16px; font-size: 12px; color: #B7BEE6; margin-top: 16px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,.16); }
+  .pkey span { display: inline-flex; gap: 6px; align-items: center; }
+  .next { margin-top: 18px; display: grid; grid-template-columns: 110px 1fr auto; gap: 14px; align-items: center; padding: 14px 18px; border: 1px dashed rgba(207,224,168,.35); border-radius: 4px; }
+  .next .lbl { font-size: 12px; font-weight: 700; color: #CFDDB0; display: flex; gap: 6px; align-items: center; }
+  .next p { font-family: var(--serif); font-size: 16px; color: #CFDDB0; }
+
+  .controls { margin-top: auto; display: flex; align-items: center; gap: 12px; padding: 16px 0 20px; border-top: 1px solid rgba(255,255,255,.12); }
+  .meter { white-space: nowrap; display: flex; align-items: center; gap: 10px; font-size: 12px; color: #B7BEE6; margin-right: auto; }
+  .meter .bars { display: flex; gap: 3px; align-items: center; height: 26px; }
+  .meter .bars i { width: 4px; background: #fff; border-radius: 1px; }
+  .meter .bars.g i { background: #8F97C9; }
+  .controls .btn.lg { padding: 0 16px; }
+  .btn.onl { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.25); color: #fff; }
+  .btn.hand { background: #DCE6C6; color: #243309; border-color: #DCE6C6; box-shadow: 0 2px 0 #7E9A45; }
+  .btn.end { background: #C73E46; color: #fff; border-color: #C73E46; box-shadow: 0 2px 0 #7E1E24; }
+
+  /* right */
+  .right { border-left: 1px solid rgba(255,255,255,.12); padding: 16px 22px; display: flex; flex-direction: column; gap: 14px; }
+  .box { border-radius: 4px; padding: 14px 16px; }
+  .box.esc { background: #F3E3C4; color: #4A2F05; }
+  .box.esc .h { display: flex; gap: 8px; align-items: center; font-weight: 700; color: var(--esc); font-size: 13px; margin-bottom: 6px; }
+  .box.facts { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); }
+  .box h3 { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .kv { display: grid; grid-template-columns: 78px 1fr; gap: 6px 10px; font-size: 13px; }
+  .kv dt { color: #8F97C9; } .kv dd { color: #fff; }
+  .flist li { list-style: none; display: flex; gap: 8px; font-size: 13px; padding: 7px 0; border-top: 1px solid rgba(255,255,255,.09); color: #E8EBFA; }
+  .flist li svg { color: #A9B4FF; margin-top: 2px; }
+  .who-on { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .who-on .avatar { width: 34px; height: 34px; font-size: 12px; background: #fff; }
 </style>
 </head>
 <body>
+<div class="app">
+  <div id="shell"></div>
+  <main class="main">
+    <div class="onair" id="onair"></div>
+    <div class="stage">
+      <section class="col earlier">
+        <div class="col-head">Earlier on this call <span class="aside">Karaoke since 01:10</span></div>
+        <div class="ex scroll fade-end" id="earlier"></div>
+      </section>
+      <section class="col prompter" id="prompter"></section>
+      <aside class="col right" id="right"></aside>
+    </div>
+  </main>
+</div>
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
 <script>
-  const { K, esc, ic, status, shell, meter, first, transcriptHtml, avatar, wroteHtml, saidHtml, keptText } = Kiku;
-  const T = K.takeover;
-  const me = K.people.specialist;
-  const liveTurn = T.transcript.find((e) => e.live);
-  const history = T.transcript.filter((e) => !e.live);
-  const evIcon = { escalation: 'hand', join: 'headphones', takeover: 'mic' };
-  const events = T.transcript.filter((e) => e.speaker === 'system');
+const { K, esc, stitch, matchMeter } = TT;
+TT.shell({ role: "specialist", active: "02-live-overview.html" });
+const c = K.takeover;
+const tx = c.transcript;
+const live = tx.find(x => x.live);
+const earlier = tx.filter(x => x !== live);
 
-  shell({
-    role: 'specialist', active: 'live', back: '02-live-overview.html', title: esc(T.guest),
-    sub: `<span class="num">${T.id}</span> · Inbound on ${K.hotel.line} · started ${T.started} · <span class="num">${esc(T.phone)}</span>`,
-    titleExtra: `<span style="margin-left:13px">${status(T.status)}</span>`,
-    right: `<span class="on-line">${ic('mic')}You’re on the line</span><span class="head-num" title="Call time">${T.duration}</span>`,
-    content: `
-    <div class="split">
-      <div class="golden-rows inv">
-        <section class="panel" aria-label="Earlier in the call">
-          <div class="panel-head ruled">
-            <h2>Earlier in the call</h2>
-            <div class="legend"><span class="sw-gold">Kiku wrote</span><span class="sw-drop">dropped</span><span class="sw-pink">you improvised</span></div>
-          </div>
-          <div class="pane" id="hist"><div class="transcript">${transcriptHtml(history, { guest: first(T.guest), spec: 'You' })}</div></div>
-        </section>
-        <section class="panel prompter" aria-label="Karaoke prompter" aria-live="polite">
-          <div class="prompter-bar">
-            <p>${ic('mic')}You’re speaking to ${esc(T.guest)} <span class="muted">Kiku is writing your lines</span></p>
-            ${meter(34, 3, 'pink', (t) => (t < 0.9 ? 0.85 : 0.5))}
-          </div>
-          <div class="pr-body">
-            <p class="pr-lab gold">${ic('scroll-text')}Kiku wrote <span class="muted num">· ${liveTurn.t}</span></p>
-            <p class="pr-script">${wroteHtml(liveTurn, true)}</p>
-            <p class="pr-lab pink">${ic('audio-lines')}You’re saying <span class="muted">· live</span></p>
-            <p class="pr-said">${saidHtml(liveTurn)}<span class="caret" aria-hidden="true"></span></p>
-            <p class="pr-kept">${keptText(liveTurn, ' so far')}</p>
-            <div class="pr-next">
-              <p class="pr-lab gold">${ic('corner-down-right')}Next line</p>
-              <p>${esc(T.nextLine)}</p>
-            </div>
-          </div>
-        </section>
-      </div>
-      <div class="col">
-        <section class="panel" aria-label="Call controls">
-          <div class="panel-head"><h2>On the line</h2><span class="tag pink">${ic('mic', 'ic-13')}Mic live</span></div>
-          <div class="panel-body lc">
-            <div class="me">${avatar(me, 'spec')}<div><p class="strong">${esc(me.name)} (you)</p><p class="muted">Took over at ${T.takeoverAt}. Kiku is writing, not speaking.</p></div></div>
-            <div class="mic" aria-label="Your microphone level">${ic('mic')}${meter(34, 21, 'pink tall', (t) => (t < 0.85 ? 0.9 : 0.6))}</div>
-            <div class="ctl-grid">
-              <button class="btn">${ic('mic-off')}Mute my mic</button>
-              <button class="btn pink-line">${ic('phone-off')}End call</button>
-              <a class="btn wide" href="05-live-call-listening.html">${ic('bot')}Hand back to Kiku</a>
-            </div>
-          </div>
-        </section>
-        <section class="panel" aria-label="Escalation">
-          <div class="panel-head"><h2>Why it escalated</h2></div>
-          <div class="panel-body">
-            <p class="reason">${esc(T.escalationReason)}</p>
-            <ul class="events">${events.map((e) => `<li class="${e.kind !== 'join' ? 'pink' : ''}"><span class="t">${e.t}</span>${ic(evIcon[e.kind])}<span>${esc(e.text)}</span></li>`).join('')}</ul>
-          </div>
-        </section>
-        <section class="panel fill" aria-label="Booking">
-          <div class="panel-head"><h2>Booking <span class="num">${T.booking}</span></h2></div>
-          <div class="panel-body">
-            <dl class="facts" style="margin-bottom:8px"><dt>Stay</dt><dd>${esc(T.stay)}</dd><dt>Purpose</dt><dd>${esc(T.purpose)}</dd></dl>
-            <ul class="facts-list">${T.facts.map((f) => `<li>${ic('receipt')}<span>${esc(f)}</span></li>`).join('')}</ul>
-          </div>
-        </section>
-      </div>
-    </div>`,
-  });
-  Kiku.done(() => {
-    Kiku.pinBottom(document.getElementById('hist'), (k) => {
-      const kk = history.slice(0, k).filter((e) => e.karaoke).length;
-      return `${ic('chevron-up')}<span>Show ${k} earlier entries${kk ? `, including ${kk} more karaoke line${kk > 1 ? 's' : ''}` : ''}</span>`;
-    });
-    if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
-  });
+document.getElementById("onair").innerHTML = `
+  <span class="live-dot"><span class="rec"></span>You're on the line</span>
+  <h1>${c.guest}</h1>
+  <span class="st st-dark">${TT.STATUS.escalated.svg}Escalated</span>
+  <div class="facts">
+    <span><i data-lucide="phone-incoming" style="vertical-align:-3px"></i> Inbound <b>${c.phone}</b></span>
+    <span>Call <b>${c.duration}</b></span>
+    <span>You took over at <b>${c.takeoverAt}</b></span>
+  </div>
+  <span class="spacer"></span>
+  <span class="who-on"><span class="avatar">PR</span><span><b style="color:#fff">${c.specialist}</b><br><span style="color:#8F97C9;font-size:12px">Speaking, Kiku is writing</span></span></span>`;
+
+const first = "Priya";
+let ki = 0;
+document.getElementById("earlier").innerHTML = earlier.map(m => {
+  if (m.speaker === "system") {
+    const ic = { escalation: TT.STATUS.escalated.svg.replace('<svg','<svg width="13" height="13"'), join: '<i data-lucide="headphones" style="width:14px;height:14px"></i>', takeover: '<i data-lucide="mic" style="width:14px;height:14px"></i>' }[m.kind];
+    return `<div class="er sys ${m.kind}"><span class="t">${m.t}</span>${ic}${esc(m.text)}</div>`;
+  }
+  if (m.karaoke) {
+    ki++;
+    return `<div class="er"><div class="who"><span class="t">${m.t}</span><span style="color:#fff">You, karaoke line ${ki}</span></div>${stitch(m.diff, "You", { compact: true, cls: "dark", saidCap: "You said" })}<div class="kf dark">${matchMeter(m.match)}</div></div>`;
+  }
+  const name = m.speaker === "agent" ? "Kiku" : "Margaret Doyle";
+  return `<div class="er ${m.speaker}"><div class="who"><span class="t">${m.t}</span><span>${name}</span></div><div class="txt">${esc(m.text)}</div></div>`;
+}).join("");
+
+const heard = earlier.filter(m => m.speaker === "guest").pop();
+document.getElementById("prompter").innerHTML = `
+  <div class="pr-label"><i data-lucide="user-round" style="width:14px;height:14px"></i>Margaret, ${heard.t}<span class="heard" style="margin:0"><b>“${esc(heard.text)}”</b></span></div>
+  <div class="card">
+    ${stitch(live.diff, "You", { live: true, caret: true, cls: "big dark", wroteCap: `Kiku wrote, ${live.t}`, saidCap: "You're saying, live" })}
+    <div class="pkey"><span><span class="kept">stitched</span>you kept Kiku's words</span><span><span class="dl">struck</span>you skipped them</span><span><span class="ahead">faded</span>not reached yet</span><span><span class="in">marked</span>your own words</span></div>
+  </div>
+  <div class="next"><span class="lbl"><i data-lucide="list-end" style="width:14px;height:14px"></i>Next, queued</span><p>${esc(c.nextLine)}</p><button class="btn sm onl">Skip</button></div>
+  <div class="controls">
+    <div class="meter"><i data-lucide="mic" style="color:#fff"></i><span class="bars">${[8,14,22,17,26,12,20,24,10,16,21,9,13,6].map(h => `<i style="height:${h}px"></i>`).join("")}</span><span>Mic live</span></div>
+    <button class="btn lg onl"><i data-lucide="mic-off"></i>Mute</button>
+    <button class="btn lg hand"><i data-lucide="audio-lines"></i>Hand back to Kiku</button>
+    <button class="btn lg end"><i data-lucide="phone-off"></i>End call</button>
+  </div>`;
+
+document.getElementById("right").innerHTML = `
+  <div class="box esc"><div class="h">${TT.STATUS.escalated.svg.replace('<svg','<svg width="14" height="14"')}Why this came to you</div>${c.escalationReason}</div>
+  <div class="box facts">
+    <h3>Booking</h3>
+    <dl class="kv"><dt>Booking</dt><dd class="num">${c.booking}</dd><dt>Stay</dt><dd>${c.stay.replace(/ · /g, ", ")}</dd><dt>Call about</dt><dd>${c.purpose}</dd></dl>
+  </div>
+  <div class="box facts">
+    <h3>Payment facts</h3>
+    <ul class="flist">${c.facts.map(f => `<li><i data-lucide="receipt-text"></i>${f}</li>`).join("")}</ul>
+  </div>`;
+TT.icons();
+TT.stitchWhenReady();
+requestAnimationFrame(() => { const e = document.getElementById("earlier"); e.scrollTop = e.scrollHeight; });
+document.fonts.ready.then(() => { const e = document.getElementById("earlier"); e.scrollTop = e.scrollHeight; });
 </script>
 </body>
 </html>

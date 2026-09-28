@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku · Make a call</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="icons.js"></script>
+<script src="app.js"></script>
+<style>
+  .body { grid-template-columns: 1fr 1.35fr; }
+  .path { display: flex; flex-direction: column; }
+  .path .ph .pn { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; font-size: 11.5px; font-weight: 700; align-self: center; }
+  .inner { padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .purpose { font-family: var(--machine); font-size: 14px; line-height: 1.65; min-height: 132px; }
+  .kiku-says { border-radius: 4px; background: var(--kiku-wash); padding: 12px 14px; font-size: 13px; color: var(--ink-2); display: grid; grid-template-columns: 22px 1fr; gap: 10px; line-height: 1.5; }
+  .act { display: flex; align-items: center; gap: 10px; margin-top: auto; }
+  .tbl { border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; background: #fff; }
+  table.grid td { height: 44px; padding: 6px 10px; font-size: 12.5px; }
+  table.grid td:first-child, table.grid th:first-child { padding-left: 14px; }
+  table.grid td.pp { line-height: 1.4; max-width: 330px; }
+  tr.bad td { background: var(--red-wash); }
+  tr.gap td { height: 24px; padding: 0; color: var(--ink-3); font-size: 12px; text-align: center; background: repeating-linear-gradient(90deg, transparent 0 6px, var(--paper-2) 6px 12px); }
+  .why { color: var(--red); font-weight: 600; display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; }
+  .miss { color: var(--red); font-style: italic; }
+  .none { color: var(--ink-3); font-style: italic; }
+  .tpl { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px dashed var(--rule); border-radius: 3px; font-size: 12.5px; color: var(--ink-2); }
+  .tpl a { color: var(--human-deep); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; margin-left: auto; white-space: nowrap; }
+</style></head>
+<body>
+<main class="page">
+  <div class="head"><div><h1>Outbound calls</h1><div class="sub">Tell Kiku why to call, and it will have the conversation.</div></div><div class="grow"></div><div id="tabs"></div></div>
+  <div class="body">
+    <section class="panel path" id="single"></section>
+    <section class="panel path" id="csv"></section>
+  </div>
+</main>
+<script>
+  shell('admin', 'out');
+  document.getElementById('tabs').innerHTML = outboundTabs('make');
+  const S = K.makeCallSingle;
+  document.getElementById('single').innerHTML = `
+    <div class="ph"><span class="pn">1</span><h2>Place one call</h2><span class="note">A general call, by purpose</span></div>
+    <div class="inner">
+      <div class="field"><label>Purpose <em>What should Kiku get done on this call?</em></label><div class="input area purpose">${S.purpose}</div></div>
+      <div class="two">
+        <div class="field"><label>Name <em>optional</em></label><div class="input">${ic('user')}${S.name}</div></div>
+        <div class="field"><label>Phone</label><div class="input">${ic('phone')}${S.phone}</div></div>
+      </div>
+      <div class="kiku-says">${mark(20, false)}<span>Kiku opens by introducing itself as calling from The Brenlow, then works through the purpose in its own words. If the guest needs a person, the call is escalated to a specialist.</span></div>
+      <div class="act"><span class="grow"></span><button class="btn ink lg">${ic('phone-outgoing')}Place call</button></div>
+    </div>`;
+
+  const C = K.makeCallCsv;
+  const rows = C.preview.map((r, i) => {
+    const prev = C.preview[i - 1];
+    const gap = prev && r.row - prev.row > 1 ? `<tr class="gap"><td colspan="5">row ${prev.row + 1}</td></tr>` : '';
+    return gap + `<tr class="${r.ok ? '' : 'bad'}"><td class="code">${r.row}</td><td style="white-space:nowrap">${r.phone || '<span class="miss">empty</span>'}</td><td style="white-space:nowrap">${r.name || '<span class="none">No name</span>'}</td><td class="pp">${r.purpose}</td>
+      <td>${r.ok ? status('completed').replace('Completed', 'Ready') : `<span class="why">${SHAPE.failed.replace('<svg', '<svg width="12" height="12"')}${r.error}</span>`}</td></tr>`;
+  }).join('');
+  document.getElementById('csv').innerHTML = `
+    <div class="ph"><span class="pn">2</span><h2>Place calls from a list</h2><span class="note">CSV with columns ${C.columns.map(c => `<span class="code">${c}</span>`).join(', ')}</span></div>
+    <div class="inner">
+      <div class="file"><span class="ico">CSV</span><div><div class="nm">${C.file}</div><div class="hint">${C.size} · ${C.rows} rows</div></div><span class="grow"></span>
+        <div class="tally"><span class="ok">${SHAPE.completed.replace('<svg', '<svg width="12" height="12"')}${C.ready} ready</span><span class="bad">${SHAPE.failed.replace('<svg', '<svg width="12" height="12"')}${C.errors} error</span></div><button class="btn sm quiet">${ic('replace')}Replace</button></div>
+      <div class="tbl"><table class="grid"><thead><tr><th>Row</th><th>Phone</th><th>Name</th><th>Purpose</th><th>Check</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="tpl">${ic('file-down')}<span>Not sure of the format? Start from the template: one row per call, name can be left blank.</span><a href="#">${ic('download')}Download template</a></div>
+      <div class="act"><span class="hint">Row 6 will be skipped until it has a phone number.</span><span class="grow"></span><button class="btn ink lg">${ic('phone-outgoing')}Place ${C.ready} calls</button></div>
+    </div>`;
+  icons();
+</script>
+</body></html>
