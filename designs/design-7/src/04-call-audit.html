@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku · Call audit KK-24027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=block">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .main { display: grid; grid-template-columns: 372px 1fr; gap: 22px; }
+  .side { padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 16px; }
+  .top { display: flex; justify-content: space-between; align-items: center; }
+  .back { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; font-weight: 700; }
+  .side h1 { font-size: 40px; margin-top: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .reason { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; font-weight: 500; padding-top: 14px; border-top: 2px dotted var(--plum); }
+  .reason .tile { margin-top: 1px; }
+  .outcome .half.a { padding: 14px 16px 16px; }
+  .outcome .half.b { padding: 16px 16px 14px; display: grid; gap: 8px; }
+  .oc { display: grid; grid-template-columns: 18px 1fr auto; gap: 0 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; line-height: 1.35; align-items: start; }
+  .oc:last-child { border-bottom: 0; padding-bottom: 0; }
+  .oc .tile { margin-top: 1px; }
+  .oc .amt { font-weight: 700; text-align: right; }
+  .oc.no .item, .oc.no .amt { color: var(--ink-2); font-weight: 500; }
+  .total { display: flex; justify-content: space-between; align-items: baseline; }
+  .total b { font-stretch: 66%; font-weight: 800; font-size: 30px; line-height: 1; }
+  .note { display: flex; gap: 8px; font-size: 13px; font-weight: 500; }
+
+  .right { display: flex; flex-direction: column; gap: 12px; min-height: 0; min-width: 0; }
+  .player { display: grid; grid-template-columns: 124px 1fr 226px; gap: 20px; padding: 14px 18px 12px 14px; align-items: center; }
+  .ph { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  .ph .time { font-stretch: 66%; font-weight: 800; font-size: 22px; line-height: 1; }
+  .ph .time span { color: var(--ink-2); }
+  .ctl { display: flex; gap: 4px; margin-left: auto; }
+  .ctl button { height: 30px; min-width: 30px; padding: 0 8px; border-radius: 4px; display: grid; place-items: center; font-size: 15px; box-shadow: inset 0 0 0 1px var(--chrome); font-weight: 700; }
+  .ctl button:hover { background: var(--lilac); }
+  .ctl .speed { font-size: 12.5px; }
+  .tl { position: relative; }
+  .marks { position: relative; height: 20px; }
+  .mark { position: absolute; bottom: 3px; display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+  .mark .tile { width: 15px; height: 15px; font-size: 9px; }
+  .mark.to-left { transform: translateX(-100%); }
+  .wave { display: flex; align-items: center; gap: 1.5px; height: 46px; }
+  .wave i { flex: 1; border-radius: 1px; min-height: 2px; }
+  .lane { position: relative; height: 5px; margin-top: 4px; border-radius: 2px; overflow: hidden; display: flex; }
+  .vline { position: absolute; top: 20px; height: 55px; width: 2px; }
+  .head { position: absolute; top: 16px; height: 62px; width: 2px; background: var(--plum); }
+  .head::before { content: ""; position: absolute; top: -2px; left: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--plum); box-shadow: 0 0 0 2px var(--white); }
+  .kt { position: relative; height: 18px; margin-top: 3px; }
+  .kt span { position: absolute; transform: translateX(-50%); font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 2px; }
+  .kt span::before { content: ""; width: 1.5px; height: 6px; background: var(--blue); position: absolute; top: -5px; left: 50%; }
+  .axis { position: relative; height: 14px; font-size: 11px; color: var(--ink-2); font-weight: 500; }
+  .axis span { position: absolute; transform: translateX(-50%); }
+  .axis span:first-child { transform: none; }
+  .axis span:last-child { transform: translateX(-100%); }
+  .ksum { border-left: 1px solid var(--line); padding-left: 18px; display: grid; gap: 8px; align-self: stretch; align-content: center; }
+  .ksum .big { font-stretch: 64%; font-weight: 800; font-size: 44px; line-height: .85; }
+  .ksum .big small { font-size: 18px; letter-spacing: .03em; margin-left: 4px; }
+  .ksum ul { display: grid; gap: 5px; font-size: 13px; font-weight: 600; }
+  .ksum li { display: flex; align-items: center; gap: 7px; }
+  .spk { display: flex; gap: 12px; font-size: 11.5px; font-weight: 600; margin-top: 2px; color: var(--ink-2); }
+  .spk span { display: inline-flex; gap: 5px; align-items: center; }
+  .spk i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+  .hh { display: flex; justify-content: space-between; align-items: center; }
+  .jump { display: flex; gap: 6px; align-items: center; }
+  .jump .lbl { margin-right: 4px; }
+  .jump .sel { height: 34px; font-size: 14px; padding: 0 12px 0 4px; gap: 8px; }
+  .jump .sel b { height: 26px; min-width: 26px; font-size: 12.5px; }
+  .ksum .legend { gap: 6px 12px; font-size: 12px; margin-top: 2px; }
+  .legend del { text-decoration: line-through; text-decoration-color: var(--red-ink); text-decoration-thickness: 1.5px; color: var(--ink-2); }
+  .tx-pane { flex: 1; padding: 2px 6px 16px 0; }
+  .tx { gap: 6px; }
+  .tx .strip { margin: 6px 0; }
+</style>
+</head>
+<body>
+<header class="band"></header>
+<main class="main">
+  <aside class="panel side on-violet" id="side"></aside>
+  <section class="right">
+    <div class="strip player" id="player"></div>
+    <div class="hh">
+      <h2 class="h2">Message history</h2>
+      <div class="jump" id="jump"></div>
+    </div>
+    <div class="pane tx-pane"><div class="tx" id="tx"></div></div>
+  </section>
+</main>
+<script>
+  const { K, esc, icon, status, tile, record, first } = UI;
+  UI.mountBand("specialist", "logs");
+  const A = K.audit;
+  const toS = (t) => { const [m, s] = t.split(":").map(Number); return m * 60 + s; };
+  const total = toS(A.duration);
+  const pct = (t) => (toS(t) / total * 100).toFixed(2) + "%";
+  const esc0 = A.transcript.find((x) => x.kind === "escalation");
+
+  document.getElementById("side").innerHTML = `
+    <div>
+      <div class="top"><a class="back" href="03-call-logs.html">${icon("arrow-left")}Call logs</a><span class="chip dark num">${A.id}</span></div>
+      <h1 class="h1">${esc(A.guest)}</h1>
+      <div class="chips">${status(A.status)}<span class="chip">${icon("telephone-outbound-fill")}Outbound · ${A.type}</span></div>
+    </div>
+    <dl class="facts">
+      <div><dt>Phone</dt><dd class="num">${esc(A.phone)}</dd></div>
+      <div><dt>Booking</dt><dd class="num">${A.booking}</dd></div>
+      <div class="full"><dt>Stay</dt><dd>${esc(A.stay)}</dd></div>
+      <div class="full"><dt>Purpose</dt><dd>${esc(A.purpose)}</dd></div>
+      <div><dt>Started</dt><dd class="num">${A.started}</dd></div>
+      <div><dt>Duration</dt><dd class="num">${A.duration}</dd></div>
+      <div class="full"><dt>Specialist</dt><dd>${A.specialist}, took over from ${A.agent} at <span class="num">${A.takeoverAt}</span></dd></div>
+    </dl>
+    <article class="strip outcome">
+      <div class="half a">
+        <h2 class="h3">Outcome</h2>
+        ${A.outcome.map((o) => `<div class="oc${o.result === "added" ? "" : " no"}">${o.result === "added" ? `<span class="tile ok" title="Added">${icon("check-lg")}</span>` : `<span class="tile chrome" title="Declined">${icon("x-lg")}</span>`}<span class="item">${esc(o.item)}${o.result === "added" ? "" : " · declined"}</span><span class="amt num">${o.amount}</span></div>`).join("")}
+      </div>
+      <div class="tear"></div>
+      <div class="half b">
+        <div class="total"><span class="lbl">Added to ${A.booking}</span><b class="num">${A.total}</b></div>
+        <p class="note">${icon("pin-angle-fill")}<span>${esc(A.note)}</span></p>
+      </div>
+    </article>`;
+
+  // speaker spans from the transcript
+  const spans = [];
+  A.transcript.forEach((it, i) => {
+    const next = A.transcript[i + 1];
+    const end = next ? toS(next.t) : total;
+    const who = it.speaker === "system" ? (it.kind === "end" ? null : "hold") : it.speaker;
+    if (who) spans.push({ who, s: toS(it.t), e: end });
+  });
+  const COL = { agent: "#2A0B38", guest: "#A996B8", specialist: "#2457F5", hold: "#C9C4CF" };
+  const whoAt = (sec) => (spans.find((p) => sec >= p.s && sec < p.e) || { who: "hold" });
+  const playhead = toS("01:12");
+  let bars = "";
+  const N = 150;
+  for (let i = 0; i < N; i++) {
+    const sec = (i + .5) / N * total;
+    const sp = whoAt(sec);
+    const edge = sp.s != null && (sec - sp.s < 0.8 || sp.e - sec < 0.8);
+    let h = sp.who === "hold" ? 6 : 28 + 60 * Math.abs(Math.sin(i * 1.7) * Math.cos(i * .63)) + 12 * Math.abs(Math.sin(i * 5.1));
+    if (edge && sp.who !== "hold") h = 10;
+    const played = sec <= playhead;
+    bars += `<i style="height:${Math.min(100, h).toFixed(0)}%;background:${COL[sp.who]};opacity:${played ? 1 : .38}"></i>`;
+  }
+  const lane = spans.map((p) => `<span style="flex:${p.e - p.s};background:${COL[p.who]}"></span>`).join("");
+  const kturns = A.transcript.filter((x) => x.karaoke);
+  const ks = K.audit.karaokeSummary;
+  const takeoverEvt = A.transcript.find((x) => x.kind === "takeover");
+  const axis = ["00:00", "00:30", "01:00", "01:30", "02:00"].map((t) => `<span style="left:${pct(t)}">${t}</span>`).join("") + `<span style="left:100%">${A.duration}</span>`;
+
+  document.getElementById("player").innerHTML = `
+    <button aria-label="Play recording" style="border-radius:50%">${record({ size: 124, play: true, top: "Play" })}</button>
+    <div>
+      <div class="ph">
+        <h2 class="h3">Recording</h2>
+        <span class="time num">01:12 <span>/ ${A.duration}</span></span>
+        <div class="ctl">
+          <button aria-label="Back 10 seconds">${icon("arrow-counterclockwise")}</button>
+          <button aria-label="Play">${icon("play-fill")}</button>
+          <button aria-label="Forward 10 seconds">${icon("arrow-clockwise")}</button>
+          <button class="speed">1×</button>
+        </div>
+      </div>
+      <div class="tl">
+        <div class="marks">
+          <span class="mark to-left" style="left:calc(${pct(esc0.t)} + 1px)"><span class="tile esc">${icon("arrow-up")}</span>Escalated ${esc0.t}</span>
+          <span class="mark" style="left:calc(${pct(takeoverEvt.t)} + 4px)"><span class="tile run">${icon("mic-fill")}</span>Tomasz took over ${takeoverEvt.t}</span>
+        </div>
+        <div class="wave">${bars}</div>
+        <div class="lane">${lane}</div>
+        <div class="kt">${kturns.map((k) => `<span style="left:${pct(k.t)}" class="num">${k.asWritten ? `<i class="bi bi-check-lg" style="color:var(--ok)" aria-hidden="true"></i>` : ""}${k.match}</span>`).join("")}</div>
+        <div class="axis num">${axis}</div>
+        <span class="vline" style="left:${pct(esc0.t)};background:var(--esc)"></span>
+        <span class="vline" style="left:${pct(takeoverEvt.t)};background:var(--blue)"></span>
+        <span class="head" style="left:${pct("01:12")}"></span>
+      </div>
+      <div class="spk"><span><i style="background:${COL.agent}"></i>Kiku</span><span><i style="background:${COL.guest}"></i>${first(A.guest)}</span><span><i style="background:${COL.specialist}"></i>${first(A.specialist)}</span><span><i style="background:${COL.hold}"></i>On hold</span><span>Under the track: match % per karaoke line</span></div>
+    </div>
+    <div class="ksum">
+      <span class="lbl">Karaoke</span>
+      <div class="big num">${ks.lines}<small>lines</small></div>
+      <ul>
+        <li><span class="tile ok">${icon("check-lg")}</span><span class="num">${ks.asWritten}</span> spoken as written</li>
+        <li><span class="tile violet">${icon("pencil-fill")}</span><span class="num">${ks.improvised}</span> improvised</li>
+      </ul>
+      <div class="legend"><span class="k-txt"><del>struck</del> Kiku wrote, not said</span><span class="k-txt"><ins>tinted</ins> said, not written</span></div>
+    </div>`;
+
+  const tx = document.getElementById("tx");
+  tx.innerHTML = UI.transcript(A.transcript, first(A.guest), first(A.specialist));
+  document.getElementById("jump").innerHTML = `<span class="lbl">Jump to</span>` +
+    [["1", "Start", "00:00"], ["2", "Escalated", esc0.t], ["3", "Takeover", takeoverEvt.t], ["4", "End", A.duration]]
+      .map(([k, t, at], i) => `<button class="sel${i === 1 ? " is-on" : ""}"><b>${k}</b>${t} <span class="num" style="font-weight:600">${at}</span></button>`).join("");
+  const pane = document.querySelector(".tx-pane");
+  const anchor = tx.children[4];
+  UI.afterFonts(() => { pane.scrollTop = anchor.getBoundingClientRect().top - pane.getBoundingClientRect().top + pane.scrollTop - 2; });
+</script>
+</body>
+</html>

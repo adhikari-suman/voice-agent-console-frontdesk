@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiku · Users</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,300..800;1,400..500&display=block">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .utbl td { vertical-align: middle; height: var(--s89); padding-top: var(--s5); padding-bottom: var(--s5); white-space: nowrap; }
+  .person b { font-size: var(--f16); line-height: 26px; }
+  .utbl tbody tr:hover td { background: rgba(32, 36, 74, 0.55); }
+  .person { display: flex; align-items: center; gap: var(--s13); }
+  .person b { display: block; font-weight: 600; }
+  .person span.muted { display: block; }
+  .ustat { display: inline-flex; align-items: center; gap: var(--s5); font-weight: 500; white-space: nowrap; }
+  .ustat.active { color: var(--leaf); }
+  .ustat.invited { color: var(--gold); }
+  .ustat.deactivated { color: var(--failed); }
+  .row-off td { color: var(--text-2); }
+  .row-off .avatar { opacity: 0.6; }
+  .row-new td { background: var(--gold-wash); }
+  .tk { display: flex; align-items: center; gap: var(--s8); }
+  .tk .bar { width: 34px; }
+  .utbl th.wrap { white-space: normal; width: 89px; line-height: 1.3; padding-top: 5px; padding-bottom: 5px; }
+  .la small { display: block; color: var(--text-2); font-size: var(--f13); }
+  .tk .bar > i { background: var(--pink); }
+  .tk .n { width: 21px; text-align: right; }
+  .role-tag { display: inline-flex; align-items: center; gap: var(--s5); }
+  .role-tag .ic { color: var(--text-2); }
+
+  .side { padding: 0 var(--s21) var(--s21); display: flex; flex-direction: column; gap: var(--s21); flex: 1; min-height: 0; }
+  .roles { display: flex; flex-direction: column; gap: var(--s8); }
+  .role-opt { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--s5) var(--s13); padding: var(--s13); border: 1px solid var(--line-2); border-radius: var(--r-ctl); background: var(--night); cursor: pointer; }
+  .role-opt.on { border-color: var(--gold); background: var(--gold-wash); }
+  .role-opt .radio { margin-top: 3px; }
+  .role-opt .nm { font: 600 var(--f16)/21px var(--font); }
+  .role-opt ul { grid-column: 2; display: flex; flex-direction: column; gap: var(--s2); }
+  .role-opt li { display: flex; align-items: center; gap: var(--s8); font-size: var(--f13); line-height: 21px; color: var(--text); }
+  .role-opt li .ic { width: 13px; height: 13px; color: var(--leaf); }
+  .role-opt:not(.on) li { color: var(--text-2); }
+  .role-opt:not(.on) li .ic { color: var(--text-2); }
+  .side-foot { margin-top: auto; display: flex; flex-direction: column; gap: var(--s8); }
+  .side-foot .row { display: flex; gap: var(--s8); }
+  .side-foot .row .primary { flex: 1.618; }
+  .side-foot .row .btn:not(.primary) { flex: 1; }
+</style>
+</head>
+<body>
+<script>
+  const { K, esc, ic, shell, avatar } = Kiku;
+  const N = K.newUserDraft;
+  const maxT = Math.max(...K.users.map((u) => u.takeovers30d));
+  const counts = { Active: 0, Invited: 0, Deactivated: 0 };
+  K.users.forEach((u) => { counts[u.status]++; });
+  const USTAT = { Active: 'circle-check', Invited: 'mail', Deactivated: 'ban' };
+
+  const row = (u) => `<tr class="${u.status === 'Deactivated' ? 'row-off' : ''}">
+    <td><div class="person">${avatar(u, (u.role === 'Specialist' && u.status !== 'Deactivated' ? 'spec ' : '') + 'lg')}<div><b>${esc(u.name)}</b><span class="muted">${esc(u.email)}</span></div></div></td>
+    <td><span class="role-tag">${ic(u.role === 'Admin' ? 'shield-check' : 'headphones', 'ic-13')}${u.role}</span></td>
+    <td><span class="ustat ${u.status.toLowerCase()}">${ic(USTAT[u.status], 'ic-13')}${u.status}</span></td>
+    <td class="la">${u.lastActive.includes('(') ? `${esc(u.lastActive.split(' (')[0])}<small>${esc(u.lastActive.split(' (')[1].replace(')', ''))}</small>` : esc(u.lastActive)}</td>
+    <td>${u.role === 'Specialist'
+      ? `<div class="tk"><span class="n">${u.takeovers30d}</span><span class="bar" aria-hidden="true"><i style="width:${(u.takeovers30d / maxT) * 100}%"></i></span></div>`
+      : `<div class="tk"><span class="n">${u.takeovers30d}</span></div>`}</td>
+  </tr>`;
+
+  const roleOpt = (name) => `<label class="role-opt ${N.role === name ? 'on' : ''}"><span class="radio ${N.role === name ? 'on' : ''}" role="radio" aria-checked="${N.role === name}"></span>
+      <span class="nm">${name}</span>
+      <ul>${K.roles[name].map((p) => `<li>${ic('check')}${esc(p)}</li>`).join('')}</ul></label>`;
+
+  shell({
+    role: 'admin', active: 'users', title: 'Users',
+    sub: `${K.users.length} people · ${counts.Active} active, ${counts.Invited} invited, ${counts.Deactivated} deactivated`,
+    right: `<button class="btn pressed">${ic('user-plus')}Invite user</button>`,
+    content: `
+    <div class="split">
+      <section class="panel" aria-label="All users">
+        <table class="tbl utbl">
+          <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last active</th><th class="wrap">Takeovers, 30 days</th></tr></thead>
+          <tbody>${K.users.map(row).join('')}</tbody>
+        </table>
+        <p class="panel-foot" style="flex:1;align-items:flex-end;padding-bottom:13px">${ic('info', 'ic-13')}Showing all ${K.users.length} users</p>
+      </section>
+      <section class="panel" aria-label="Invite a user">
+        <div class="panel-head"><h2 class="lg">Invite a user</h2><button class="icon-btn" aria-label="Close">${ic('x')}</button></div>
+        <div class="side">
+          <div class="field"><label class="label" for="nm">Full name</label><input class="input lg-text" id="nm" value="${esc(N.name)}"></div>
+          <div class="field"><label class="label" for="em">Work email</label><input class="input lg-text is-focus" id="em" type="email" value="${esc(N.email)}"></div>
+          <div class="field"><label class="label" for="jt">Job title <span class="opt">optional</span></label><input class="input lg-text" id="jt" placeholder="For example, Guest Services"></div>
+          <div class="field">
+            <p class="label">Role</p>
+            <div class="roles" role="radiogroup" aria-label="Role">${roleOpt('Specialist')}${roleOpt('Admin')}</div>
+          </div>
+          <div class="side-foot">
+            <p class="help">${esc(Kiku.first(N.name))} gets an email at ${esc(N.email)} with a link to set a password.</p>
+            <div class="row"><button class="btn primary lg">${ic('send')}Send invite</button><button class="btn lg">Cancel</button></div>
+          </div>
+        </div>
+      </section>
+    </div>`,
+  });
+  Kiku.done();
+</script>
+</body>
+</html>

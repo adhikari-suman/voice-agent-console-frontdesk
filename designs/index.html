@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiku design directions</title>
+<style>
+  :root { --bg: #f4f4f2; --fg: #141414; --muted: #5f5f5a; --line: #d9d9d4; --focus: #2457f5; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #151514; --fg: #ececea; --muted: #a2a29c; --line: #34342f; --focus: #7ea0ff; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  header { padding: 40px 32px 8px; max-width: 1600px; margin: 0 auto; }
+  h1 { font-size: 28px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--muted); max-width: 70ch; }
+  main { max-width: 1600px; margin: 0 auto; padding: 16px 32px 64px; }
+  section { border-top: 1px solid var(--line); padding: 28px 0; }
+  h2 { font-size: 20px; margin: 0; }
+  h2 span { color: var(--muted); font-weight: 400; }
+  section > p { margin: 4px 0 16px; color: var(--muted); max-width: 80ch; }
+  .strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  figure { margin: 0; }
+  figure a { display: block; border-radius: 4px; outline-offset: 3px; }
+  figure a:focus-visible { outline: 2px solid var(--focus); }
+  img { width: 100%; aspect-ratio: 1440 / 900; object-fit: cover; display: block; border-radius: 4px; border: 1px solid var(--line); background: var(--line); }
+  figcaption { font-size: 12px; color: var(--muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
+  @media (max-width: 900px) { .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } header, main { padding-left: 16px; padding-right: 16px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Kiku: ten design directions</h1>
+  <p>Ten visual directions for the hotel voice-agent console, each covering the same ten screens at 1440×900. Select any screen to open the full-size PNG. All hotel, guest and booking data is fictional.</p>
+</header>
+<main id="list"></main>
+<script>
+  const designs = [
+    ["Mirror Spine", "International Typographic Style: two voices meet at a central timecode spine."],
+    ["Overprint", "Two-ink risograph: Kiku prints in pink, the specialist in blue, and agreement overprints."],
+    ["Score", "Orchestral score: every call is a set of parallel staves, and karaoke mode is an ossia line."],
+    ["Gallery", "Broadcast control room: a multiviewer of live calls, a teleprompter script and ad-lib captions."],
+    ["Deck", "1960s German audio equipment: keys, lamps, VU meters and a two-track tape audit."],
+    ["Booth", "Simultaneous-interpretation booth: a floor channel for Kiku and an interpretation channel for the specialist."],
+    ["Title Strip", "Jukebox 45s: the A-side is what Kiku wrote, the B-side is what the specialist said."],
+    ["Strip Bay", "Air-traffic-control strips: arrivals and departures, amended by hand in pen."],
+    ["Night Desk", "The lobby after dark: green lacquer, brass rules and a guest-folio audit."],
+    ["Phyllotaxis", "The chrysanthemum on Fibonacci proportions: calls bloom around the present moment."]
+  ];
+  const screens = ["01-sign-in", "02-live-overview", "03-call-logs", "04-call-audit", "05-live-call-listening", "06-takeover-karaoke", "07-outbound-campaign", "08-outbound-upsell", "09-outbound-make-a-call", "10-users"];
+  document.getElementById("list").innerHTML = designs.map(([name, line], i) => `
+    <section>
+      <h2>Design ${i + 1} <span>· ${name}</span></h2>
+      <p>${line}</p>
+      <div class="strip">${screens.map(s => `
+        <figure><a href="design-${i + 1}/${s}.png"><img loading="lazy" src="design-${i + 1}/${s}.png" alt="Design ${i + 1}, ${s.slice(3).replace(/-/g, " ")}"></a>
+        <figcaption>${s.slice(3).replace(/-/g, " ")}</figcaption></figure>`).join("")}
+      </div>
+    </section>`).join("");
+</script>
+</body>
+</html>

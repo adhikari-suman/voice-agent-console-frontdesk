@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Call logs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Alegreya+Sans+SC:wght@400;500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&display=block">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.35.0/dist/tabler-icons-300-outline.min.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .phead { padding: 18px 24px 14px; border-bottom: 0; display: flex; align-items: flex-end; gap: 24px; }
+  .bar { display: flex; align-items: center; gap: 12px; padding: 0 24px 14px; }
+  .bar .inwrap { width: 330px; }
+  .bar .select { width: auto; min-width: 150px; height: 32px; }
+  .bar .fl { display: flex; align-items: center; gap: 8px; }
+  .bar .fl > span { font: 500 12px/1 var(--sc); letter-spacing: .04em; color: var(--ink-2); }
+  .bar .date { margin-left: auto; }
+  .tw { flex: 1; min-height: 0; overflow: auto; padding: 0 24px; }
+  .tbl td.time { color: var(--ink-2); width: 56px; }
+  .tbl td.g { font-weight: 500; }
+  .tbl td.pur { font: italic 400 14px/1.2 var(--serif); max-width: 380px; overflow: hidden; text-overflow: ellipsis; }
+  .tbl td .ti { font-size: 16px; color: var(--ink-2); vertical-align: -3px; margin-right: 6px; }
+  .tbl td.dur { width: 104px; }
+  .dur span { display: inline-flex; align-items: center; gap: 8px; }
+  .dur .meter { width: 36px; height: 3px; }
+  .tbl td.sp small { color: var(--ink-2); font-size: 12px; margin-left: 4px; }
+  .tbl td.sp .none { color: var(--ink-2); font-style: italic; }
+  .tbl td.sp .wait { color: var(--red); font-weight: 500; }
+  .tbl td.act { width: 110px; text-align: right; }
+  .tbl td.act .ti { color: var(--ink-2); margin: 0; }
+  .tbl tr.is-selected td.act .link { white-space: nowrap; }
+  .tbl tr.is-selected td.act .link .ti { color: var(--cobalt); margin-left: 2px; }
+  .tbl .type small { display: block; font-size: 12px; color: var(--ink-2); }
+  .tfoot { display: flex; align-items: center; gap: 16px; padding: 12px 0 16px; color: var(--ink-2); font-size: 14px; }
+</style>
+</head>
+<body data-role="specialist">
+<header id="top"></header>
+<main class="page">
+  <header class="phead">
+    <div>
+      <h1>Call logs</h1>
+      <p class="lede">Every call Kiku answered on the hotel line or placed outbound, newest first. Open a call to audit it.</p>
+    </div>
+  </header>
+  <div class="bar">
+    <label class="inwrap"><i class="ti ti-search"></i><input class="input" style="height:32px" type="search" placeholder="Guest, phone, booking or call ID"></label>
+    <div class="fl"><span>Status</span><div class="seg" id="seg"></div></div>
+    <div class="fl"><span>Direction</span><button class="select">All directions<i class="ti ti-chevron-down"></i></button></div>
+    <div class="fl"><span>Type</span><button class="select">All types<i class="ti ti-chevron-down"></i></button></div>
+    <div class="fl date"><span>Date</span><button class="select" style="min-width:120px"><span><i class="ti ti-calendar" style="font-size:16px;vertical-align:-3px;margin-right:6px;color:var(--ink-2)"></i>Today</span><i class="ti ti-chevron-down"></i></button></div>
+  </div>
+  <div class="tw">
+    <table class="tbl">
+      <thead><tr><th>Time</th><th>Guest</th><th>Phone</th><th>Direction</th><th>Type</th><th>Purpose</th><th>Status</th><th>Duration</th><th>Specialist</th><th></th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="tfoot" id="foot"></div>
+  </div>
+</main>
+<script>
+(function () {
+  const { K, esc, ic, status, secs, $ } = Kiku;
+  Kiku.shell({ active: 'logs', alert: true });
+  const C = K.calls;
+  const n = s => C.filter(c => c.status === s).length;
+  $('#seg').innerHTML = `<span class="on">All <span class="count">${C.length}</span></span>` +
+    [['completed', 'Completed'], ['in_progress', 'In progress'], ['escalated', 'Escalated'], ['failed', 'Failed']]
+      .map(([k, l]) => `<span>${status(k, false)}${l} <span class="count">${n(k)}</span></span>`).join('');
+  const maxD = Math.max(...C.map(c => secs(c.duration)));
+  $('#rows').innerHTML = C.map(c => {
+    const sel = c.id === 'KK-24027';
+    let sp;
+    if (c.specialist) {
+      const m = c.specialist.match(/^(.*?) \((.*)\)$/);
+      sp = m ? `${esc(m[1])}<small>${esc(m[2])}</small>` : esc(c.specialist);
+    } else if (c.waiting) sp = `<span class="wait">Waiting ${c.waiting}</span>`;
+    else sp = '<span class="none">Kiku only</span>';
+    return `<tr class="${sel ? 'is-selected' : ''}">
+      <td class="time">${c.started}</td>
+      <td class="g">${esc(c.guest)}</td>
+      <td>${esc(c.phone)}</td>
+      <td>${ic(c.direction === 'inbound' ? 'phone-incoming' : 'phone-outgoing')}${c.direction === 'inbound' ? 'Inbound' : 'Outbound'}</td>
+      <td class="type">${c.direction === 'inbound' ? '<span class="muted">&mdash;</span>' : esc(c.type)}</td>
+      <td class="pur" title="${esc(c.purpose)}">${esc(c.purpose)}</td>
+      <td>${status(c.status)}</td>
+      <td class="dur"><span><span class="meter"><i class="${c.status === 'in_progress' || c.status === 'escalated' ? 'c' : ''}" style="width:${(secs(c.duration) / maxD * 100).toFixed(1)}%"></i></span>${c.duration}</span></td>
+      <td class="sp">${sp}</td>
+      <td class="act">${sel ? `<a class="link" href="04-call-audit.html">Open audit${ic('arrow-right')}</a>` : ic('chevron-right')}</td>
+    </tr>`;
+  }).join('');
+  $('#foot').innerHTML = `<span>Showing the latest ${C.length} of ${K.stats.callsToday} calls today</span><button class="btn btn-sm">Load earlier calls</button>`;
+})();
+</script>
+</body>
+</html>

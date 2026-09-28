@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku · Users</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=block">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .main { display: grid; grid-template-columns: 1fr 460px; gap: 22px; }
+  .left { display: flex; flex-direction: column; gap: 14px; min-height: 0; min-width: 0; }
+  .toolbar { display: flex; align-items: center; gap: 16px; }
+  .toolbar .sub { flex: 1; }
+  .search { width: 260px; }
+  .has-ico input { border: 0; outline: 0; background: none; flex: 1; min-width: 0; height: 100%; font-size: 14px; }
+  .sheet { align-self: start; width: 100%; }
+  .tbl td { padding: 12px 12px; white-space: nowrap; }
+  .person { display: flex; align-items: center; gap: 11px; }
+  .person b { display: block; font-weight: 700; }
+  .ust { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .role { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+  .to { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+  .to .bar { width: 70px; height: 8px; }
+  tr.off td { color: var(--ink-2); }
+  .more { width: 30px; height: 30px; border-radius: 4px; display: grid; place-items: center; color: var(--ink-2); }
+  .more:hover { background: var(--lilac); }
+
+  .create { padding: 20px 24px 22px; display: flex; flex-direction: column; gap: 15px; min-height: 0; }
+  .create .head { display: flex; justify-content: space-between; align-items: flex-start; }
+  .create .head p { font-size: 13.5px; font-weight: 500; margin-top: 6px; }
+  .roles { display: grid; gap: 10px; }
+  .ro { display: grid; grid-template-columns: 20px 1fr; gap: 6px 12px; padding: 13px 16px 13px; cursor: pointer; }
+  .ro.strip { box-shadow: 0 0 0 1.5px var(--plum), var(--shadow); }
+  .ro.strip-blank { border-color: var(--plum); background: rgba(255, 255, 255, .22); }
+  .ro .rn { font-stretch: 68%; font-weight: 800; font-size: 20px; text-transform: uppercase; line-height: 20px; }
+  .ro ul { grid-column: 2; display: grid; gap: 4px; font-size: 13px; font-weight: 500; }
+  .ro li { display: flex; gap: 7px; align-items: flex-start; }
+  .ro li .bi { margin-top: 1px; }
+  .create .foot { margin-top: auto; display: flex; align-items: center; gap: 10px; padding-top: 14px; border-top: 2px dotted var(--plum); }
+  .create .foot p { flex: 1; font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+<header class="band"></header>
+<main class="main">
+  <section class="left">
+    <div class="toolbar">
+      <h1 class="h1">Users</h1>
+      <span class="sub muted num" id="usum"></span>
+      <label class="input has-ico search"><i class="bi bi-search" aria-hidden="true"></i><input type="search" placeholder="Find a name or email" aria-label="Find a user"></label>
+      <button class="btn btn-pressed" aria-expanded="true"><i class="bi bi-person-plus-fill" aria-hidden="true"></i>Add user</button>
+    </div>
+    <div class="sheet"><table class="tbl vh" id="users"></table></div>
+  </section>
+  <aside class="panel create on-violet" id="create" aria-label="Add a user"></aside>
+</main>
+<script>
+  const { K, esc, icon } = UI;
+  UI.mountBand("admin", "users");
+  const U = K.users;
+  const by = (k, v) => U.filter((u) => u[k] === v).length;
+  document.getElementById("usum").textContent = `${U.length} people · ${by("status", "Active")} active, ${by("status", "Invited")} invited, ${by("status", "Deactivated")} deactivated`;
+
+  const UST = {
+    Active: `<span class="tile ok">${icon("check-lg")}</span>Active`,
+    Invited: `<span class="tile" style="background:var(--white);color:var(--plum);box-shadow:inset 0 0 0 1.5px var(--plum)">${icon("envelope-fill")}</span>Invited`,
+    Deactivated: `<span class="tile chrome">${icon("slash-circle")}</span>Deactivated`,
+  };
+  const maxT = Math.max(...U.map((u) => u.takeovers30d));
+  document.getElementById("users").innerHTML = `<colgroup><col><col style="width:124px"><col style="width:140px"><col style="width:178px"><col style="width:150px"><col style="width:46px"></colgroup>
+    <thead><tr><th>Name and email</th><th>Role</th><th>Status</th><th>Last active</th><th class="r">Takeovers · 30 d</th><th><span class="sr">Actions</span></th></tr></thead><tbody>` +
+    U.map((u) => {
+      const av = u.status === "Deactivated" ? "av sm off" : u.status === "Invited" ? "av sm inv" : "av sm";
+      return `<tr class="${u.status === "Deactivated" ? "off" : ""}${u.name === "Tomasz Nowak" ? " is-hover" : ""}">
+        <td><span class="person"><span class="${av}">${u.initials}</span><span><b>${esc(u.name)}</b><span class="two">${esc(u.email)}</span></span></span></td>
+        <td><span class="role">${icon(u.role === "Admin" ? "shield-lock-fill" : "headset")}${u.role}</span></td>
+        <td><span class="ust">${UST[u.status]}</span></td>
+        <td class="num">${esc(u.lastActive)}</td>
+        <td><span class="to num">${u.takeovers30d}<span class="bar"><i style="width:${(u.takeovers30d / maxT * 100).toFixed(0)}%;background:var(--blue)"></i></span></span></td>
+        <td><button class="more" aria-label="More for ${esc(u.name)}">${icon("three-dots")}</button></td>
+      </tr>`;
+    }).join("") + `</tbody>`;
+
+  const N = K.newUserDraft;
+  const roleBlock = (r) => {
+    const on = r === N.role;
+    return `<label class="ro ${on ? "strip" : "strip-blank"}">
+      <span class="radio${on ? " on" : ""}" role="radio" aria-checked="${on}"></span>
+      <span class="rn">${r}</span>
+      <ul>${K.roles[r].map((p) => `<li>${icon("check-lg")}<span>${esc(p)}</span></li>`).join("")}</ul>
+    </label>`;
+  };
+  document.getElementById("create").innerHTML = `
+    <div class="head">
+      <div><h2 class="h1">Add a user</h2><p>They get an email invite to set a password.</p></div>
+      <button class="iconbtn" aria-label="Close">${icon("x-lg")}</button>
+    </div>
+    <label class="field"><span class="lbl">Full name</span><input class="input" value="${esc(N.name)}"></label>
+    <label class="field"><span class="lbl">Work email</span><input class="input" value="${esc(N.email)}"></label>
+    <label class="field"><span class="lbl">Job title <span class="opt">(optional)</span></span><input class="input is-focus" placeholder="For example, Guest Services"></label>
+    <div class="field"><span class="lbl">Role</span><div class="roles" role="radiogroup">${roleBlock("Specialist")}${roleBlock("Admin")}</div></div>
+    <div class="foot">
+      <p>${esc(N.name)} joins as a ${N.role}.</p>
+      <button class="btn btn-line">Cancel</button>
+      <button class="btn btn-pri">${icon("send-fill")}Send invite</button>
+    </div>`;
+</script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "clipped-overflow-container",
+        "value": "*",
+        "files": [
+          "designs/design-7/src/01-sign-in.html"
+        ],
+        "createdAt": "2026-09-28T05:06:09.198Z",
+        "reason": "agent: brief mandates html,body overflow:hidden for fixed 1440x900 frame; record disc crop is intentional art; no popovers on page"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "designs/design-3/src/styles.css"
+        ],
+        "createdAt": "2026-09-28T05:36:31.430Z",
+        "reason": "Agent: .fin is a music final barline (thin + thick rule), not a card stripe"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "designs/design-5/src/styles.css"
+        ],
+        "createdAt": "2026-09-28T05:36:31.468Z",
+        "reason": "Agent: CSS triangle play marker built from border-left, not a card stripe"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "designs/design-6/src/styles.css"
+        ],
+        "createdAt": "2026-09-28T05:36:31.499Z",
+        "reason": "Agent: zero-width playhead and marker lines on the audio timeline"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "designs/design-8/src/*.html"
+        ],
+        "createdAt": "2026-09-28T05:36:31.527Z",
+        "reason": "Agent: ATC flight-strip holder tabs and active bay tab are the pinned world's native grammar"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "designs/design-5/src/*.html"
+        ],
+        "createdAt": "2026-09-28T05:36:31.556Z",
+        "reason": "Agent: #D8D7D2 is the pinned aluminium chassis grey of the audio-equipment direction"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "designs/design-2/src/*.html",
+          "designs/design-7/src/*.html"
+        ],
+        "createdAt": "2026-09-28T05:36:31.582Z",
+        "reason": "Agent: blinking lamp signals a call is live; motion conveys state"
+      },
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "designs/design-7/src/*.html"
+        ],
+        "createdAt": "2026-09-28T05:36:31.610Z",
+        "reason": "Agent: printed red/blue rules of jukebox title strips, pinned by direction"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "designs/design-4/src/01-sign-in.html",
+          "designs/design-7/src/01-sign-in.html",
+          "designs/design-8/src/*.html"
+        ],
+        "createdAt": "2026-09-28T05:36:31.642Z",
+        "reason": "Agent: flush strip plates, tally bars and tear lines are edge-to-edge by design"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "designs/design-3/src/05-live-call-listening.html"
+        ],
+        "createdAt": "2026-09-28T05:36:31.671Z",
+        "reason": "Agent: only hit is a disabled Mic off control; WCAG exempts disabled controls"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "designs/design-10/src/05-live-call-listening.html"
+        ],
+        "createdAt": "2026-09-28T05:37:25.377Z",
+        "reason": "Agent: animated typing dots show Kiku is drafting a reply; motion conveys state"
+      }
+    ]
+  }
+}

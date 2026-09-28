@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku · Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=block">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  body { display: grid; grid-template-columns: 800px 1fr; }
+  .stage { background: var(--violet); position: relative; overflow: hidden; padding: 56px 64px; display: flex; flex-direction: column; }
+  .stage .wordmark { font-size: 176px; line-height: .76; }
+  .stage .hotel { margin-top: 26px; font-stretch: 70%; font-weight: 800; font-size: 30px; text-transform: uppercase; letter-spacing: .03em; line-height: 1; }
+  .stage .tag { margin-top: 10px; font-size: 16px; font-weight: 500; }
+  .stage .line { margin-top: auto; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; }
+  .stage .disc { position: absolute; right: -150px; bottom: -170px; }
+  .side { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px 64px 28px; position: relative; }
+  form.strip { width: 440px; }
+  form .half.a { padding: 30px 32px 28px; display: grid; gap: 18px; }
+  form .half.b { padding: 26px 32px 30px; display: grid; gap: 14px; }
+  .pw { position: relative; }
+  .pw .iconbtn { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; box-shadow: none; font-size: 16px; color: var(--ink-2); }
+  .foot { position: absolute; bottom: 26px; left: 64px; right: 64px; display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 500; color: var(--ink-2); justify-content: center; }
+</style>
+</head>
+<body>
+  <section class="stage" aria-label="Kiku">
+    <div class="wordmark" id="wm"></div>
+    <div class="hotel" id="hotel"></div>
+    <div class="tag" id="tag"></div>
+    <div class="disc" id="disc"></div>
+  </section>
+  <main class="side">
+    <form class="strip" onsubmit="return false">
+      <div class="half a">
+        <div>
+          <h1 class="h1">Sign in</h1>
+          <p class="sub muted" style="margin-top:8px">Use your Brenlow staff email and password.</p>
+        </div>
+        <label class="field"><span class="lbl">Email</span>
+          <input class="input" type="email" id="email" autocomplete="username">
+        </label>
+        <label class="field"><span class="lbl" style="justify-content:space-between"><span>Password</span><a class="link" href="#" style="font-stretch:100%;text-transform:none;letter-spacing:0;font-size:13px">Forgot password?</a></span>
+          <span class="pw"><input class="input is-focus" type="password" placeholder="Enter your password" autocomplete="current-password"><button class="iconbtn" type="button" title="Show password"><i class="bi bi-eye-fill" aria-hidden="true"></i></button></span>
+        </label>
+      </div>
+      <div class="tear"><span class="tear-tag"><i class="bi bi-lock-fill" aria-hidden="true"></i>Staff only</span></div>
+      <div class="half b">
+        <button class="btn btn-pri btn-lg btn-block" type="submit">Sign in<i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+      </div>
+    </form>
+    <p class="foot"><i class="bi bi-info-circle-fill" aria-hidden="true"></i><span id="demo"></span></p>
+  </main>
+<script>
+  const { K, record } = UI;
+  document.getElementById("wm").textContent = K.product.name;
+  document.getElementById("hotel").textContent = `${K.hotel.name}, ${K.hotel.city}`;
+  document.getElementById("tag").textContent = K.product.tagline;
+  document.getElementById("demo").textContent = K.synthetic;
+  document.getElementById("email").value = K.people.specialist.email;
+  document.getElementById("disc").innerHTML = record({ size: 620, cap: "", top: K.hotel.name, main: K.product.name });
+</script>
+</body>
+</html>

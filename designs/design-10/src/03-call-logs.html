@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiku · Call logs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,300..800;1,400..500&display=block">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .filters { display: flex; align-items: center; gap: var(--s13); }
+  .filters .status .ic { width: 13px; height: 13px; }
+  .filters .pulse { width: 13px; height: 13px; }
+  .filters .pulse::before { width: 5px; height: 5px; }
+  .filters .grow { flex: 1; }
+
+  .log-grid { display: grid; grid-template-columns: 40px 115px 120px 96px 104px 40px minmax(0, 1fr); column-gap: var(--s13); padding: 0 var(--s21); }
+  .log-head { height: var(--s34); align-items: center; border-bottom: 1px solid var(--line); font-size: var(--f13); color: var(--text-2); font-weight: 500; flex: none; }
+  .log-head .r { text-align: right; }
+  .log-row { height: var(--row); padding-top: var(--s5); padding-bottom: var(--s5); row-gap: var(--s3); align-content: center; border-bottom: 1px solid var(--line); font-size: var(--f13); line-height: 21px; font-variant-numeric: tabular-nums; cursor: pointer; }
+  .log-row > * { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log-row .tm { color: var(--text-2); }
+  .log-row .gn { font-weight: 600; }
+  .log-row .ph { color: var(--text-2); }
+  .log-row .du { text-align: right; }
+  .log-row .pp { grid-column: 2 / -1; color: var(--text-2); }
+  .log-row .sp { display: flex; align-items: center; gap: var(--s5); }
+  .log-row .sp .ic { width: 13px; height: 13px; color: var(--text-2); }
+  .log-row .sp .none { color: var(--text-2); }
+  .log-row:hover { background: rgba(32, 36, 74, 0.55); }
+  .log-row.sel { background: var(--surface-2); }
+  .log-row.sel .pp { color: var(--text); }
+  .log-row.sel .go { margin-left: auto; color: var(--gold); display: inline-flex; align-items: center; gap: var(--s3); font-weight: 600; }
+
+  .pv { padding: 0 var(--s21) var(--s21); display: flex; flex-direction: column; gap: var(--s13); flex: 1; min-height: 0; }
+  .pv-title h3 { font: 650 var(--f21)/34px var(--font); letter-spacing: -0.01em; }
+  .pv-title p { font-size: var(--f13); line-height: 21px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .pv-purpose { font-size: var(--f16); line-height: 1.5; }
+  .pv-rec { display: flex; flex-direction: column; gap: var(--s8); }
+  .pv-note { font-size: var(--f13); line-height: 21px; color: var(--text-2); }
+  .pv-note b { color: var(--text); font-weight: 600; }
+  .pv .btn.block { margin-top: auto; }
+  .pv-bloom { display: grid; grid-template-columns: 89px minmax(0, 1fr); column-gap: var(--s13); row-gap: var(--s2); align-items: baseline; }
+</style>
+</head>
+<body>
+<script>
+  const { K, esc, ic, status, statusIcon, direction, shell, timeline, sec } = Kiku;
+  const calls = K.calls.slice().sort((a, b) => b.started.localeCompare(a.started) || b.id.localeCompare(a.id));
+  const counts = { completed: 0, in_progress: 0, escalated: 0, failed: 0 };
+  K.calls.forEach((c) => { counts[c.status]++; });
+  const A = K.audit;
+
+  const specCell = (c) => {
+    if (c.status === 'escalated' && !c.specialist) return `<span class="pink">Waiting ${c.waiting}</span>`;
+    if (!c.specialist) return '<span class="none">Kiku only</span>';
+    const listening = c.specialist.includes('(listening)');
+    const name = c.specialist.replace(' (listening)', '');
+    return `<span>${esc(name)}</span>${listening ? `${ic('headphones')}<span class="none">listening</span>` : ''}`;
+  };
+
+  const row = (c) => {
+    const sel = c.id === A.id;
+    return `<a class="log-grid log-row ${sel ? 'sel' : ''}" data-item href="${sel ? '04-call-audit.html' : '#'}"${sel ? ' aria-current="true"' : ''}>
+      <span class="tm">${c.started}</span>
+      <span class="gn">${esc(c.guest)}</span>
+      <span class="ph">${esc(c.phone)}</span>
+      <span>${direction(c)}</span>
+      <span>${status(c.status)}</span>
+      <span class="du">${c.duration}</span>
+      <span class="sp">${specCell(c)}${sel ? `<span class="go">Audit ${ic('arrow-right')}</span>` : ''}</span>
+      <span class="pp">${esc(c.purpose)}</span>
+    </a>`;
+  };
+
+  const seg = (label, n, s, active) => `<span class="seg-item ${active ? 'active' : ''}" role="button" aria-pressed="${active}">${s ? statusIcon(s) : ''}${label} <span class="n">${n}</span></span>`;
+  const firstK = A.transcript.find((e) => e.karaoke);
+
+  shell({
+    role: 'specialist', active: 'logs', title: 'Call logs',
+    sub: `${K.hotel.today} · ${K.calls.length} calls on ${K.hotel.line} and outbound`,
+    right: `<label class="input-wrap" style="width:233px">${ic('search')}<input class="input" type="search" placeholder="Search calls"></label>
+            <span class="select" style="width:144px" role="button"><span class="lead">${ic('calendar')}Today</span>${ic('chevron-down')}</span>`,
+    contentClass: 'with-bar',
+    content: `
+    <div class="filters">
+      <div class="seg" role="group" aria-label="Status">
+        ${seg('All', K.calls.length, null, true)}
+        ${seg('Completed', counts.completed, 'completed')}
+        ${seg('In progress', counts.in_progress, 'in_progress')}
+        ${seg('Escalated', counts.escalated, 'escalated')}
+        ${seg('Failed', counts.failed, 'failed')}
+      </div>
+      <div class="seg" role="group" aria-label="Direction">
+        <span class="seg-item active">Both directions</span>
+        <span class="seg-item">${ic('phone-incoming', 'ic-13')}Inbound</span>
+        <span class="seg-item">${ic('phone-outgoing', 'ic-13')}Outbound</span>
+      </div>
+      <span class="select" style="width:170px" role="button"><span class="lead">All call types</span>${ic('chevron-down')}</span>
+    </div>
+    <div class="split">
+      <section class="panel" aria-label="Calls">
+        <div class="log-grid log-head"><span>Time</span><span>Guest</span><span>Phone</span><span>Type</span><span>Status</span><span class="r">Length</span><span>Specialist</span></div>
+        <div class="pane" id="rows">${calls.map(row).join('')}</div>
+        <div class="panel-foot" id="foot"></div>
+      </section>
+      <section class="panel" aria-label="Selected call">
+        <div class="panel-head"><h2><span class="num">${A.id}</span></h2>${status(A.status)}</div>
+        <div class="pv">
+          <div class="pv-title">
+            <h3>${esc(A.guest)}</h3>
+            <p>${esc(A.phone)} · Outbound · ${A.type} · ${esc(A.started)} · ${A.duration}</p>
+          </div>
+          <p class="pv-purpose">${esc(A.purpose)}</p>
+          <dl class="facts">
+            <dt>Booking</dt><dd>${A.booking}</dd>
+            <dt>Specialist</dt><dd>${esc(A.specialist)}, took over at ${A.takeoverAt}</dd>
+            <dt>Outcome</dt><dd>${esc(K.calls.find((c) => c.id === A.id).outcome)}</dd>
+          </dl>
+          <div class="pv-rec">
+            <p class="section-title">Recording</p>
+            ${timeline({
+              transcript: A.transcript, dur: sec(A.duration), labelW: 55,
+              lanes: [
+                { key: 'kiku', label: 'Kiku', cls: 'kiku', speakers: ['agent'] },
+                { key: 'spec', label: Kiku.first(A.specialist), cls: 'spec', speakers: ['specialist'] },
+                { key: 'guest', label: Kiku.first(A.guest), cls: 'guest', speakers: ['guest'] },
+              ],
+              marks: [{ t: '00:36', label: 'Escalated', icon: 'hand', side: 'l' }, { t: A.takeoverAt, label: 'Took over', icon: 'mic' }],
+              axis: ['00:00', '01:00', '02:00', A.duration],
+            })}
+          </div>
+          <div class="pv-rec">
+            <p class="section-title">First karaoke line</p>
+            <div class="bloom pv-bloom">
+              <span class="who-w">Kiku wrote</span><p class="wrote">${Kiku.wroteHtml(firstK)}</p>
+              <span class="who-s">${esc(Kiku.first(A.specialist))} said</span><p class="said">${Kiku.saidHtml(firstK)}</p>
+              <span></span><p class="kept">${Kiku.keptText(firstK)} · ${firstK.t}</p>
+            </div>
+          </div>
+          <p class="pv-note"><b>${A.karaokeSummary.lines}</b> karaoke lines: <b>${A.karaokeSummary.asWritten}</b> spoken as written, <b>${A.karaokeSummary.improvised}</b> improvised by ${esc(Kiku.first(A.specialist))}.</p>
+          <a class="btn primary lg block" href="04-call-audit.html">Open the audit ${ic('arrow-right')}</a>
+        </div>
+      </section>
+    </div>`,
+  });
+  Kiku.done(() => {
+    Kiku.fitPane(document.getElementById('rows'), {
+      foot: document.getElementById('foot'),
+      below: (n) => `${ic('list')}<span>${K.calls.length} calls today${n ? ` · ${n} more below, scroll to see them` : ''}</span>`,
+    });
+    if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+  });
+</script>
+</body>
+</html>

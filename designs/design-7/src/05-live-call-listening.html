@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku · Listening to KK-24031</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=block">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .main { display: grid; grid-template-columns: 1fr 440px; gap: 22px; }
+  .left { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+  .head .half.a { padding: 16px 20px 16px; display: grid; gap: 8px; }
+  .head h1 { font-size: 36px; }
+  .head .purpose { font-size: 16px; font-weight: 600; }
+  .head .half.b { padding: 14px 20px 14px; display: flex; gap: 28px; }
+  .who3 { display: flex; align-items: center; gap: 10px; font-size: 13px; line-height: 1.3; }
+  .who3 b { display: block; font-size: 14px; }
+  .who3 .av { width: 34px; height: 34px; font-size: 16px; }
+  .av.k { background: var(--violet); color: var(--plum); }
+  .av.g { background: var(--white); color: var(--plum); box-shadow: inset 0 0 0 1.5px var(--plum); }
+  .tx-pane { flex: 1; padding-right: 6px; }
+  .ln.is-latest { margin-top: 4px; }
+  .latest-tag { display: inline-flex; margin-left: 8px; vertical-align: 2px; }
+  .draft { display: grid; grid-template-columns: 50px 104px 1fr; gap: 0 10px; padding: 12px 4px; margin-top: 8px; align-items: baseline; border: 1.5px dashed var(--plum); border-radius: 4px; background: rgba(255, 255, 255, .55); }
+  .draft p { color: var(--ink-2); font-size: 15px; font-weight: 500; }
+  .draft .who { font-stretch: 70%; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; display: flex; gap: 6px; align-items: center; }
+  .draft .t { font-size: 12.5px; color: var(--ink-2); }
+  .dots { display: inline-flex; gap: 3px; margin-left: 6px; vertical-align: middle; }
+  .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--plum); opacity: .35; animation: blink 1.2s infinite ease-out; }
+  .dots i:nth-child(2) { animation-delay: .2s; }
+  .dots i:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%, 100% { opacity: .25; } 40% { opacity: 1; } }
+
+  .ctl { padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; }
+  .now { display: grid; grid-template-columns: 150px 1fr; gap: 18px; align-items: center; }
+  .now h2 { font-size: 28px; }
+  .now p { font-size: 13.5px; font-weight: 500; margin-top: 8px; }
+  .levels { display: grid; gap: 8px; }
+  .lv { display: grid; grid-template-columns: 74px 1fr 64px; gap: 10px; align-items: center; font-size: 13px; font-weight: 600; }
+  .lv .meter { height: 18px; }
+  .lv .st8 { font-size: 12px; font-weight: 600; text-align: right; }
+  .help2 { font-size: 12.5px; font-weight: 500; margin-top: 7px; }
+  .two-btn { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .rule { border-top: 2px dotted var(--plum); }
+  .did { display: grid; gap: 8px; }
+  .did li { display: flex; gap: 9px; font-size: 13.5px; font-weight: 500; align-items: flex-start; }
+  .did .tile { margin-top: 1px; }
+</style>
+</head>
+<body>
+<header class="band"></header>
+<main class="main">
+  <section class="left">
+    <article class="strip head" id="head"></article>
+    <div class="pane tx-pane" id="pane"><div class="tx" id="tx"></div></div>
+  </section>
+  <aside class="panel ctl on-violet" id="ctl" aria-label="Call controls"></aside>
+</main>
+<script>
+  const { K, esc, icon, status, tile, record, first, meter } = UI;
+  UI.mountBand("specialist", "live");
+  const L = K.liveCall;
+  const g = first(L.guest);
+
+  document.getElementById("head").innerHTML = `
+    <div class="half a">
+      <div class="row" style="gap:14px"><h1 class="h1">${esc(L.guest)}</h1>${status(L.status)}<span class="chip">${icon("telephone-inbound-fill")}Inbound</span><span class="chip num">${L.id}</span></div>
+      <p class="purpose">${esc(L.purpose)}</p>
+    </div>
+    <div class="tear"><span class="tear-tag l num">Rang ${K.hotel.line} at ${L.started}</span></div>
+    <div class="half b">
+      <span class="who3"><span class="av k">${icon("robot")}</span><span><b>Kiku</b>${esc(L.agentState)}</span></span>
+      <span class="who3"><span class="av g">${icon("person-fill")}</span><span><b>${esc(L.guest)}</b>On the line</span></span>
+      <span class="who3"><span class="av">${K.people.specialist.initials}</span><span><b>You</b>Listening · they can't hear you</span></span>
+    </div>`;
+
+  const items = L.transcript;
+  const latest = [...items].reverse().find((x) => x.speaker === "guest");
+  const tx = document.getElementById("tx");
+  tx.innerHTML = items.map((it) => UI.line(it, g, it === latest ? "is-latest" : "")).join("") +
+    `<div class="draft"><span class="t num">${L.duration}</span><span class="who">${icon("robot")}Kiku</span>
+      <p><span class="chip flat" style="height:22px;margin-right:8px">${icon("pencil-fill")}Drafting</span>${esc(L.agentDraft)}<span class="dots"><i></i><i></i><i></i></span></p></div>`;
+  tx.querySelector(".is-latest p").insertAdjacentHTML("beforeend", `<span class="chip latest-tag" style="height:22px">Latest question</span>`);
+  const pane = document.getElementById("pane");
+  UI.pinEnd(pane);
+
+  document.getElementById("ctl").innerHTML = `
+    <div class="now">
+      ${record({ size: 150, top: "Live", main: L.duration })}
+      <div>
+        <h2 class="h2">You're listening</h2>
+        <p>${esc(first(L.guest))} and Kiku can't hear you. Take over to speak.</p>
+      </div>
+    </div>
+    <div class="levels" aria-label="Live audio level">
+      <div class="lv"><span class="row" style="gap:6px">${icon("person-fill")}${esc(g)}</span>${meter(26, 15, 2)}<span class="st8">Speaking</span></div>
+      <div class="lv"><span class="row" style="gap:6px">${icon("robot")}Kiku</span>${meter(26, 0)}<span class="st8">Drafting</span></div>
+    </div>
+    <div>
+      <a class="btn btn-pri btn-lg btn-block is-focus" href="06-takeover-karaoke.html">${icon("mic-fill")}Take over</a>
+      <p class="help2">Kiku stops talking and writes each line for you to say.</p>
+    </div>
+    <div class="two-btn">
+      <button class="btn btn-line">${icon("volume-mute-fill")}Mute audio</button>
+      <a class="btn btn-line" href="02-live-overview.html">${icon("box-arrow-right")}Leave</a>
+    </div>
+    <div class="rule"></div>
+    <dl class="facts">
+      <div><dt>Booking</dt><dd class="num">${L.booking}</dd></div>
+      <div><dt>Phone</dt><dd class="num">${esc(L.phone)}</dd></div>
+      <div class="full"><dt>Stay</dt><dd>${esc(L.stay)}</dd></div>
+      <div><dt>Started</dt><dd class="num">${L.started}</dd></div>
+      <div><dt>On the line</dt><dd class="num">${L.duration}</dd></div>
+    </dl>
+    <div class="did">
+      <h3 class="lbl">Kiku has already</h3>
+      <ul class="did">${L.actionsTaken.map((a) => `<li><span class="tile plum">${icon("check-lg")}</span><span>${esc(a)}</span></li>`).join("")}</ul>
+    </div>`;
+</script>
+</body>
+</html>

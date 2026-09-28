@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Listening to KK-24031</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=block">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/iconoir@7.12.1/css/iconoir.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .face { padding-top: 18px; }
+  .head { margin-bottom: 16px; align-items: flex-start; }
+  .head .meta { margin-top: 6px; }
+  .clock { text-align: right; }
+  .clock .count { font-size: 30px; font-weight: 600; line-height: 1; padding: 8px 12px 9px; border-radius: 9px; background: var(--panel); box-shadow: var(--inset); display: inline-flex; align-items: center; gap: 10px; }
+  .clock .lbl { margin-top: 5px; }
+  .live { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 432px; gap: 22px; }
+  .tx { display: flex; flex-direction: column; overflow: hidden; }
+  .tx .display-head { padding: 11px 18px 10px; }
+  .tx .display-head .status { margin-left: auto; font-size: 12.5px; }
+  .msgs { flex: 1; }
+  .msg.is-latest .msg-text { font-weight: 500; }
+  .latest-lbl { display: block; font-size: 11px; font-weight: 600; color: var(--dark); margin-top: 5px; letter-spacing: .02em; }
+  .msg--draft .msg-who { color: var(--graphite); }
+  .draft { border: 1px solid var(--graphite); border-radius: 8px; background: var(--face); padding: 9px 12px 10px; }
+  .draft-head { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--label); font-weight: 500; margin-bottom: 4px; letter-spacing: .02em; }
+  .draft p { font-size: 14px; color: var(--graphite); line-height: 1.5; }
+  .dots { display: inline-flex; gap: 3px; }
+  .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--graphite); }
+  .dots i:nth-child(2) { opacity: .6; } .dots i:nth-child(3) { opacity: .3; }
+
+  .right { display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+  .audio { padding: 14px 16px 16px; }
+  .audio-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .audio-top .h3 { font-size: 14px; }
+  .speaker { display: grid; grid-template-columns: 1fr 140px 140px; gap: 10px; }
+  .speaker .grille { height: 90px; }
+  .you { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; margin: 14px 0 12px; }
+  .you .ico { font-size: 17px; }
+  .keys2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .take-hint { font-size: 12px; color: var(--label); margin-top: 8px; text-align: center; }
+
+  .facts .h3 { margin-bottom: 10px; }
+  .facts .dl { grid-template-columns: 86px 1fr; gap: 7px 12px; font-size: 13.5px; }
+  .done { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--rule-2); }
+  .done li { display: flex; gap: 9px; font-size: 13.5px; padding: 4px 0; }
+  .done li .ico { font-size: 16px; margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="column" id="column"></aside>
+  <main class="face">
+    <header class="head" id="head"></header>
+    <div class="live">
+      <section class="display tx">
+        <div class="display-head"><h2 class="h3">Live transcript</h2><span class="status" id="state"></span></div>
+        <div class="scroll msgs" id="msgs"></div>
+      </section>
+      <div class="right">
+        <section class="display audio" aria-label="Call audio" id="audio"></section>
+        <section class="facts" id="facts"></section>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+  const { K, esc, ico, status, lamp, first } = Kiku;
+  Kiku.shell({ role: 'specialist', active: 'live' });
+  const c = K.liveCall;
+  const g = first(c.guest);
+
+  document.querySelector('#head').innerHTML = `
+    <a class="key key--icon" href="02-live-overview.html" aria-label="Back to live board">${ico('arrow-left')}</a>
+    <div class="grow">
+      <div class="head-title"><h1 class="h1">${esc(c.guest)}</h1>${status(c.status)}</div>
+      <div class="meta">${ico('phone-income')}<span>Inbound to ${esc(K.hotel.line)}</span><span class="sep"></span><span>${esc(c.phone)}</span><span class="sep"></span><span>${c.id}</span><span class="sep"></span><span>started ${c.started}</span></div>
+    </div>
+    <div class="clock"><div class="count">${lamp('green', 'lamp--lg')}${c.duration}</div><div class="lbl">on the call</div></div>`;
+
+  document.querySelector('#state').innerHTML = `${lamp('green')}live`;
+  const pane = document.querySelector('#msgs');
+  const last = c.transcript.length - 1;
+  pane.innerHTML = Kiku.transcript(c.transcript, { guest: c.guest, latestIndex: last }) + `
+    <div class="msg msg--draft"><div class="msg-t">${c.duration}</div><div class="msg-who">Kiku</div>
+      <div class="draft"><div class="draft-head"><span class="dots"><i></i><i></i><i></i></span>${c.agentState.toLowerCase()}, not spoken yet</div><p>${esc(c.agentDraft)}</p></div></div>`;
+  pane.querySelectorAll('.msg')[last].querySelector('.msg-who').insertAdjacentHTML('beforeend', '<span class="latest-lbl">latest</span>');
+  requestAnimationFrame(() => { pane.scrollTop = pane.scrollHeight; });
+
+  document.querySelector('#audio').innerHTML = `
+    <div class="audio-top"><h2 class="h3">Line audio</h2><span class="lbl" style="margin-left:auto">you hear both sides</span></div>
+    <div class="speaker">
+      <div class="grille" aria-hidden="true"></div>
+      ${Kiku.vu({ label: g.toLowerCase(), db: -6, width: 140 })}
+      ${Kiku.vu({ label: 'kiku', db: -20, width: 140 })}
+    </div>
+    <p class="you">${ico('microphone-mute')}You're listening. ${esc(g)} can't hear you.</p>
+    <a class="key key--orange key--xl key--block" href="06-takeover-karaoke.html">${ico('microphone')}take over</a>
+    <p class="take-hint">Kiku stops speaking and writes each line for you to say.</p>
+    <div class="keys2">
+      <button class="key key--lg">${ico('sound-off')}mute call audio</button>
+      <a class="key key--lg" href="02-live-overview.html">${ico('log-out')}leave call</a>
+    </div>`;
+
+  document.querySelector('#facts').innerHTML = `
+    <h2 class="h3">Call facts</h2>
+    <dl class="dl">
+      <dt>booking</dt><dd class="strong">${c.booking}</dd>
+      <dt>stay</dt><dd>${esc(c.stay)}</dd>
+      <dt>purpose</dt><dd>${esc(c.purpose)}</dd>
+      <dt>listening</dt><dd class="row gap-8">${Kiku.knob(K.people.specialist.initials, 'knob--sm')}${esc(c.listening[0])} (you)</dd>
+    </dl>
+    <div class="done"><h3 class="lbl" style="font-size:12px;margin-bottom:4px">Kiku has already</h3>
+      <ul>${c.actionsTaken.map(x => `<li>${ico('check')}<span>${esc(x)}</span></li>`).join('')}</ul></div>`;
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku · Listening to KK-24031</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&display=block">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .head-tags { display: flex; gap: 8px; align-items: center; padding-bottom: 6px; }
+  .timer { text-align: right; }
+  .timer b { font: 600 40px/1 var(--mono); letter-spacing: -.04em; display: block; }
+  .timer span { font-size: 12.5px; color: var(--moss); }
+  .lbar { display: grid; grid-template-columns: auto 1fr auto; gap: 24px; align-items: center; padding: 12px 16px; border-top: var(--rule); border-bottom: var(--rule); background: var(--paper-2); }
+  .lstate { display: flex; gap: 12px; align-items: center; }
+  .lstate b { display: block; font-size: 15px; font-weight: 700; text-transform: lowercase; }
+  .lstate span { font-size: 13px; color: var(--moss); }
+  .lstate .ic { width: 40px; height: 40px; display: grid; place-items: center; background: var(--blue-55); font-size: 20px; }
+  .roll { display: flex; gap: 18px; align-items: center; justify-content: center; }
+  .roll .lvl { display: flex; flex-direction: column; gap: 3px; }
+  .roll .lvl small { font-size: 11.5px; color: var(--moss); display: flex; justify-content: space-between; gap: 12px; }
+  .roll .lvl small .mono { font-size: 10.5px; }
+  .ctrls { display: flex; gap: 8px; align-items: center; }
+
+  .body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 360px; gap: 32px; margin-top: 18px; }
+  .col { display: flex; flex-direction: column; min-height: 0; }
+  .col-head { display: flex; align-items: baseline; gap: 12px; padding-bottom: 8px; border-bottom: var(--rule); }
+  .tr { display: grid; grid-template-columns: 44px 92px 1fr; gap: 0 12px; padding: 9px 0; border-bottom: 1px solid var(--hair); align-items: start; }
+  .tr .t { font: 500 12px/1.9 var(--mono); color: var(--moss); }
+  .who { display: inline-flex; gap: 7px; align-items: center; font-weight: 600; font-size: 13px; text-transform: lowercase; }
+  .tx { font-size: 14px; line-height: 1.5; padding-top: 3px; max-width: 66ch; }
+  .tr.latest { border: var(--rule); padding: 12px 12px 12px 0; margin-top: 6px; }
+  .tr.latest .t { padding-left: 10px; }
+  .tr.latest .tx { font-size: 17px; font-weight: 500; line-height: 1.4; }
+  .tr.latest .tag { margin-top: 6px; }
+  .tr.draft { background: var(--pink-15); border-bottom: 0; padding: 12px 12px 14px 0; margin-top: 8px; }
+  .tr.draft .t { padding-left: 10px; }
+  .tr.draft .tx { font-size: 15px; }
+  .drafting { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; text-transform: lowercase; margin-bottom: 4px; }
+  .gap { font-size: 12px; color: var(--moss); padding: 6px 0 6px 56px; border-bottom: 1px solid var(--hair); display: flex; gap: 6px; align-items: center; }
+
+  .side-sec + .side-sec { margin-top: 22px; }
+  .dl { margin-top: 10px; grid-template-columns: 76px 1fr; }
+  .did { margin-top: 8px; }
+  .did li { list-style: none; display: grid; grid-template-columns: 24px 1fr; gap: 6px; padding: 7px 0; border-bottom: 1px solid var(--hair); font-size: 13.5px; }
+  .did li .st-mark { margin-top: 1px; }
+  .people li { list-style: none; display: flex; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--hair); font-size: 13.5px; }
+  .people li .moss { margin-left: auto; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function () {
+  const { K, esc, ic, status, av, mis, level, toSec } = Kiku;
+  const L = K.liveCall;
+  const me = K.people.specialist;
+  const gFirst = L.guest.split(" ")[0];
+
+  const tr = L.transcript;
+  const items = tr.map((e, i) => {
+    const agent = e.speaker === "agent";
+    const last = i === tr.length - 1;
+    return `<div class="tr ${last ? "latest" : ""}"><span class="t">${e.t}</span><span class="who">${agent ? av("", "kiku", "sm") + "kiku" : av(L.guest, "guest", "sm") + esc(gFirst)}</span>
+      <div><p class="tx">${esc(e.text)}</p>${last ? `<span class="tag">${ic("question")}latest question</span>` : ""}</div></div>`;
+  }).join("");
+  const draft = `<div class="tr draft"><span class="t">now</span><span class="who">${av("", "kiku", "sm")}kiku</span>
+    <div><div class="drafting">${esc(L.agentState.toLowerCase())}<span class="dots"><i></i><i></i><i></i></span></div><p class="tx">${esc(L.agentDraft)}</p></div></div>`;
+
+  Kiku.shell({
+    role: "specialist", active: "live", html: `
+    <header class="page-head">
+      <a class="icon-btn" href="02-live-overview.html" aria-label="Back to live board" style="align-self:center">${ic("arrow-left")}</a>
+      ${mis(L.guest, { proper: true })}
+      <div class="head-tags">${status(L.status)}<span class="tag">${ic("phone-incoming")}Inbound</span><span class="tag mono">${L.id}</span></div>
+      <div class="head-meta"><div class="timer"><b>${L.duration}</b><span>on the line since <span class="mono">${L.started}</span></span></div></div>
+    </header>
+    <section class="lbar" aria-label="Your connection">
+      <div class="lstate"><span class="ic">${ic("headphones")}</span><div><b>you're listening</b><span>Your mic is off. ${esc(L.guest)} hears only Kiku.</span></div></div>
+      <div class="roll">
+        <div class="lvl"><small><span>${esc(gFirst)}</span><span class="mono">last 30 s</span></small>${level(44, 11, { h: 26, off: 22, floor: .2 })}</div>
+        <div class="lvl"><small><span>kiku</span><span class="mono">drafting</span></small>${level(44, 5, { cls: "pink", h: 26, off: 44 })}</div>
+      </div>
+      <div class="ctrls">
+        <button class="btn">${ic("speaker-slash")}mute audio</button>
+        <a class="btn" href="02-live-overview.html">${ic("sign-out")}leave</a>
+        <a class="btn blue" href="06-takeover-karaoke.html">${ic("hand-grabbing")}take over</a>
+      </div>
+    </section>
+    <div class="body">
+      <section class="col">
+        <div class="col-head"><h2 class="h2">live transcript</h2><span class="moss" style="font-size:12.5px">${tr.length} lines · updating</span></div>
+        <div class="pane edge" id="live">${items}${draft}</div>
+      </section>
+      <aside class="col">
+        <section class="side-sec">
+          <div class="col-head"><h2 class="h2">the call</h2></div>
+          <dl class="dl">
+            <dt>purpose</dt><dd>${esc(L.purpose)}</dd>
+            <dt>phone</dt><dd class="mono">${esc(L.phone)}</dd>
+            <dt>booking</dt><dd class="mono">${esc(L.booking)}</dd>
+            <dt>stay</dt><dd>${esc(L.stay)}</dd>
+            <dt>rang</dt><dd><span class="mono">${esc(K.hotel.line)}</span></dd>
+          </dl>
+        </section>
+        <section class="side-sec">
+          <div class="col-head"><h2 class="h2">kiku already did</h2><span class="moss" style="font-size:12.5px">${L.actionsTaken.length} actions</span></div>
+          <ul class="did">${L.actionsTaken.map((a) => `<li><span class="st st-done"><span class="st-mark">${ic("check")}</span></span><span>${esc(a)}</span></li>`).join("")}</ul>
+        </section>
+        <section class="side-sec">
+          <div class="col-head"><h2 class="h2">on the call</h2></div>
+          <ul class="people">
+            <li>${av(L.guest, "guest", "sm")}${esc(L.guest)}<span class="moss">guest</span></li>
+            <li>${av("", "kiku", "sm")}Kiku<span class="moss">handling the call</span></li>
+            <li>${av(me.name, "spec", "sm")}${esc(me.name)}<span class="moss">listening, mic off</span></li>
+          </ul>
+        </section>
+      </aside>
+    </div>`
+  });
+  const p = document.getElementById("live");
+  p.scrollTop = p.scrollHeight;
+})();
+</script>
+</body>
+</html>

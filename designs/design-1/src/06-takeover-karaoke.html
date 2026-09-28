@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>On the line: Margaret Doyle · Kiku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&family=Geist+Mono:wght@400;500&display=block">
+<script src="https://cdn.jsdelivr.net/npm/lucide@1.48.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+</head>
+<body>
+<div id="app" class="app"></div>
+<script>
+const { K, ic, status, topbar, mount, esc, spineEntry, diffWrote, diffSaid, meter, legend, firstName, toSec, fmt } = UI;
+const T = K.takeover;
+const me = K.people.specialist;
+const cur = T.transcript[T.transcript.length - 1];
+const history = T.transcript.slice(0, -1);
+const shown = history.slice(-3);
+const earlier = history.slice(0, -3);
+const onLine = fmt(toSec(T.duration) - toSec(T.takeoverAt));
+const ctx = { guest: T.guest, specialistFirst: "You" };
+
+const current = `<div class="sp-row cur">
+  <div class="sp-l"><span class="who-lbl">Kiku wrote</span><p class="sp-text">${diffWrote(cur.diff, { live: true })}</p></div>
+  <div class="sp-c"><span class="tc sig">${cur.t}</span><span class="chip ink">${ic("mic", "i12")}Live</span></div>
+  <div class="sp-r"><span class="who-lbl">You’re saying</span><p class="sp-text">${diffSaid(cur.diff)}<span class="caret"></span></p></div>
+</div>`;
+const next = `<div class="sp-row nextl">
+  <div class="sp-l"><span class="who-lbl">Next line, ready when you finish</span><p class="sp-text">${esc(T.nextLine)}</p></div>
+  <div class="sp-c"><span class="tc">Next</span></div>
+  <div class="sp-r"></div>
+</div>`;
+
+mount(`
+${topbar("specialist", "Live", { liveDot: true })}
+<main class="page" style="grid-template-rows:auto minmax(0,1fr)">
+  <div class="band onair" role="status">
+    <span class="badge">${ic("mic", "i20")}</span>
+    <div class="state"><span class="h20">You’re on the line with ${esc(T.guest)}</span><span>Karaoke mode: Kiku writes each line, you say it in your own words.</span></div>
+    <div class="ctrls">
+      <div class="timer">${onLine}<small>on the line since ${T.takeoverAt}</small></div>
+      <div class="mic-lvl"><span class="t12">Your mic</span>${meter(17, 24)}</div>
+      <button class="btn">${ic("mic-off")}Mute</button>
+      <button class="btn solid">${ic("undo-2")}Hand back to Kiku</button>
+      <button class="btn">${ic("phone-off", "danger")}End call</button>
+    </div>
+  </div>
+
+  <section class="col panel prompter" style="grid-column:1/10;margin:24px 0">
+    <div class="sp-head"><div class="l">${legend()}<span class="st">${ic("audio-lines")}Kiku wrote</span></div><div class="c">Time</div><div class="r"><span class="st">${ic("mic")}You said</span><span></span></div></div>
+    <div class="spine hist">
+      <div class="sp-more"><a class="lbl" href="#">${ic("chevron-up")}<span>${earlier.length} earlier lines</span><span class="mono">${earlier[0].t}–${earlier[earlier.length - 1].t}</span><span class="muted">incl. escalation and your takeover</span></a></div>
+      ${shown.map((e) => spineEntry(e, ctx)).join("")}</div>
+    <div class="spine live-now">${current}${next}</div>
+  </section>
+
+  <aside class="rail" style="grid-column:10/13">
+    <div class="blk">
+      <h1 class="h32">${esc(T.guest)}</h1>
+      <div class="audit-chips" style="padding:0;flex-wrap:wrap">${status(T.status, { chip: true })}<span class="chip flat">${ic("phone-incoming", "i12")}Inbound</span><span class="chip flat mono">${T.id}</span></div>
+    </div>
+    <section class="blk">
+      <h2 class="sec-h h20">Why it escalated</h2>
+      <p>${esc(T.escalationReason)}</p>
+    </section>
+    <dl class="facts">
+      <div class="w"><dt>Why she called</dt><dd>${esc(T.purpose)}</dd></div>
+      <div><dt>Phone</dt><dd class="mono" style="font-size:12px">${esc(T.phone)}</dd></div>
+      <div><dt>Booking</dt><dd class="mono" style="font-size:12px">${T.booking}</dd></div>
+      <div class="w"><dt>Stay</dt><dd>${esc(T.stay)}</dd></div>
+    </dl>
+    <section>
+      <h2 class="sec-h h20">On the booking <span class="cnt">${T.facts.length}</span></h2>
+      <ul class="acts-list">${T.facts.map((f) => `<li>${ic("receipt")}<span>${esc(f)}</span></li>`).join("")}</ul>
+    </section>
+  </aside>
+</main>
+`);
+</script>
+</body>
+</html>

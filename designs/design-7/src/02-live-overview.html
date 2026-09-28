@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku · Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=block">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .main { display: grid; grid-template-columns: 440px 1fr; gap: 24px; }
+  .needs { padding: 22px 22px 22px; display: flex; flex-direction: column; gap: 14px; }
+  .needs .intro { font-size: 13.5px; font-weight: 500; margin-top: -4px; }
+  .owen .half.a { display: grid; gap: 14px; padding: 16px 18px 18px; }
+  .owen .who { display: grid; grid-template-columns: 136px 1fr; gap: 16px; align-items: center; }
+  .owen .who h2 { font-size: 30px; }
+  .owen .meta { display: grid; gap: 4px; margin-top: 8px; font-size: 13px; font-weight: 500; }
+  .owen .purpose { font-size: 16px; font-weight: 600; line-height: 1.4; }
+  .owen .half.b { display: grid; gap: 14px; padding: 18px 18px 18px; }
+  .reason { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; font-weight: 500; }
+  .reason .tile { margin-top: 1px; }
+  .acts { display: flex; gap: 10px; }
+  .mine .half.a { padding: 14px 18px 16px; display: grid; gap: 8px; }
+  .mine .half.b { padding: 16px 18px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+  .right { display: flex; flex-direction: column; gap: 14px; min-width: 0; min-height: 0; }
+  .today { font-size: 16.5px; line-height: 1.55; font-weight: 400; max-width: 96ch; background: var(--white); padding: 12px 16px; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--line); }
+  .today b { font-weight: 700; }
+  .today .cx { font-size: 16.5px; margin-right: 6px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .lc .half.a { padding: 14px 16px 16px; display: grid; gap: 7px; }
+  .lc .half.b { padding: 16px 16px 14px; display: grid; gap: 10px; }
+  .lc h3 { font-stretch: 68%; font-weight: 800; font-size: 21px; text-transform: uppercase; line-height: 1; letter-spacing: .015em; }
+  .lc .dir { font-size: 12.5px; font-weight: 500; color: var(--ink-2); display: flex; gap: 6px; align-items: center; }
+  .lc .purpose { font-size: 13.5px; line-height: 1.4; min-height: 38px; }
+  .lc .who { font-size: 13px; font-weight: 600; display: flex; gap: 7px; align-items: center; }
+  .lc .acts .btn { flex: 1; }
+  .rec-sheet { flex: 1; overflow: hidden; }
+  .rec-sheet .tbl td { padding: 8px 12px; white-space: nowrap; }
+  .rec-sheet .tbl td.oc { white-space: normal; }
+</style>
+</head>
+<body>
+<header class="band"></header>
+<main class="main">
+  <section class="panel needs on-violet" aria-labelledby="needs-h">
+    <div class="row between"><h1 class="h1" id="needs-h">Needs a specialist</h1><span class="chip dark num" id="waiting-n"></span></div>
+    <p class="intro">Escalated calls wait here until someone takes over.</p>
+    <article class="strip owen" id="owen"></article>
+    <h2 class="h3" style="margin-top:6px">Escalated, already with you</h2>
+    <article class="strip mine" id="mine"></article>
+  </section>
+
+  <section class="right" aria-label="Live now">
+    <p class="today" id="today"></p>
+    <div class="row between"><h2 class="h2">On the air with Kiku</h2><span class="sub muted" id="onair-n"></span></div>
+    <div class="grid3" id="grid"></div>
+    <div class="row between" style="margin-top:4px"><h2 class="h2">Just finished</h2><a class="link" href="03-call-logs.html">All call logs</a></div>
+    <div class="sheet rec-sheet"><table class="tbl" id="recent"></table></div>
+  </section>
+</main>
+<script>
+  const { K, esc, icon, status, tile, record, first } = UI;
+  UI.mountBand("specialist", "live");
+  const byId = (id) => K.calls.find((c) => c.id === id);
+  const S = K.stats;
+
+  const owen = byId("KK-24032");
+  const waiting = K.calls.filter((c) => c.status === "escalated" && !c.specialist);
+  document.getElementById("waiting-n").textContent = `${waiting.length} waiting`;
+  document.getElementById("owen").innerHTML = `
+    <div class="half a">
+      <div class="who">
+        ${record({ size: 136, top: "Waiting", main: owen.waiting })}
+        <div>
+          <h2 class="h2">${esc(owen.guest)}</h2>
+          <div style="margin-top:10px">${status(owen.status)}</div>
+          <div class="meta">
+            <span class="num">${icon("telephone-inbound-fill")} ${esc(owen.phone)}</span>
+            <span class="num">Rang ${owen.started} · on the line ${owen.duration}</span>
+            <span class="num" style="font-weight:700">Waiting for a specialist ${owen.waiting}</span>
+          </div>
+        </div>
+      </div>
+      <p class="purpose">${esc(owen.purpose)}</p>
+    </div>
+    <div class="tear"><span class="tear-tag">${owen.type} · <span class="num">${owen.id}</span></span></div>
+    <div class="half b">
+      <p class="reason"><span class="tile esc">${icon("arrow-up")}</span><span>${esc(owen.escalationReason)}</span></p>
+      <div class="acts">
+        <a class="btn btn-pri btn-lg" style="flex:1" href="06-takeover-karaoke.html">${icon("mic-fill")}Take over</a>
+        <a class="btn btn-sec btn-lg" href="05-live-call-listening.html">${icon("headphones")}Listen</a>
+      </div>
+    </div>`;
+
+  const mg = byId("KK-24030");
+  document.getElementById("mine").innerHTML = `
+    <div class="half a">
+      <div class="row between"><h3 class="h2" style="font-size:22px">${esc(mg.guest)}</h3>${status(mg.status)}</div>
+      <p style="font-size:13.5px">${esc(mg.purpose)}</p>
+      <p class="sub muted num">${icon("telephone-inbound-fill")} ${esc(mg.phone)} · since ${mg.started} · ${mg.duration}</p>
+    </div>
+    <div class="tear"><span class="tear-tag">${icon("mic-fill")}You took over at ${K.takeover.takeoverAt}</span></div>
+    <div class="half b">
+      <span class="sub" style="font-weight:600">Karaoke mode on</span>
+      <a class="btn btn-sec" href="06-takeover-karaoke.html">Back to call${icon("arrow-right")}</a>
+    </div>`;
+
+  document.getElementById("today").innerHTML =
+    `<span class="cx">Today, ${K.hotel.now}</span> <b>${S.callsToday}</b> calls so far: <b>${S.inbound}</b> inbound, <b>${S.outbound}</b> outbound. ` +
+    `<b>${S.completed}</b> completed, <b>${S.inProgress}</b> in progress, <b>${S.escalated}</b> escalated, <b>${S.failed}</b> failed. ` +
+    `Specialists took over <b>${S.takeoversToday}</b> times, average handle time <b>${S.avgHandle}</b>, and upsells added <b>${S.upsellValueToday}</b>.`;
+
+  const prog = K.calls.filter((c) => c.status === "in_progress");
+  document.getElementById("onair-n").textContent = `${prog.length} in progress`;
+  document.getElementById("grid").innerHTML = prog.map((c) => {
+    const mine = c.specialist && c.specialist.startsWith(K.people.specialist.name);
+    const kind = c.direction === "inbound" ? `${icon("telephone-inbound-fill")}Inbound` : `${icon("telephone-outbound-fill")}Outbound · ${c.type}${c.promo ? " · " + c.promo : ""}`;
+    const who = mine
+      ? `<span class="who">${icon("headphones")}You're listening</span>`
+      : `<span class="who">${icon("robot")}Kiku alone<span class="muted" style="font-weight:500">· listen in to take over</span></span>`;
+    const acts = mine
+      ? `<div class="acts"><span class="btn btn-pressed btn-sm">${icon("headphones")}Listening</span><a class="btn btn-sec btn-sm" href="05-live-call-listening.html">Open${icon("arrow-right")}</a></div>`
+      : `<div class="acts"><button class="btn btn-sec btn-sm${c.id === "KK-24029" ? " is-hover" : ""}">${icon("headphones")}Listen</button><button class="btn btn-sm" disabled title="Listen in first to take over">${icon("mic-fill")}Take over</button></div>`;
+    return `<article class="strip lc">
+      <div class="half a">
+        <div class="row between"><h3>${esc(c.guest)}</h3>${status(c.status)}</div>
+        <span class="dir">${kind}</span>
+        <p class="purpose clamp2">${esc(c.purpose)}</p>
+      </div>
+      <div class="tear"><span class="tear-tag l num">${c.id} · ${c.duration}</span></div>
+      <div class="half b">${who}${acts}</div>
+    </article>`;
+  }).join("");
+
+  const done = K.calls.filter((c) => c.status === "completed" || c.status === "failed").slice(0, 6);
+  document.getElementById("recent").innerHTML = `<thead><tr><th>Ended</th><th>Guest</th><th>Call</th><th>Status</th><th class="r">Length</th><th>Outcome</th><th></th></tr></thead><tbody>` +
+    done.map((c) => `<tr><td class="num">${c.started}</td><td class="strong">${esc(c.guest)}</td>
+      <td>${c.direction === "inbound" ? "Inbound" : "Outbound · " + c.type}</td><td>${status(c.status)}</td><td class="r num">${c.duration}</td>
+      <td class="oc">${esc(c.outcome || "")}</td>
+      <td class="r">${c.id === "KK-24027" ? `<a class="link" href="04-call-audit.html">Audit</a>` : `<a class="link" href="03-call-logs.html">Log</a>`}</td></tr>`).join("") + `</tbody>`;
+</script>
+</body>
+</html>

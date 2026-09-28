@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Call audit KK-24027 · Kiku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&family=Geist+Mono:wght@400;500&display=block">
+<script src="https://cdn.jsdelivr.net/npm/lucide@1.48.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+</head>
+<body>
+<div id="app" class="app"></div>
+<script>
+const { K, ic, status, topbar, mount, esc, spineEntry, legend, toSec, firstName } = UI;
+const A = K.audit;
+const total = toSec(A.duration);
+const pct = (t) => ((toSec(t) / total) * 100).toFixed(2) + "%";
+const esc36 = A.transcript.find((e) => e.kind === "escalation");
+const kturns = A.transcript.filter((e) => e.karaoke);
+const PLAYHEAD = "01:12";
+
+let ticks = "";
+for (let s = 0; s <= total; s += 10) {
+  const major = s % 30 === 0;
+  ticks += `<span class="tick${major ? "" : " minor"}" style="left:${((s / total) * 100).toFixed(2)}%"></span>`;
+  if (major) ticks += `<span class="tlab" style="left:${((s / total) * 100).toFixed(2)}%">${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}</span>`;
+}
+const ktick = kturns.map((k) => `<span class="kt" style="left:${pct(k.t)};${k.asWritten ? "height:12px;top:36px" : "background:var(--ink)"}" title="${k.t}"></span>`).join("");
+
+const player = `<div class="player">
+  <button class="play" aria-label="Play recording">${ic("play")}</button>
+  <div class="ptime">${PLAYHEAD} <span class="muted">/ ${A.duration}</span><small>Recording</small></div>
+  <div class="tl" aria-label="Call timeline">
+    <span class="mk" style="right:calc(100% - ${pct(esc36.t)} - 5px);flex-direction:row">Escalated ${esc36.t}<svg viewBox="0 0 10 10" style="width:10px;height:10px"><path d="M5 0 L10 9.5 H0 Z" fill="#FF6A13"/></svg><span class="stem" style="left:auto;right:5px"></span></span>
+    <span class="mk" style="left:calc(${pct(A.takeoverAt)} - 5px)"><svg viewBox="0 0 10 10" style="width:10px;height:10px"><rect x=".5" y=".5" width="9" height="9" fill="#C8F03C" stroke="#0E0E0E"/></svg>${esc(firstName(A.specialist))} took over ${A.takeoverAt}<span class="stem"></span></span>
+    <span class="lane"></span>
+    <span class="played" style="width:${pct(PLAYHEAD)}"></span>
+    <span class="kband" style="left:${pct(A.takeoverAt)};right:0"></span>
+    ${ticks}${ktick}
+    <span class="head" style="left:${pct(PLAYHEAD)}"></span>
+  </div>
+</div>`;
+
+const ctx = { guest: A.guest, specialistFirst: firstName(A.specialist), current: PLAYHEAD };
+const transcript = A.transcript.map((e) => `<div data-t="${e.t}">${spineEntry(e, ctx)}</div>`).join("");
+
+const outcome = A.outcome.map((o) => `<div class="outcome-row">
+  <div>${esc(o.item)}</div>
+  <div class="res">${o.result === "added" ? ic("check", "i12") + "Added" : ic("x", "i12") + "Declined"}</div>
+  <div class="num strong${o.result === "declined" ? " muted" : ""}">${o.amount}</div></div>`).join("");
+
+const kcells = kturns.map((k) => `<div class="kcell${k.asWritten ? " aw" : ""}" title="${k.t}"><span class="pc">${k.match}%</span><span class="fill" style="height:${Math.max(2, Math.round(k.match * 0.26))}px"></span></div>`).join("");
+
+mount(`
+${topbar("specialist", "Call logs")}
+<main class="page">
+  <header class="ph">
+    <h1 class="h52">${esc(A.guest)}</h1>
+    <div class="audit-chips">${status(A.status, { chip: true })}<span class="chip flat">${ic("phone-outgoing", "i12")}Outbound · ${esc(A.type)}</span><span class="chip flat mono">${A.duration}</span><span class="chip flat mono">${A.id}</span><span class="chip flat">${esc(A.started)}</span></div>
+    <a class="aside link" href="03-call-logs.html">${ic("arrow-left")}Call logs</a>
+  </header>
+
+  <aside class="col rail-a" style="grid-column:1/5">
+    <p class="t16 strong">${esc(A.purpose)}</p>
+    <dl class="facts">
+      <div><dt>Phone</dt><dd class="mono">${esc(A.phone)}</dd></div>
+      <div><dt>Booking</dt><dd class="mono">${A.booking}</dd></div>
+      <div class="w"><dt>Stay</dt><dd>${esc(A.stay)}</dd></div>
+      <div class="w"><dt>Handled by</dt><dd>${esc(A.agent)}, then ${esc(A.specialist)} from <span class="mono">${A.takeoverAt}</span></dd></div>
+      <div class="w"><dt>Escalated at <span class="mono">${esc36.t}</span></dt><dd>${esc(A.escalationReason)}</dd></div>
+    </dl>
+    <section>
+      <h2 class="sec-h h20" title="Share of Kiku’s script kept, per line">Karaoke <span class="cnt">${A.karaokeSummary.lines} lines · ${A.karaokeSummary.asWritten} as written · ${A.karaokeSummary.improvised} improvised</span></h2>
+      <div class="kstrip">${kcells}</div>
+      <div class="klab">${kturns.map((k) => `<span>${k.t}</span>`).join("")}</div>
+    </section>
+    <section>
+      <h2 class="sec-h h20">Outcome <span class="cnt">${A.outcome.filter((o) => o.result === "added").length} added to ${A.booking}</span></h2>
+      ${outcome}
+      <div class="outcome-row total"><div>Total added</div><div class="num">${A.total}</div></div>
+      <p class="st" style="padding-top:8px">${ic("pencil")}${esc(A.note)}</p>
+    </section>
+  </aside>
+
+  <section class="col panel" style="grid-column:5/13;margin-bottom:24px">
+    ${player}
+    <div class="transcript" id="tx">
+      <div class="sp-head"><div class="l">${legend()}<span class="st">${ic("audio-lines")}Kiku</span></div><div class="c">Time</div><div class="r"><span class="st">${ic("user")}${esc(A.specialist)}</span><span class="muted t12 st">${ic("audio-lines", "i12")}Following playback</span></div></div>
+      <div class="spine">${transcript}</div>
+    </div>
+  </section>
+</main>
+`, () => {
+  const tx = document.getElementById("tx");
+  const target = tx.querySelector('[data-t="00:36"]');
+  tx.scrollTop = target.getBoundingClientRect().top - tx.getBoundingClientRect().top - 48;
+});
+</script>
+</body>
+</html>

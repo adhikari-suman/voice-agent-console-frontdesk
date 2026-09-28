@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku · Users</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&display=block">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .main { padding-right: 0; }
+  .layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 32px; margin-top: -26px; }
+  .left { display: flex; flex-direction: column; min-height: 0; padding-top: 26px; }
+  .users td { padding: 12px 10px; font-size: 13.5px; }
+  .users td:nth-child(1) { padding-left: 0; }
+  .users tr.hov .to .bar { background: var(--paper); }
+  .users .who { display: flex; gap: 12px; align-items: center; }
+  .users .who b { font-weight: 600; font-size: 14.5px; display: block; line-height: 1.25; }
+  .users .who .mono { font-size: 11px; color: var(--moss); }
+  .users tr.off td, .users tr.off .who .mono { color: var(--moss); }
+  .users tr.off .av { background: var(--paper-2); border-style: dashed; border-color: var(--moss); color: var(--moss); }
+  .ust { display: inline-flex; align-items: center; gap: 7px; font-weight: 500; white-space: nowrap; }
+  .ust .d { width: 18px; height: 18px; display: inline-grid; place-items: center; font-size: 13px; }
+  .ust.active .d::after { content: ""; width: 9px; height: 9px; background: var(--ink); border-radius: 50%; }
+  .role { display: inline-flex; gap: 6px; align-items: center; }
+  .to { display: inline-flex; gap: 8px; align-items: center; justify-content: flex-end; font: 500 13px var(--mono); }
+  .to .bar { width: 36px; height: 8px; background: var(--paper-2); position: relative; }
+  .to .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--blue); }
+  .you { font-size: 11px; font-weight: 600; background: var(--ink); color: var(--paper); padding: 1px 5px; margin-left: 6px; text-transform: lowercase; vertical-align: 1px; }
+
+  .panel { background: var(--paper-2); border-left: var(--rule); display: flex; flex-direction: column; min-height: 0; height: 100%; }
+  .panel-head { display: flex; align-items: center; gap: 10px; padding: 24px 24px 14px; border-bottom: var(--rule); }
+  .panel-head .h2 { font-size: 24px; }
+  .panel-head .icon-btn { margin-left: auto; }
+  .panel-body { padding: 18px 24px; display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0; overflow: auto; }
+  .rolepick { display: flex; flex-direction: column; gap: 10px; }
+  .ropt { border: var(--rule); background: var(--paper); padding: 12px 14px; display: grid; grid-template-columns: 22px 1fr; gap: 4px 10px; cursor: pointer; }
+  .ropt.on { background: var(--blue-22); }
+  .ropt b { font-weight: 700; font-size: 15px; }
+  .ropt ul { grid-column: 2; list-style: none; display: flex; flex-direction: column; gap: 3px; margin-top: 4px; }
+  .ropt li { display: flex; gap: 7px; align-items: center; font-size: 13px; }
+  .ropt li i { font-size: 12px; }
+  .panel-foot { border-top: var(--rule); padding: 16px 24px 22px; display: flex; gap: 10px; align-items: center; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function () {
+  const { K, esc, ic, mis, av } = Kiku;
+  const D = K.newUserDraft;
+  const me = K.people.admin;
+  const max = Math.max(...K.users.map((u) => u.takeovers30d));
+  const ust = (s) => s === "Active" ? `<span class="ust active"><span class="d"></span>Active</span>`
+    : s === "Invited" ? `<span class="ust"><span class="d">${ic("envelope-simple")}</span>Invited</span>`
+    : `<span class="ust"><span class="d">${ic("prohibit")}</span>Deactivated</span>`;
+  const rows = K.users.map((u) => `
+    <tr class="${u.status === "Deactivated" ? "off" : ""} ${u.name === "Tomasz Nowak" ? "hov" : ""}">
+      <td><div class="who">${av(u.name, u.role === "Admin" ? "admin" : "spec")}<div><b>${esc(u.name)}${u.name === me.name ? `<span class="you">you</span>` : ""}</b><span class="mono">${esc(u.email)}</span></div></div></td>
+      <td><span class="role">${ic(u.role === "Admin" ? "key" : "headset")}${u.role}</span></td>
+      <td>${ust(u.status)}</td>
+      <td>${esc(u.lastActive)}</td>
+      <td class="num"><span class="to">${u.name === "Tomasz Nowak" ? `<button class="icon-btn" style="width:28px;height:28px" aria-label="Manage ${esc(u.name)}">${ic("dots-three")}</button>` : ""}<span class="bar"><i style="width:${(u.takeovers30d / max) * 100}%"></i></span>${u.takeovers30d}</span></td>
+    </tr>`).join("");
+  const roleOpt = (r, on) => `<label class="ropt ${on ? "on" : ""}"><span class="radio ${on ? "on" : ""}" role="radio" aria-checked="${on}"></span><b>${r}</b>
+      <ul>${K.roles[r].map((p) => `<li>${ic("check")}${esc(p)}</li>`).join("")}</ul></label>`;
+
+  Kiku.shell({
+    role: "admin", active: "users", html: `
+    <div class="layout">
+      <section class="left">
+        <header class="page-head">
+          ${mis("users")}
+          <span class="moss" style="padding-bottom:6px;font-size:14px">${K.users.length} people · ${K.users.filter((u) => u.status === "Invited").length} invite waiting</span>
+          <div class="head-meta"><button class="btn ink">${ic("user-plus")}new user</button></div>
+        </header>
+        <div class="pane">
+          <table class="ruled users" style="table-layout:fixed">
+            <colgroup><col style="width:256px"><col style="width:104px"><col style="width:122px"><col style="width:130px"><col style="width:124px"></colgroup>
+            <thead><tr><th>name and email</th><th>role</th><th>status</th><th>last active</th><th class="num" style="white-space:normal;line-height:1.2">takeovers, 30 days</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </section>
+      <aside class="panel" aria-label="New user">
+        <div class="panel-head"><h2 class="h2">new user</h2><button class="icon-btn bare" aria-label="Close">${ic("x")}</button></div>
+        <div class="panel-body">
+          <div class="field"><label for="n">full name</label><input id="n" class="input" value="${esc(D.name)}"></div>
+          <div class="field"><label for="e">work email</label><input id="e" class="input mono" value="${esc(D.email)}"></div>
+          <div class="field"><label for="t">job title <span class="opt">optional</span></label><input id="t" class="input" placeholder="For example, Guest Services"></div>
+          <div class="field"><span class="flabel">role</span>
+            <div class="rolepick" role="radiogroup">${roleOpt("Specialist", D.role === "Specialist")}${roleOpt("Admin", D.role === "Admin")}</div></div>
+        </div>
+        <div class="panel-foot">
+          <button class="btn ink big">${ic("paper-plane-tilt")}send invite</button>
+          <button class="btn">cancel</button>
+        </div>
+        <p class="hint" style="padding:0 24px 22px;margin-top:-10px">${esc(D.name.split(" ")[0])} gets an email invite to set a password.</p>
+      </aside>
+    </div>`
+  });
+})();
+</script>
+</body>
+</html>

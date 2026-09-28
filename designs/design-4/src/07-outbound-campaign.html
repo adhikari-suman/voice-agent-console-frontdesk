@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Kiku · Campaign calls</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&display=block">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .camp { height: 100%; display: grid; grid-template-columns: 452px minmax(0, 1fr); gap: 16px; }
+  .cr { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 0 12px; padding: 14px 14px 14px 12px; border-bottom: 1px solid var(--line); }
+  .cr:hover { background: var(--hover); }
+  .cr.is-sel { background: var(--sel); box-shadow: inset 0 0 0 1px var(--blue); }
+  .cr__n { font: 600 18px/1.2 var(--f-cond); color: var(--text-2); text-align: right; padding-top: 2px; }
+  .cr__head { display: flex; align-items: center; gap: 10px; }
+  .cr__head b { font-weight: 600; font-size: 15px; }
+  .cr__status { margin-top: 8px; }
+  .cr__offer { font-size: 13.5px; color: var(--text-2); margin-top: 6px; line-height: 1.4; }
+  .cr__prog { margin-top: 12px; display: flex; align-items: center; gap: 10px; }
+  .cr__bar { flex: 1; height: 8px; background: var(--bezel); border-radius: 1px; position: relative; overflow: hidden; }
+  .cr__bar span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--text); }
+  .cr__prog .v { font: 600 14px/1 var(--f-cond); letter-spacing: .03em; white-space: nowrap; }
+  .nums { display: flex; flex-wrap: wrap; gap: 4px 13px; margin-top: 10px; font-size: 13px; color: var(--text-2); }
+  .nums b { font: 600 16px/1 var(--f-cond); letter-spacing: .03em; color: var(--text); margin-right: 4px; }
+  .nums .fail b { color: var(--text); }
+  .nums .fail i { color: var(--fail); font-size: 14px; position: relative; top: 2px; margin-right: 3px; }
+  .cr__meta { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; font-size: 13px; color: var(--text-2); }
+  .cr__meta span { display: inline-flex; align-items: center; gap: 6px; }
+  .cr__meta i { font-size: 15px; }
+  .cr__keys { display: flex; gap: 6px; margin-top: 12px; }
+  .cst { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .cst i { font-size: 15px; color: var(--text-2); }
+  .cst--paused i { color: var(--amber); }
+  .cst--sched i { color: #3DA5FF; }
+
+  .setup { display: flex; flex-direction: column; min-height: 0; }
+  .setup__body { flex: 1; min-height: 0; overflow: auto; padding: 16px 18px; display: grid; grid-template-columns: 200px minmax(0, 1fr) 190px; gap: 16px 16px; align-content: start; }
+  .setup__body .span2 { grid-column: 2 / -1; }
+  .setup__body .full { grid-column: 1 / -1; }
+  .aud { display: flex; flex-direction: column; gap: 10px; }
+  .vsum { justify-content: space-between; }
+  .window { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .window .times { display: flex; align-items: center; gap: 8px; color: var(--text-2); }
+  .window .sel { width: 104px; }
+  .opening { min-height: 132px; height: auto; padding: 10px 12px; line-height: 1.55; font-size: 15px; }
+  .opening .token { font-size: 14px; }
+  .setup__foot { flex: none; display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-top: 1px solid var(--line); }
+  .setup__foot .sum { font-size: 13.5px; color: var(--text-2); }
+  .setup__foot .sum b { color: var(--text); font-weight: 600; }
+  .setup__foot .end { margin-left: auto; display: flex; gap: 8px; }
+  .errlist { font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 8px; }
+  .errlist i { color: var(--fail); font-size: 15px; }
+</style>
+</head>
+<body>
+<script>
+  const { K, esc, ic, mount } = Kiku;
+  const D = K.campaignDraft;
+  const statusOf = (c) => c.status.startsWith("Paused") ? ["paused", "pause-circle-line"] : c.status.startsWith("Scheduled") ? ["sched", "calendar-schedule-line"] : ["draft", "draft-line"];
+
+  const rows = K.campaigns.map((c, i) => {
+    const [k, icon] = statusOf(c);
+    const sel = c.code === D.code;
+    const pct = c.contacts ? (c.called / c.contacts) * 100 : 0;
+    const prog = c.contacts
+      ? `<div class="cr__prog"><div class="cr__bar" role="progressbar" aria-valuenow="${c.called}" aria-valuemax="${c.contacts}"><span style="width:${pct}%"></span></div><span class="v">${c.called} of ${c.contacts} called</span></div>`
+      : "";
+    const nums = c.called
+      ? `<div class="nums"><span><b>${c.contacts}</b>contacts</span><span><b>${c.called}</b>called</span><span><b>${c.answered}</b>answered</span><span><b>${c.booked}</b>booked</span><span class="fail">${ic("close-line")}<b>${c.failed}</b>failed</span></div>`
+      : c.contacts ? `<div class="nums"><span><b>${c.contacts}</b>contacts, none called yet</span></div>` : "";
+    const key = k === "paused" ? `<button class="key key--sm">${ic("play-line")}Resume now</button><button class="key key--sm key--ghost">Edit</button>`
+      : k === "sched" ? `<button class="key key--sm">${ic("edit-line")}Edit</button><button class="key key--sm key--ghost">Pause</button>`
+      : `<span class="cst" style="color:#6FBCFF">${ic("edit-line")}Editing in setup</span>`;
+    return `<article class="cr${sel ? " is-sel" : ""}"${sel ? ' aria-current="true"' : ""}>
+      <span class="cr__n">${i + 1}</span>
+      <div>
+        <div class="cr__head"><span class="umd-chip">${esc(c.code)}</span><b>${esc(c.name)}</b></div>
+        <div class="cr__status"><span class="cst cst--${k}">${ic(icon)}${esc(c.status)}</span></div>
+        <p class="cr__offer">${esc(c.offer)}</p>
+        ${prog}${nums}
+        <div class="cr__meta"><span>${ic("time-line")}${esc(c.window)}</span><span>${ic("file-text-line")}${esc(c.audience)}</span></div>
+        <div class="cr__keys">${key}</div>
+      </div>
+    </article>`;
+  }).join("");
+
+  const draftC = K.campaigns.find((c) => c.code === D.code);
+  const opening = esc(D.opening).replace("{first_name}", `<span class="token">{first_name}</span>`);
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => `<button class="${i < 5 ? "is-on" : ""}" aria-pressed="${i < 5}" aria-label="${d}">${d.slice(0, 2)}</button>`).join("");
+  const readyPct = (D.ready / D.rows) * 100;
+
+  const setup = `<section class="pane setup" aria-label="Campaign setup">
+    <div class="pane__head"><h2>Set up ${esc(D.code)}</h2><span class="muted">${esc(draftC.name)}</span><span class="end cst">${ic("draft-line")}Draft</span></div>
+    <div class="setup__body">
+      <div class="field"><label class="lbl" for="code">Promo code</label><input class="input input--code" id="code" value="${esc(D.code)}"></div>
+      <div class="field span2"><label class="lbl" for="name">Campaign name</label><input class="input" id="name" value="${esc(draftC.name)}"></div>
+      <div class="field full"><label class="lbl" for="offer">Offer Kiku describes</label><input class="input" id="offer" value="${esc(draftC.offer)}"></div>
+
+      <div class="field full"><span class="lbl">Audience <span class="end help">Needs a phone column. Other columns become fields like {first_name}.</span></span>
+        <div class="aud">
+          <div class="file"><span class="file__icon">${ic("file-text-line")}</span><div><div class="file__name">${esc(D.file)}</div><div class="file__meta">${D.rows} rows</div></div>
+            <div class="end"><button class="key key--sm">${ic("upload-2-line")}Replace</button><button class="key key--sm key--ghost">Remove</button></div></div>
+          <div class="vbar" aria-hidden="true"><span style="width:${readyPct}%"></span><span class="err" style="width:${100 - readyPct}%"></span></div>
+          <div class="vsum"><span class="st st--done">${ic("check-line")}<span><b>${D.ready}</b> ready to call</span></span>
+            <span class="errlist">${ic("close-circle-line")}<span><b style="color:var(--text)">${D.errors}</b> rows have errors and will be skipped</span><a class="link" href="#">Review ${D.errors} rows</a></span></div>
+        </div>
+      </div>
+
+      <div class="field span2" style="grid-column:1 / 3"><span class="lbl">Call window</span>
+        <div class="window"><div class="daykeys" role="group" aria-label="Days">${days}</div>
+          <div class="times"><label class="sel" aria-label="From"><select class="input"><option>10:00</option></select><i class="ri-arrow-down-s-line chev" aria-hidden="true"></i></label>to<label class="sel" aria-label="Until"><select class="input"><option>18:00</option></select><i class="ri-arrow-down-s-line chev" aria-hidden="true"></i></label></div></div>
+        <span class="help">${esc(D.window)}, hotel time (${esc(K.hotel.tz)})</span>
+      </div>
+      <div class="field"><span class="lbl">Max attempts</span>
+        <div class="stepper"><button aria-label="Fewer">${ic("subtract-line")}</button><output>${D.maxAttempts}</output><button aria-label="More">${ic("add-line")}</button></div>
+        <span class="help">per contact</span>
+      </div>
+
+      <div class="field full"><span class="lbl">Opening line <span class="end help">Kiku says this first, then follows the guest's lead.</span></span>
+        <div class="input opening" role="textbox" aria-multiline="true">${opening}</div>
+      </div>
+    </div>
+    <div class="setup__foot">
+      <p class="sum"><b>${D.ready}</b> contacts · ${esc(D.window)} · up to <b>${D.maxAttempts}</b> attempts</p>
+      <div class="end"><button class="key key--lg">Save draft</button><button class="key key--lg key--lit">${ic("calendar-schedule-line")}Schedule campaign</button></div>
+    </div>
+  </section>`;
+
+  mount({
+    role: "admin",
+    active: "campaign",
+    title: "Campaign calls",
+    meta: `Promotional calls tied to a promo code · <b>${K.campaigns.length}</b> campaigns`,
+    tools: `<button class="key">${ic("add-line")}New campaign</button>`,
+    body: `<div class="camp">
+      <section class="pane" aria-label="Campaigns">
+        <div class="pane__head"><h2>Campaigns</h2><span class="end muted">${K.campaigns.length}</span></div>
+        <div class="scroll">${rows}</div>
+      </section>
+      ${setup}
+    </div>`,
+  });
+</script>
+</body>
+</html>

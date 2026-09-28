@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku · Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&display=block">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .signin { display: grid; grid-template-columns: 700px 1fr; height: 100%; }
+  .cover { background: var(--paper-2); border-right: var(--rule); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 56px 56px; }
+  .cover svg.art { position: absolute; left: 56px; top: 64px; width: 560px; height: 420px; }
+  .word { font-weight: 800; font-size: 96px; line-height: .86; letter-spacing: -.05em; font-stretch: 86%; }
+  .hotel { font-size: 24px; font-weight: 500; letter-spacing: -.015em; margin-top: 18px; }
+  .hotel-sub { display: flex; gap: 18px; margin-top: 8px; font-size: 14px; color: var(--moss); }
+  .formside { display: flex; flex-direction: column; padding: 0 96px; }
+  .form { margin: auto 0; width: 420px; display: flex; flex-direction: column; gap: 20px; }
+  .form .h1 { margin-bottom: 8px; }
+  .form .lrow { display: flex; justify-content: space-between; align-items: baseline; }
+  .form .input { height: 46px; font-size: 15px; }
+  .form .input.mono { font-size: 14px; }
+  .form .btn { height: 50px; font-size: 17px; margin-top: 6px; }
+  .foot { padding: 0 0 32px; font-size: 12.5px; color: var(--moss); display: flex; gap: 8px; align-items: center; }
+  .foot i { font-size: 15px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function () {
+  const { K, esc, ic, mis } = Kiku;
+  const me = K.people.specialist;
+  document.getElementById("app").innerHTML = `
+  <div class="signin">
+    <section class="cover" aria-label="${esc(K.product.name)}">
+      <svg class="art" viewBox="0 0 560 420" aria-hidden="true">
+        <circle cx="200" cy="210" r="196" fill="#FF3EA5"/>
+        <circle cx="360" cy="210" r="196" fill="#0078BF" style="mix-blend-mode:multiply"/>
+      </svg>
+      <div class="word mis" data-t="kiku">kiku</div>
+      <div class="hotel">${esc(K.hotel.name)}, ${esc(K.hotel.city)}</div>
+      <div class="hotel-sub"><span>${esc(K.product.tagline)}</span><span class="mono">${esc(K.hotel.line)}</span></div>
+    </section>
+    <section class="formside">
+      <form class="form" onsubmit="return false">
+        ${mis("sign in")}
+        <div class="field"><label for="em">email</label><input id="em" class="input mono is-focus" type="email" value="${esc(me.email)}" autocomplete="username"></div>
+        <div class="field"><div class="lrow"><label class="flabel" for="pw">password</label><a class="link" href="#" style="font-size:13px">forgot password?</a></div>
+          <input id="pw" class="input mono" type="password" value="brenlowdemo26" autocomplete="current-password"></div>
+        <button class="btn ink" type="submit">sign in ${ic("arrow-right")}</button>
+        <p class="hint">Accounts are set up by your admin. Ask them if you need an invite.</p>
+      </form>
+      <p class="foot">${ic("info")}${esc(K.synthetic)}</p>
+    </section>
+  </div>
+  <div class="grain"></div>`;
+})();
+</script>
+</body>
+</html>

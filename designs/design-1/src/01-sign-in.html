@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Sign in · Kiku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&family=Geist+Mono:wght@400;500&display=block">
+<script src="https://cdn.jsdelivr.net/npm/lucide@1.48.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+</head>
+<body>
+<main id="app" class="signin"></main>
+<script>
+const { K, ic, mount, esc } = UI;
+mount(`
+  <section class="left">
+    <div class="mark-xl">${esc(K.product.name)}</div>
+    <div class="t20 strong">${esc(K.hotel.name)}, ${esc(K.hotel.city)}</div>
+    <div class="muted t14">${esc(K.product.tagline)}</div>
+  </section>
+  <div class="spine-rule"></div>
+  <section class="right">
+    <form onsubmit="return false">
+      <h1 class="h32">Sign in</h1>
+      <div class="field">
+        <label class="label" for="em">Work email</label>
+        <input class="input" id="em" type="email" autocomplete="username" value="${esc(K.people.specialist.email)}">
+      </div>
+      <div class="field">
+        <div class="label" style="justify-content:space-between"><label for="pw">Password</label><a class="link t12" href="#">Forgot password?</a></div>
+        <input class="input is-focus" id="pw" type="password" autocomplete="current-password" value="brenlow-demo">
+      </div>
+      <button class="btn primary lg block" type="submit">Sign in${ic("arrow-right")}</button>
+    </form>
+  </section>
+  <div class="ticks" aria-hidden="true">
+    <span class="tick tc" style="top:348px">${K.hotel.now} ${K.hotel.tz}</span>
+  </div>
+  <p class="foot"><span>${esc(K.synthetic)}</span><span>${esc(K.hotel.today)}</span></p>
+`);
+</script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku · On the line with Margaret Doyle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=block">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .main { display: grid; grid-template-columns: 372px 1fr 404px; gap: 20px; }
+  .hist { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+  .hist .pane { flex: 1; padding-right: 4px; }
+  .compact .ln { grid-template-columns: 40px 1fr; row-gap: 3px; padding: 7px 2px; font-size: 13.5px; }
+  .compact .ln p { grid-column: 2; }
+  .compact .kst .half { grid-template-columns: 40px 1fr; row-gap: 5px; padding: 10px 14px 10px 2px; font-size: 13.5px; }
+  .compact .kst .half.a { padding-bottom: 12px; }
+  .compact .kst .half.b { padding-top: 12px; }
+  .compact .kst .t { padding-left: 10px; }
+  .compact .kst .k-txt { grid-column: 2; }
+  .compact .evt { padding: 6px 2px; }
+  .compact .evt::before { flex-basis: 12px; }
+  .compact .evt-tag { white-space: normal; font-size: 12px; align-items: flex-start; }
+  .compact .evt-tag > span:last-child { display: none; }
+  .compact .strip { margin: 6px 0; }
+
+  .np { padding: 20px 24px 22px; display: flex; flex-direction: column; gap: 16px; }
+  .np .top { display: flex; align-items: center; justify-content: space-between; }
+  .np .top p { font-size: 13.5px; font-weight: 600; margin-top: 6px; }
+  .onair { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 4px; background: var(--plum); color: var(--white); font-stretch: 70%; font-weight: 800; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
+  .onair i.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--red); animation: pulse 1.4s ease-out infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+  .big { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+  .big .half { display: block; padding: 20px 24px; }
+  .big .half.b { flex: 1; }
+  .big .half.a { padding-bottom: 22px; }
+  .big .half.b { padding-top: 24px; padding-bottom: 22px; }
+  .big .k-lab { font-size: 15px; margin-bottom: 12px; }
+  .big .k-key { width: 24px; height: 24px; font-size: 17px; }
+  .big .k-lab .t { font-stretch: 100%; font-weight: 600; letter-spacing: 0; color: var(--ink-2); margin-left: 4px; text-transform: none; font-size: 13px; }
+  .big .a .k-txt { font-size: 23px; line-height: 1.45; font-weight: 500; }
+  .big .b .k-txt { font-size: 31px; line-height: 1.42; font-weight: 600; }
+  .big .tear-tag { font-size: 13px; }
+  .caret { display: inline-block; width: 3px; height: 1.05em; background: var(--blue); vertical-align: -.15em; margin-left: 4px; animation: pulse 1s steps(1) infinite; }
+  .livechip { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; color: var(--blue); font-size: 12.5px; letter-spacing: .06em; }
+  .livechip i { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+  .cued { background: var(--white); border-top: 2px solid var(--red); border-radius: 3px 3px 0 0; padding: 14px 22px 16px; position: relative; box-shadow: var(--shadow); }
+  .cued::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: -2px; border-bottom: 2px dotted var(--chrome); }
+  .cued .k-lab { margin-bottom: 8px; }
+  .cued .k-txt { font-size: 19px; font-weight: 500; color: var(--plum); }
+  .np .legend { margin-top: -2px; }
+  .np .legend .k-txt { font-size: 13px; }
+
+  .air { padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; }
+  .air .who { display: grid; grid-template-columns: 136px 1fr; gap: 16px; align-items: center; }
+  .air h2 { font-size: 30px; color: var(--white); }
+  .air .who p { color: var(--on-plum-2); font-size: 13.5px; font-weight: 500; margin-top: 8px; }
+  .air .lv { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: center; font-size: 13px; font-weight: 600; }
+  .air .lv .meter { height: 18px; }
+  .air .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .air .btns .btn-danger { grid-column: 1 / -1; }
+  .air .rule { border-top: 2px dotted rgba(216, 198, 228, .5); }
+  .air .reason { display: flex; gap: 10px; font-size: 13.5px; line-height: 1.4; }
+  .air .reason .tile { margin-top: 1px; }
+  .air dl.facts dt { color: var(--on-plum-2); }
+  .air .fl { display: grid; gap: 6px; font-size: 13.5px; }
+  .air .fl li { display: flex; gap: 8px; align-items: flex-start; }
+  .air .fl .bi { color: var(--violet); margin-top: 2px; }
+</style>
+</head>
+<body>
+<header class="band"></header>
+<main class="main">
+  <section class="hist" aria-labelledby="hist-h">
+    <h2 class="h3" id="hist-h">Earlier in this call</h2>
+    <div class="pane compact" id="pane"><div class="tx" id="tx"></div></div>
+  </section>
+  <section class="panel np on-violet" id="np" aria-label="Karaoke prompter"></section>
+  <aside class="panel-plum air on-plum" id="air" aria-label="You are on the line"></aside>
+</main>
+<script>
+  const { K, esc, icon, status, tile, record, first, meter, diffSide } = UI;
+  UI.mountBand("specialist", "live");
+  const T = K.takeover;
+  const me = first(T.specialist);
+  const g = first(T.guest);
+  const liveTurn = T.transcript.find((x) => x.live);
+  const earlier = T.transcript.filter((x) => !x.live);
+
+  const tx = document.getElementById("tx");
+  tx.innerHTML = UI.transcript(earlier, g, me);
+  const pane = document.getElementById("pane");
+  UI.pinEnd(pane);
+
+  const lineNo = T.transcript.filter((x) => x.karaoke).indexOf(liveTurn) + 1;
+  document.getElementById("np").innerHTML = `
+    <div class="top">
+      <div><h1 class="h1">Now playing</h1><p>${esc(T.guest)} · karaoke line ${lineNo}</p></div>
+      <span class="onair"><i class="dot"></i>Live</span>
+    </div>
+    <article class="strip kst big">
+      <div class="half a">
+        <div class="k-lab"><span class="k-key a">A</span>Kiku wrote <span class="t num">${liveTurn.t}</span></div>
+        <p class="k-txt">${diffSide(liveTurn.diff, "a", true)}</p>
+      </div>
+      <div class="tear"><span class="tear-tag"><span class="match">${liveTurn.match}%</span> match so far</span></div>
+      <div class="half b">
+        <div class="k-lab"><span class="k-key b">B</span>You're saying <span class="livechip"><i></i>Live</span></div>
+        <p class="k-txt">${diffSide(liveTurn.diff, "b")}<span class="caret"></span></p>
+      </div>
+    </article>
+    <div class="cued">
+      <div class="k-lab"><span class="k-key a">A</span>Next line, cued</div>
+      <p class="k-txt">${esc(T.nextLine)}</p>
+    </div>
+    <div class="legend"><span class="k-txt"><del>struck</del> you skipped it</span><span class="k-txt"><ins>tinted</ins> your own words</span><span class="k-txt"><span class="ahead">grey</span> still ahead in Kiku's line</span></div>`;
+
+  const escEvt = T.transcript.find((x) => x.kind === "escalation");
+  document.getElementById("air").innerHTML = `
+    <div class="who">
+      ${record({ size: 136, top: "On air", main: T.duration, disc: "#14041D", ring: "#DC45FE" })}
+      <div>
+        <h2 class="h2">You're on the line</h2>
+        <p>${esc(g)} ${esc(T.guest.split(" ")[1])} hears you, not Kiku. You took over at <span class="num">${T.takeoverAt}</span>.</p>
+      </div>
+    </div>
+    <div class="lv"><span class="row" style="gap:6px;white-space:nowrap">${icon("mic-fill")}Your mic</span>${meter(26, 19, 3)}</div>
+    <div class="btns">
+      <button class="btn btn-plumline">${icon("mic-mute-fill")}Mute mic</button>
+      <button class="btn btn-plumline">${icon("arrow-return-left")}Hand back to Kiku</button>
+      <button class="btn btn-danger">${icon("telephone-x-fill")}End call</button>
+    </div>
+    <div class="rule"></div>
+    <p class="reason"><span class="tile esc">${icon("arrow-up")}</span><span><b>Escalated at <span class="num">${escEvt.t}</span>.</b> ${esc(T.escalationReason)}</span></p>
+    <dl class="facts">
+      <div><dt>Booking</dt><dd class="num">${T.booking}</dd></div>
+      <div><dt>Phone</dt><dd class="num">${esc(T.phone)}</dd></div>
+      <div class="full"><dt>Stay</dt><dd>${esc(T.stay)}</dd></div>
+      <div class="full"><dt>Purpose</dt><dd>${esc(T.purpose)}</dd></div>
+    </dl>
+    <ul class="fl">${T.facts.map((f) => `<li>${icon("credit-card-fill")}<span>${esc(f)}</span></li>`).join("")}</ul>`;
+</script>
+</body>
+</html>

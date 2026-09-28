@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Campaign calls</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&display=block">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .list { width: 420px; flex: none; }
+  .cp { display: block; padding: 16px 16px 16px; border: 1px solid transparent; border-bottom-color: var(--line); border-radius: 0; }
+  .cp:first-of-type { border-top-color: var(--line); }
+  .cp:hover { background: var(--ivory-wash); }
+  .cp.is-sel { background: var(--raised); border: 1px solid var(--brass); border-radius: 4px; }
+  .cp-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .cp-top .code { font-size: 15px; }
+  .cp-st { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ivory); }
+  .cp-st i { font-size: 16px; color: var(--brass); }
+  .cp-name { font-weight: 600; font-size: 14px; margin-top: 8px; }
+  .cp-offer { font-size: 13px; color: var(--ivory-2); margin-top: 2px; }
+  .cp .bar { margin-top: 12px; }
+  .cp-nums { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--ivory-2); margin-top: 9px; }
+  .cp-nums b { color: var(--ivory); font-weight: 600; }
+  .cp-meta { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ivory-2); margin-top: 9px; }
+  .cp-meta i { font-size: 15px; color: var(--brass-dim); }
+  .cp-edit { font-size: 12px; font-weight: 600; color: var(--brass); display: inline-flex; gap: 5px; align-items: center; }
+
+  .setup { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 22px 26px 22px; }
+  .setup-h { display: flex; align-items: baseline; gap: 12px; }
+  .setup-h h2 { font: 600 19px/1.2 var(--sans); }
+  .setup-h .code { font-size: 14px; }
+  .setup-h .st-d { margin-left: auto; display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--ivory-2); }
+  .sec { padding: 16px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
+  .sec:last-of-type { border-bottom: 0; }
+  .row2 { display: grid; grid-template-columns: 170px 1fr; gap: 16px; }
+  .row3 { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .att { display: flex; align-items: center; gap: 16px; }
+  .att .stepper { width: 150px; flex: none; }
+  .days { display: flex; gap: 4px; }
+  .day { width: 40px; height: 34px; border: 1px solid var(--line); border-radius: 3px; display: grid; place-items: center; font-size: 12.5px; font-weight: 500; color: var(--ivory-2); }
+  .day.on { border-color: var(--brass); background: var(--brass-wash-2); color: var(--ivory); }
+  .times { display: flex; align-items: center; gap: 8px; margin-left: 14px; }
+  .times .sel { width: 96px; }
+  .times .sel select { height: 34px; }
+  .stepper { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 3px; height: 38px; background: var(--lacquer-deep); }
+  .stepper button { width: 38px; height: 100%; display: grid; place-items: center; color: var(--brass); font-size: 15px; }
+  .stepper span { flex: 1; text-align: center; font-weight: 600; border-left: 1px solid var(--line); border-right: 1px solid var(--line); line-height: 36px; }
+  .opening { min-height: 76px; font-size: 14px; line-height: 1.6; }
+  .file-row { display: flex; align-items: center; gap: 16px; }
+  .file-row .drop { flex: 1; }
+  .warn { display: flex; gap: 8px; font-size: 12.5px; color: var(--ivory); }
+  .warn i { color: var(--fail); font-size: 15px; margin-top: 1px; }
+  .foot { margin-top: auto; display: flex; align-items: center; gap: 10px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .foot .sum { font-size: 13px; color: var(--ivory-2); margin-right: auto; }
+  .foot .sum b { color: var(--ivory); font-weight: 600; }
+</style>
+</head>
+<body>
+<script>
+  const { K, icon } = KK;
+  const d = K.campaignDraft;
+  const stIcon = (s) => (s.startsWith("Paused") ? "pause-circle" : s.startsWith("Scheduled") ? "calendar-blank" : "pencil-simple");
+  const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+  const draftCamp = K.campaigns.find((c) => c.code === d.code);
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const hours = ["09:00", "10:00", "11:00", "17:00", "18:00", "19:00"];
+  const [winDays, winTimes] = d.window.split(", ");
+  const [t0, t1] = winTimes.split("–");
+  const opening = d.opening.replace("{first_name}", '<span class="tok">{first_name}</span>');
+
+  const card = (c) => {
+    const sel = c.code === d.code;
+    const nums = c.contacts
+      ? `<div class="bar" aria-hidden="true"><span style="width:${pct(c.called, c.contacts)}%"></span></div>
+         <div class="cp-nums"><span><b>${c.called}</b> of <b>${c.contacts}</b> called</span><span><b>${c.answered}</b> answered</span><span><b>${c.booked}</b> booked</span><span><b>${c.failed}</b> failed</span></div>`
+      : "";
+    return `<a class="cp${sel ? " is-sel" : ""}" href="#">
+      <div class="cp-top"><span class="code">${c.code}</span><span class="cp-st">${icon(stIcon(c.status))}${c.status}</span></div>
+      <div class="cp-name">${c.name}</div>
+      <div class="cp-offer">${c.offer}</div>
+      ${c.called ? nums : c.contacts ? `<div class="cp-nums"><span><b>${c.contacts}</b> contacts, none called yet</span></div>` : ""}
+      <div class="cp-meta">${icon("file-csv")}${c.audience}<span>·</span>${icon("clock")}${c.window}${sel ? `<span class="cp-edit" style="margin-left:auto">${icon("pencil-simple")}Editing</span>` : ""}</div>
+    </a>`;
+  };
+
+  KK.mount("admin", "campaign", `
+    <header class="ph">
+      <div class="ph-l"><h1 class="title">Campaign calls</h1></div>
+      <div class="ph-r"><button class="btn">${icon("plus")}New campaign</button></div>
+    </header>
+    <div class="dbl"></div>
+    <div class="body">
+      <section class="col list">
+        <div class="h2-row"><h2 class="h2">Campaigns <span class="n">${K.campaigns.length}</span></h2></div>
+        ${K.campaigns.map(card).join("")}
+      </section>
+
+      <section class="panel setup">
+        <div class="setup-h"><h2>${draftCamp.name}</h2><span class="code">${d.code}</span><span class="st-d">${icon("pencil-simple")}Draft</span></div>
+        <div class="sec" style="padding-top:14px">
+          <div class="row2">
+            <div class="field"><label class="label" for="pc">Promo code</label><input class="input code" id="pc" value="${d.code}"></div>
+            <div class="field"><label class="label" for="of">Offer</label><input class="input" id="of" value="${draftCamp.offer}"></div>
+          </div>
+        </div>
+        <div class="sec">
+          <div class="label">Audience</div>
+          <div class="drop">${icon("file-csv")}<div><div class="drop-name">${d.file}</div><div class="drop-meta">${d.rows} rows · uploaded just now</div></div><button class="btn btn-sm btn-quiet">${icon("upload-simple")}Replace</button></div>
+          <div class="tally"><span class="ok">${icon("check")}<b>${d.ready}</b>&nbsp;ready to call</span><span class="bad">${icon("x")}<b>${d.errors}</b>&nbsp;rows with errors</span><a class="link small" href="#" style="margin-left:auto">Review ${d.errors} rows${icon("arrow-right")}</a></div>
+          <p class="warn">${icon("warning")}<span>Rows with errors are skipped. Fix them in the file and replace it to include them.</span></p>
+        </div>
+        <div class="sec">
+          <div class="row3">
+            <div class="field"><span class="label">Call window</span>
+              <div style="display:flex;align-items:center">
+                <div class="days">${days.map((x, i) => `<span class="day${i < 5 ? " on" : ""}">${x}</span>`).join("")}</div>
+                <div class="times">
+                  <label class="sel"><select class="input">${hours.map((h) => `<option${h === t0 ? " selected" : ""}>${h}</option>`).join("")}</select>${icon("caret-down", "caret")}</label>
+                  <span class="muted">to</span>
+                  <label class="sel"><select class="input">${hours.map((h) => `<option${h === t1 ? " selected" : ""}>${h}</option>`).join("")}</select>${icon("caret-down", "caret")}</label>
+                </div>
+              </div>
+            </div>
+            <div class="field"><span class="label">Max attempts</span><div class="att"><div class="stepper"><button aria-label="Fewer">${icon("minus")}</button><span>${d.maxAttempts}</span><button aria-label="More">${icon("plus")}</button></div><p class="help">Kiku tries each contact up to ${d.maxAttempts} times, only inside the call window.</p></div></div>
+          </div>
+        </div>
+        <div class="sec">
+          <div class="field">
+            <span class="label">Opening line</span>
+            <div class="input area opening is-focus" contenteditable="true" spellcheck="false">${opening}</div>
+            <p class="help">Kiku fills <span class="tok">{first_name}</span> for each contact on the list.</p>
+          </div>
+        </div>
+        <div class="foot">
+          <span class="sum"><b>${d.ready}</b> contacts · ${d.window} · <b>${d.maxAttempts}</b> attempts</span>
+          <button class="btn">Save draft</button>
+          <button class="btn btn-primary">${icon("calendar-blank")}Schedule campaign</button>
+        </div>
+      </section>
+    </div>`);
+</script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Call audit KK-24027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Alegreya+Sans+SC:wght@400;500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&display=block">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.35.0/dist/tabler-icons-300-outline.min.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .phead { padding: 14px 24px 14px; }
+  .phead-row { gap: 14px; }
+  .credit { margin-left: auto; font: italic 400 16px/1.2 var(--serif); color: var(--ink-2); }
+  .credit b { font-style: normal; font-weight: 500; color: var(--ink); }
+  .subtitle { font: italic 400 16px/1.3 var(--serif); color: var(--ink-2); margin: 4px 0 12px 118px; }
+  .meta { display: flex; gap: 10px 30px; margin-left: 118px; flex-wrap: wrap; }
+  .meta div { display: grid; gap: 3px; }
+  .meta dt { font: 500 12px/1 var(--sc); letter-spacing: .04em; color: var(--ink-2); }
+  .meta dd { font-size: 14px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .meta dd .ti { font-size: 16px; color: var(--ink-2); }
+  .meta .av { width: 20px; height: 20px; font-size: 10px; }
+  .ab { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; }
+  .scol { position: relative; min-height: 0; display: flex; flex-direction: column; border-right: 1px solid var(--rule); }
+  .scol-head { display: flex; align-items: center; gap: 16px; padding: 12px 24px 10px; border-bottom: 1px solid var(--rule); }
+  .scol-head h2 { margin-right: 6px; }
+  .spane { flex: 1; min-height: 0; overflow: auto; padding: 18px 24px 110px 12px; }
+  .side { min-height: 0; display: flex; flex-direction: column; padding: 16px 24px 0; }
+  .side h2 { font-size: 20px; }
+  .side section + section { margin-top: 18px; }
+  .oc { margin-top: 10px; border-top: 1px solid var(--ink); }
+  .oc li { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+  .oc li .ti { font-size: 16px; transform: translateY(2px); }
+  .oc li b { font-weight: 500; font-variant-numeric: tabular-nums lining-nums; }
+  .oc li.no { color: var(--ink-2); }
+  .oc li.no b { font-weight: 400; font-style: italic; }
+  .oc .tot { grid-template-columns: 1fr auto; border-bottom: 1px solid var(--ink); }
+  .oc .tot span { font-family: var(--sc); letter-spacing: .04em; font-size: 12px; color: var(--ink-2); font-weight: 500; }
+  .oc .tot b { font: 500 20px/1 var(--serif); }
+  .rnote { display: flex; gap: 8px; margin-top: 8px; color: var(--ink); font-size: 14px; }
+  .rnote .ti { font-size: 16px; color: var(--ink-2); margin-top: 1px; }
+  .ksum p { margin-top: 4px; color: var(--ink-2); }
+  .ksum p b { color: var(--ink); font-weight: 500; }
+  .kbars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px; }
+  .kb { display: grid; justify-items: center; gap: 3px; }
+  .kbt { width: 100%; height: 30px; position: relative; background: repeating-linear-gradient(to bottom, var(--rule) 0 1px, transparent 1px 6px); border-bottom: 1px solid var(--ink-2); }
+  .kbt i { position: absolute; left: 30%; right: 30%; bottom: 0; background: var(--cobalt); }
+  .kb.asw .kbt i { background: var(--ink); }
+  .kb b { font: 500 12px/1 var(--sans); font-variant-numeric: tabular-nums lining-nums; }
+  .kb time { font: italic 400 12px/1 var(--serif); color: var(--ink-2); }
+  .libwrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .libhead { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--ink); padding-bottom: 7px; }
+  .libhead span { font-size: 12px; color: var(--ink-2); }
+  .scol::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 16px; background: var(--paper); z-index: 5; }
+  .pl-time small { display: block; font: 500 12px/1 var(--sc); letter-spacing: .04em; color: var(--ink-2); margin-top: 5px; }
+  .tline .lanebg { position: absolute; left: 0; right: 0; height: 3px; background: var(--rule); }
+  .tline .rm::after { top: 15px; height: 27px; }
+  .tline .ph { top: 17px; bottom: 8px; }
+  .tline .ph::after { bottom: auto; top: -6px; }
+  .pl-key { display: grid; gap: 3px; font: 500 12px/1 var(--sc); letter-spacing: .04em; color: var(--ink-2); }
+  .pl-key span { display: flex; align-items: center; gap: 6px; }
+  .pl-key i { width: 14px; height: 3px; background: var(--ink); }
+  .pl-key i.a { background: var(--ink-2); }
+  .pl-key i.s { background: var(--cobalt); }
+  .libs { overflow: auto; flex: 1; min-height: 0; padding: 0 8px; margin: 0 -8px; overflow-x: hidden; }
+</style>
+</head>
+<body data-role="specialist">
+<header id="top"></header>
+<main class="page">
+  <header class="phead">
+    <div class="phead-row">
+      <a class="btn btn-quiet" href="03-call-logs.html" style="width:96px;justify-content:flex-start"><i class="ti ti-arrow-left"></i>Call logs</a>
+      <h1 id="title"></h1>
+      <span id="st"></span>
+      <span class="idtag" id="cid"></span>
+      <span class="credit" id="credit"></span>
+    </div>
+    <p class="subtitle" id="purpose"></p>
+    <dl class="meta" id="meta"></dl>
+  </header>
+  <div class="ab">
+    <section class="scol">
+      <div class="scol-head">
+        <h2>Score</h2>
+        <div class="legend" id="legend"></div>
+      </div>
+      <div class="spane" id="spane"><div class="score" id="score"></div></div>
+      <div class="player" id="player"></div>
+    </section>
+    <aside class="side">
+      <section>
+        <h2>Outcome</h2>
+        <ul class="oc" id="oc"></ul>
+        <p class="rnote" id="rnote"></p>
+      </section>
+      <section class="ksum" id="ksum"></section>
+      <section class="libwrap">
+        <div class="libhead"><h2>Libretto</h2><span>Full transcript, in order</span></div>
+        <ol class="libs" id="lib"></ol>
+      </section>
+    </aside>
+  </div>
+</main>
+<script>
+(function () {
+  const { K, esc, ic, status, reh, renderSystems, libretto, ready, $, secs, mmss, tlab } = Kiku;
+  const A = K.audit;
+  Kiku.shell({ active: 'logs', alert: true });
+  const playAt = 58;
+
+  $('#title').textContent = A.guest;
+  $('#st').innerHTML = status(A.status);
+  $('#cid').textContent = A.id;
+  $('#credit').innerHTML = `${esc(A.agent)}, with <b>${esc(A.specialist)}</b>`;
+  $('#purpose').textContent = A.purpose;
+  const meta = [
+    ['Phone', `<span class="tnum">${esc(A.phone)}</span>`],
+    ['Booking', `<span class="tnum">${esc(A.booking)}</span>`],
+    ['Stay', esc(A.stay)],
+    ['Call', `${ic('phone-outgoing')}Outbound, ${esc(A.type)}`],
+    ['Started', `<span class="tnum">${esc(A.started)}</span>`],
+    ['Duration', `<span class="tnum">${esc(A.duration)}</span>`],
+    ['Specialist', `<span class="av">TN</span>${esc(A.specialist)}`]
+  ];
+  $('#meta').innerHTML = meta.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+
+  const evs = A.transcript.filter(u => u.speaker === 'system' && u.kind !== 'end');
+  $('#legend').innerHTML = evs.map(u => `<span>${reh(u.kind, true)}<span class="tnum">${u.t}</span> ${u.kind === 'escalation' ? 'Escalated: accessibility request' : u.kind === 'join' ? 'Tomasz joined' : 'Tomasz took over, karaoke on'}</span>`).join('') +
+    `<span><span class="s">struck</span> dropped from Kiku's line</span><span><span class="u">underlined</span> improvised</span>`;
+
+  $('#oc').innerHTML = A.outcome.map(o => o.result === 'added'
+    ? `<li>${ic('check')}<span>${esc(o.item)}</span><b>${esc(o.amount)}</b></li>`
+    : `<li class="no">${ic('x')}<span>${esc(o.item)}</span><b>Declined</b></li>`).join('') +
+    `<li class="tot"><span>Added to ${esc(A.booking)}</span><b>${esc(A.total)}</b></li>`;
+  $('#rnote').innerHTML = `${ic('pencil')}<span>${esc(A.note)}</span>`;
+
+  const kl = A.transcript.filter(u => u.karaoke);
+  const S = A.karaokeSummary;
+  $('#ksum').innerHTML = `<h2>Karaoke</h2><p><b>${S.lines} lines</b> in karaoke mode: <b>${S.asWritten}</b> spoken as written, <b>${S.improvised}</b> improvised. Match per line:</p>
+    <div class="kbars">${kl.map(u => `<div class="kb${u.asWritten ? ' asw' : ''}"><span class="kbt"><i style="height:${u.match}%"></i></span><b>${u.match}%</b><time>${tlab(secs(u.t))}</time></div>`).join('')}</div>`;
+
+  const end = secs(A.duration);
+  const tr = A.transcript;
+  const segs = { guest: [], agent: [], specialist: [] };
+  tr.forEach((u, i) => {
+    if (u.speaker === 'system') return;
+    const nx = tr[i + 1];
+    segs[u.speaker].push([secs(u.t), (nx ? secs(nx.t) : end) - 0.7]);
+  });
+  const P = s => (s / end * 100).toFixed(2) + '%';
+  let ticks = '';
+  for (let T = 15; T < end; T += 15) ticks += `<i class="tk${T % 30 ? '' : ' maj'}" style="left:${P(T)};top:20px;height:22px"></i>`;
+  let tts = '';
+  for (let T = 30; T < end; T += 30) tts += `<span class="tt tnum" style="left:${P(T)};top:44px">${tlab(T)}</span>`;
+  const lane = (k, y, cls) => `<div class="lane" style="top:${y}px">${segs[k].map(([a, b]) => `<i class="seg ${cls}" style="left:${P(a)};width:calc(${P(b)} - ${P(a)})"></i>`).join('')}</div>`;
+  $('#player').innerHTML = `
+    <div class="pl-btns"><button class="pl-play" aria-label="Play">${ic('player-play')}</button>
+      <button class="btn btn-quiet" aria-label="Back 10 seconds">${ic('rewind-backward-10')}</button>
+      <button class="btn btn-quiet" aria-label="Forward 10 seconds">${ic('rewind-forward-10')}</button></div>
+    <div class="pl-time">${mmss(playAt)} <span>/ ${A.duration}</span><small>Recording</small></div>
+    <div class="tline">
+      <i class="lanebg" style="top:22px"></i><i class="lanebg" style="top:29px"></i><i class="lanebg" style="top:36px"></i>
+      ${ticks}
+      ${evs.map(u => `<span class="rm reh reh-sm reh-${Kiku.REH[u.kind][1]}" style="left:${P(secs(u.t))}">${Kiku.REH[u.kind][0]}</span>`).join('')}
+      ${lane('guest', 22, '')}${lane('agent', 29, 'a')}${lane('specialist', 36, 's')}
+      ${tts}
+      <i class="ph" style="left:${P(playAt)}"></i>
+    </div>
+    <div class="pl-key"><span><i></i>Guest</span><span><i class="a"></i>Kiku</span><span><i class="s"></i>Tomasz</span></div>`;
+
+  $('#lib').innerHTML = libretto(tr, { specialist: A.specialist, guest: 'Eleanor Vance', current: '00:54' });
+
+  ready(() => {
+    renderSystems($('#score'), tr, {
+      specialist: A.specialist,
+      names: { guest: 'Eleanor Vance' },
+      specSub: 'Specialist',
+      ossiaSub: 'Karaoke script',
+      fonts: { lyric: '400 14px Alegreya', ossia: '400 12px Alegreya', mark: 'italic 400 12px Alegreya', draft: 'italic 400 14px Alegreya' },
+      play: playAt
+    });
+    const sys = [...document.querySelectorAll('.system')].find(s => +s.dataset.t0 >= 30);
+    if (sys) $('#spane').scrollTop = sys.offsetTop - 14;
+    const cur = document.querySelector('.lib[data-t="00:31"]');
+    if (cur) $('#lib').scrollTop = cur.offsetTop - $('#lib').offsetTop;
+  });
+})();
+</script>
+</body>
+</html>

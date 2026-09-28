@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku · Call logs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612+Mono:wght@400;700&family=B612:ital,wght@0,400;0,700;1,400&family=Kalam:wght@400;700&display=block">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@20..24,400,0..1,0&icon_names=add,admin_panel_settings,arrow_back,arrow_forward,assignment_return,badge,block,call,call_end,call_made,call_received,campaign,check,check_box,close,confirmation_number,credit_card,data_object,description,do_not_disturb_on,done_all,download,edit,edit_note,error,event_upcoming,expand_more,forum,forward_to_inbox,graphic_eq,group,headphones,hotel,hourglass_top,info,list,lock,login,logout,mail,mic,mic_off,more_vert,open_in_full,pause_circle,payments,person,person_add,phone_in_talk,play_arrow,receipt_long,record_voice_over,remove,room_service,save,schedule,search,sell,send,sticky_note_2,subject,support_agent,table_view,today,upload_file,view_week,visibility,volume_off,warning&display=block">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  :root { --cols: 58px 94px 176px 124px minmax(0, 1fr) 122px 62px 204px 40px; }
+  .filters { display: flex; align-items: center; gap: 10px; }
+  .seg { display: inline-flex; }
+  .seg .key { border-radius: 0; margin-left: -1px; }
+  .seg .key:first-child { border-radius: var(--r) 0 0 var(--r); margin-left: 0; }
+  .seg .key:last-child { border-radius: 0 var(--r) var(--r) 0; }
+  .filters .inp { height: 32px; }
+  .filters .selwrap { width: auto; }
+  .filters .selwrap .ms { color: var(--on-bay-2); }
+  .flabel { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--on-bay-2); margin-right: -4px; }
+  .rackwrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .rack { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; border-radius: 0 var(--r) var(--r) var(--r); padding: 2px 26px 10px 10px; gap: 3px; }
+  .rack > * { flex: none; }
+  .lg { line-height: 1.25; }
+  .colhead { display: grid; grid-template-columns: 31px var(--cols); padding-right: 1px; }
+  .colhead span { padding: 0 9px; }
+  .colhead span:first-child { padding: 0; text-align: center; }
+  .lg .sbody { display: grid; grid-template-columns: var(--cols); }
+  .lg .box { padding: 3px 9px; }
+  .lg .gname { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lg .gph { font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-2); white-space: nowrap; }
+  .lg .purp { font-size: 12.5px; line-height: 1.32; }
+  .lg .typ { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; white-space: nowrap; }
+  .lg .typ .ms { font-size: 16px; }
+  .lg > .tab { padding: 0; justify-content: center; gap: 1px; }
+  .lg .act { align-items: center; padding: 0; }
+  .lg.cocked { outline: 2px solid var(--pen); outline-offset: 2px; }
+  .lg .open { width: 28px; height: 26px; padding: 0; }
+</style>
+</head>
+<body>
+<header class="tower" id="tower"></header>
+<main class="page">
+  <div class="pagehead">
+    <h1>Call logs</h1>
+    <span class="sub" id="sub"></span>
+    <span class="sp"></span>
+    <div class="filters">
+      <label class="srch"><span class="ms" aria-hidden="true">search</span><input class="inp inp-bay" style="width:280px" type="search" placeholder="Search guest, phone or KK number" aria-label="Search calls"></label>
+      <span class="flabel">Direction</span>
+      <div class="seg" role="group" aria-label="Direction">
+        <button class="key key-bay on" aria-pressed="true">All</button>
+        <button class="key key-bay"><span class="ms" aria-hidden="true">call_received</span>Inbound</button>
+        <button class="key key-bay"><span class="ms" aria-hidden="true">call_made</span>Outbound</button>
+      </div>
+      <span class="flabel">Type</span>
+      <label class="selwrap"><select class="inp inp-bay" style="width:150px" aria-label="Type"><option>All types</option><option>Inbound</option><option>Campaign</option><option>Upsell</option><option>Make a call</option></select><span class="ms" aria-hidden="true">expand_more</span></label>
+      <span class="flabel">Date</span>
+      <label class="selwrap"><select class="inp inp-bay" style="width:118px" aria-label="Date"><option>Today</option><option>Yesterday</option><option>Last 7 days</option></select><span class="ms" aria-hidden="true">expand_more</span></label>
+    </div>
+  </div>
+  <div class="rackwrap">
+    <nav class="btabs" id="tabs" aria-label="Status"></nav>
+    <div class="rail rack" id="rack">
+      <div class="colhead"><span>Dir</span><span>Time</span><span>Call</span><span>Guest · phone</span><span>Type</span><span>Purpose</span><span>Status</span><span>Dur</span><span>Specialist</span><span></span></div>
+    </div>
+  </div>
+</main>
+<script>
+  const { D, esc, icon, status, kind, dirTab, hand, initials, specParse, glyph, STATUS } = KK;
+  KK.mountTower({ role: "specialist", active: "logs" });
+  const calls = D.calls;
+  document.getElementById("sub").textContent = `${D.hotel.today} · ${calls.length} calls`;
+
+  const count = (s) => calls.filter((c) => c.status === s).length;
+  const tabs = [`<a class="btab on" href="#" aria-current="true">All<span class="n">${calls.length}</span></a>`]
+    .concat(["completed", "in_progress", "escalated", "failed"].map((s) => `<a class="btab" href="#">${icon(STATUS[s].icon)}${STATUS[s].label}<span class="n">${count(s)}</span></a>`));
+  document.getElementById("tabs").innerHTML = tabs.join("");
+
+  /*icons:campaign,room_service*/
+  const typeIcon = { Inbound: "call_received", Campaign: "campaign", Upsell: "room_service", "Make a call": "call_made" };
+  const rows = calls.map((c) => {
+    const p = specParse(c);
+    const f = c.status === "failed";
+    const sel = c.id === D.audit.id;
+    const spec = p
+      ? `<span class="sig">${hand(initials(p.name))}<span class="nm">${esc(p.name)}${p.note ? ` · ${esc(p.note)}` : ""}</span></span>`
+      : `<span class="kiku-only">${glyph(14)}Kiku only</span>`;
+    return `
+      <article class="strip ${kind(c)} lg ${sel ? "cocked" : ""}" ${sel ? 'aria-selected="true"' : ""}>
+        <div class="tab">${dirTab(c)}</div>
+        <div class="sbody">
+          <div class="box"><span class="tm">${c.started}</span></div>
+          <div class="box"><span class="cs ${f ? "struck" : ""}">${c.id}</span></div>
+          <div class="box"><span class="gname ${f ? "struck" : ""}">${esc(c.guest)}</span><span class="gph">${esc(c.phone)}</span></div>
+          <div class="box"><span class="typ">${icon(typeIcon[c.type])}${esc(c.type)}</span></div>
+          <div class="box"><span class="purp">${esc(c.purpose)}</span></div>
+          <div class="box row">${status(c.status)}</div>
+          <div class="box"><span class="tm">${c.duration}</span></div>
+          <div class="box row">${spec}</div>
+          <div class="box act">${sel ? `<a class="key key-primary open" href="04-call-audit.html" aria-label="Open audit for ${c.id}">${icon("arrow_forward")}</a>` : ""}</div>
+        </div>
+      </article>`;
+  });
+  document.getElementById("rack").insertAdjacentHTML("beforeend", rows.join(""));
+  KK.finish();
+</script>
+</body>
+</html>

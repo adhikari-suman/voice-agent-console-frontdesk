@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · On the line, KK-24030</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&display=block">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .ttl { display: flex; align-items: center; gap: 16px; }
+  .body { padding-top: 18px; }
+  .side { width: 318px; flex: none; gap: 20px; }
+  .hist { flex: 1; min-height: 0; overflow: auto; }
+
+  .prompter { flex: none; margin-top: 16px; padding: 18px 24px 20px; }
+  .pr-h { display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 600; color: var(--ivory-2); margin-bottom: 6px; }
+  .pr-h .lg-t { color: var(--brass); }
+  .pr-h i { font-size: 15px; color: var(--brass); }
+  .pr-h .r { margin-left: auto; font-weight: 500; }
+  .pr-wrote { font-size: 17px; line-height: 1.5; color: var(--ivory-2); max-width: 64ch; }
+  .pr-wrote .m { color: var(--ivory); }
+  .prompter .hair { margin: 14px 0 12px; }
+  .pr-said { font-size: 27px; line-height: 1.35; color: var(--ivory); font-weight: 500; letter-spacing: -0.005em; }
+  .pr-said ins { text-decoration: underline; text-decoration-color: var(--brass); text-decoration-thickness: 2px; text-underline-offset: 6px; }
+  .caret { display: inline-block; width: 2px; height: 28px; background: var(--brass); vertical-align: -5px; margin-left: 4px; }
+  .prompter .dbl { margin: 16px 0 12px; }
+  .pr-next { font-size: 24px; line-height: 1.35; color: var(--brass-dim); }
+</style>
+</head>
+<body>
+<script>
+  const { K, icon, status, dir, fob, avatar, ledger, meter, esc } = KK;
+  const T = K.takeover;
+  const live = T.transcript.find((e) => e.live);
+  const norm = (w) => w.toLowerCase().replace(/[^a-z0-9£-]/g, "");
+  const sameWords = new Set(live.diff.filter((d) => d.op === "same").flatMap((d) => d.text.split(" ").map(norm)));
+  const wroteLive = live.wrote.split(" ").map((w) => (sameWords.has(norm(w)) ? `<span class="m">${esc(w)}</span>` : esc(w))).join(" ");
+  const saidLive = live.diff.filter((d) => d.op !== "del").map((d) => (d.op === "same" ? esc(d.text) : `<ins>${esc(d.text)}</ins>`)).join(" ");
+  const esc0 = T.transcript.find((e) => e.kind === "escalation");
+  const join = T.transcript.find((e) => e.kind === "join");
+  const micLevels = [7, 11, 15, 12, 17, 14, 10, 13, 16, 9, 6, -3];
+
+  KK.mount("specialist", "live", `
+    <header class="ph">
+      <div class="ph-l">
+        <div class="ttl">
+          <h1 class="title guest">${T.guest}</h1>
+          ${status(T.status)}
+          <span class="muted small">${T.id} · started ${T.started}</span>
+        </div>
+        <div class="ph-line">
+          ${dir(T.direction)}<span>to ${K.hotel.line}</span><span class="sep"></span>
+          <span>${T.phone}</span><span class="sep"></span>
+          ${fob(T.booking)}<span>${T.stay}</span>
+        </div>
+      </div>
+      <div class="ph-r live"><small><span class="live-dot"></span>Live</small><span class="timer">${T.duration}</span></div>
+    </header>
+    <div class="dbl"></div>
+
+    <div class="band on">
+      <div class="band-who"><span class="band-ic">${icon("microphone")}</span><div><b>You're on the line with ${T.guest}</b><span>${T.specialist} · took over at ${T.takeoverAt} · Kiku writes each line, you speak it</span></div></div>
+      <div class="band-meters"><span class="meter-l">Your mic ${meter(micLevels)}</span></div>
+      <div class="band-act">
+        <button class="btn">${icon("microphone-slash")}Mute</button>
+        <button class="btn">${icon("arrow-u-up-left")}Hand back to Kiku</button>
+        <button class="btn btn-danger">${icon("phone-x")}End call</button>
+      </div>
+    </div>
+
+    <div class="body">
+      <section class="col grow">
+        <div class="h2-row" style="margin-bottom:4px"><h2 class="h2">Earlier in this call</h2>${KK.legend()}</div>
+        <div class="hist" id="hist">${ledger(T.transcript, { guest: T.guest, specialist: T.specialist, skipLive: true })}</div>
+        <section class="panel prompter" aria-live="polite">
+          <div class="pr-h"><span class="lg-t">${live.t}</span>Kiku wrote<span class="r">Line ${T.transcript.filter((e) => e.karaoke).length} of karaoke</span></div>
+          <p class="pr-wrote">${wroteLive}</p>
+          <div class="hair"></div>
+          <div class="pr-h">${icon("microphone")}You're saying<span class="r" style="display:inline-flex;align-items:center;gap:6px"><span class="live-dot"></span>Live</span></div>
+          <p class="pr-said">${saidLive}<span class="caret"></span></p>
+          <div class="dbl dim"></div>
+          <div class="pr-h">${icon("arrow-bend-down-right")}Next line</div>
+          <p class="pr-next">${T.nextLine}</p>
+        </section>
+      </section>
+
+      <aside class="col side">
+        <div class="side-sec">
+          <h2 class="h2">Why it was escalated</h2>
+          <p class="reason">${icon("bell")}<span>${T.escalationReason}</span></p>
+        </div>
+        <div class="dbl dim"></div>
+        <div class="side-sec">
+          <h2 class="h2">Purpose</h2>
+          <p style="font-size:13.5px">${T.purpose}</p>
+        </div>
+        <div class="side-sec">
+          <h2 class="h2">Booking facts ${fob(T.booking)}</h2>
+          <div class="facts-list">${T.facts.map((f) => `<div>${icon("key")}<span>${f}</span></div>`).join("")}</div>
+        </div>
+        <div class="dbl dim"></div>
+        <div class="side-sec">
+          <h2 class="h2">Handover</h2>
+          <dl class="kv" style="grid-template-columns:70px 1fr;font-size:13px">
+            <dt>${esc0.t}</dt><dd>Escalated by Kiku</dd>
+            <dt>${join.t}</dt><dd>You joined to listen</dd>
+            <dt>${T.takeoverAt}</dt><dd>You took over</dd>
+          </dl>
+        </div>
+      </aside>
+    </div>`, ["microphone", "On a call · KK-24030"]);
+  document.fonts.ready.then(() => {
+    const h = document.getElementById("hist");
+    const pr = document.querySelector(".prompter");
+    const col = h.parentElement;
+    const avail = 900 - 24 - h.getBoundingClientRect().top - pr.offsetHeight - 16;
+    const head = h.querySelector(".lg-head");
+    const rows = [...h.querySelectorAll(".lg-karaoke .lg-row")];
+    let used = head.offsetHeight;
+    for (let i = rows.length - 1; i >= 0; i--) {
+      if (used + rows[i].offsetHeight > avail) break;
+      used += rows[i].offsetHeight;
+    }
+    h.style.flex = "none";
+    h.style.height = used + "px";
+    h.scrollTop = h.scrollHeight;
+    pr.style.flex = "1 0 auto";
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Live board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=block">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/iconoir@7.12.1/css/iconoir.css">
+<script src="../../_shared/data.js"></script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js"></script>
+<style>
+  .head { align-items: flex-start; margin-bottom: 20px; }
+  .totals { font-size: 14px; color: var(--graphite); margin-top: 8px; line-height: 1.6; }
+  .totals b { color: var(--dark); font-weight: 600; }
+  .board { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 352px; gap: 22px; }
+  .left { display: flex; flex-direction: column; gap: 22px; min-height: 0; }
+  .sec-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .sec-head .lbl { font-size: 12.5px; }
+
+  .waiting { padding: 20px 22px 20px; display: grid; grid-template-columns: 1fr auto; gap: 18px 28px; }
+  .waiting .who { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .waiting .name { font-size: 24px; font-weight: 600; letter-spacing: -.01em; }
+  .waiting .purpose { font-size: 15px; margin-top: 10px; max-width: 60ch; }
+  .waiting .reason { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13.5px; color: var(--dark); font-weight: 500; }
+  .waiting .reason .ico { color: #9A6A08; font-size: 17px; }
+  .timer { text-align: right; }
+  .timer .count { font-size: 40px; line-height: 1; font-weight: 600; letter-spacing: -.02em; padding: 10px 14px 12px; border-radius: 10px; background: var(--face); box-shadow: var(--inset); display: inline-block; min-width: 132px; text-align: center; }
+  .timer .lbl { margin-top: 7px; }
+  .waiting .actions { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding-top: 16px; border-top: 1px solid var(--rule); }
+  .waiting .actions .help { margin-left: 8px; }
+
+  .lines { overflow: hidden; }
+  .line { display: grid; grid-template-columns: 124px 1fr 150px 138px; gap: 16px; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--rule); }
+  .line:last-child { border-bottom: 0; }
+  .line .g { font-weight: 600; font-size: 14.5px; }
+  .line .p { font-size: 13px; color: var(--graphite); margin-top: 2px; }
+  .line .on { font-size: 13px; display: flex; flex-direction: column; gap: 2px; }
+  .line .on .lbl { font-size: 12px; }
+  .line .t { font-size: 13px; }
+  .line .key { justify-self: end; width: 128px; }
+
+  .recent { display: flex; flex-direction: column; min-height: 0; }
+  .recent .display { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .fin { padding: 12px 16px; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; }
+  .fin .g { font-weight: 600; font-size: 14px; }
+  .fin .o { grid-column: 1 / -1; font-size: 13px; color: var(--graphite); }
+  .fin .m { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--label); }
+  .recent .more { margin-top: auto; padding: 12px 16px; border-top: 1px solid var(--rule); }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="column" id="column"></aside>
+  <main class="face">
+    <header class="head">
+      <div class="grow">
+        <h1 class="h1">Live board</h1>
+        <p class="totals" id="totals"></p>
+      </div>
+    </header>
+    <div class="board">
+      <div class="left">
+        <section>
+          <div class="sec-head"><h2 class="h2">Needs a specialist</h2><span class="status" id="needCount"></span></div>
+          <div class="display waiting" id="waiting"></div>
+        </section>
+        <section>
+          <div class="sec-head"><h2 class="h2">On the line</h2><span class="lbl" id="lineCount"></span></div>
+          <div class="display lines" id="lines"></div>
+        </section>
+      </div>
+      <section class="recent">
+        <div class="sec-head"><h2 class="h2">Just finished</h2></div>
+        <div class="display" id="recent"></div>
+      </section>
+    </div>
+  </main>
+</div>
+<script>
+  const { K, esc, ico, status, lamp } = Kiku;
+  Kiku.shell({ role: 'specialist', active: 'live' });
+  const s = K.stats;
+  document.querySelector('#totals').innerHTML =
+    `Today so far: <b>${s.callsToday}</b> calls, <b>${s.inbound}</b> inbound and <b>${s.outbound}</b> outbound. ` +
+    `<br><b>${s.completed}</b> completed, <b>${s.inProgress}</b> in progress, <b>${s.escalated}</b> escalated, <b>${s.failed}</b> failed. ` +
+    `<b>${s.takeoversToday}</b> takeovers, <b>${s.avgHandle}</b> average handle time, <b>${s.upsellValueToday}</b> added in upsells.`;
+
+  const me = K.people.specialist.name;
+  const live = K.calls.filter(c => c.status === 'in_progress' || c.status === 'escalated');
+  const need = live.filter(c => c.status === 'escalated' && !c.specialist);
+  const onLine = live.filter(c => !need.includes(c)).sort((a, b) => (a.status === 'escalated' ? -1 : 0) - (b.status === 'escalated' ? -1 : 0));
+
+  document.querySelector('#needCount').innerHTML = `${lamp('amber')}${need.length} waiting`;
+  const o = need[0];
+  document.querySelector('#waiting').innerHTML = `
+    <div>
+      <div class="who"><span class="name">${esc(o.guest)}</span>${status(o.status)}</div>
+      <div class="meta" style="margin-top:6px">${ico('phone-income')}<span>${o.type}</span><span class="sep"></span><span>${esc(o.phone)}</span><span class="sep"></span><span>${o.id}</span><span class="sep"></span><span>started ${o.started}</span><span class="sep"></span><span>on call ${o.duration}</span></div>
+      <p class="purpose">${esc(o.purpose)}</p>
+      <p class="reason">${ico('warning-triangle')}${esc(o.escalationReason)}</p>
+    </div>
+    <div class="timer"><div class="count">${o.waiting}</div><div class="lbl">waiting for a person</div></div>
+    <div class="actions">
+      <a class="key key--orange key--lg" href="06-takeover-karaoke.html">${ico('microphone')}take over</a>
+      <a class="key key--lg" href="05-live-call-listening.html">${ico('headset')}listen first</a>
+      <span class="help">You speak, Kiku keeps writing the script for you.</span>
+    </div>`;
+
+  document.querySelector('#lineCount').textContent = `${onLine.length} calls`;
+  document.querySelector('#lines').innerHTML = onLine.map(c => {
+    const mine = c.specialist && c.specialist.startsWith(me);
+    const listening = mine && /listening/.test(c.specialist);
+    const who = !c.specialist ? `<span>Kiku alone</span><span class="lbl">no one listening</span>`
+      : listening ? `<span>You, listening</span><span class="lbl">Kiku is speaking</span>`
+      : `<span class="strong">You took over</span><span class="lbl">karaoke mode on</span>`;
+    const key = !c.specialist ? `<a class="key" href="05-live-call-listening.html">${ico('headset')}listen</a>`
+      : listening ? `<a class="key is-down" href="05-live-call-listening.html">${lamp('green')}listening</a>`
+      : `<a class="key key--dark" href="06-takeover-karaoke.html">${ico('microphone')}back to call</a>`;
+    const dir = c.direction === 'inbound' ? 'Inbound' : `Outbound · ${c.type}`;
+    return `<div class="line ${mine ? 'is-you' : ''}">
+      <div>${status(c.status)}<div class="lbl" style="margin-top:4px">${c.started} · ${c.duration}</div></div>
+      <div style="min-width:0"><div class="g">${esc(c.guest)} <span class="muted" style="font-weight:400;font-size:13px">· ${dir}</span></div><div class="p">${esc(c.purpose)}</div></div>
+      <div class="on">${who}</div>
+      ${key}
+    </div>`;
+  }).join('');
+
+  const done = K.calls.filter(c => c.status === 'completed' || c.status === 'failed').slice(0, 6);
+  document.querySelector('#recent').innerHTML = done.map(c => `
+    <a class="fin" href="${c.id === 'KK-24027' ? '04-call-audit.html' : '03-call-logs.html'}" style="text-decoration:none">
+      <span class="g">${esc(c.guest)}</span>${status(c.status)}
+      <span class="o">${esc(c.outcome)}</span>
+      <span class="m"><span>${c.started}</span><span>${c.direction === 'inbound' ? 'Inbound' : c.type}</span><span>${c.duration}</span>${c.specialist ? `<span>${esc(c.specialist)}</span>` : ''}</span>
+    </a>`).join('') + `<div class="more"><a class="key key--sm" href="03-call-logs.html">${ico('list')}all call logs</a></div>`;
+</script>
+</body>
+</html>
