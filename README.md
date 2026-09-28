@@ -38,6 +38,11 @@ one line runs through the whole console. Kiku's script sits above it, the person
 
 [Direction notes](designs/design-1/DIRECTION.md) · [Source](designs/design-1/src)
 
+<a href="designs/design-1/04-call-audit.png"><img src="designs/design-1/04-call-audit.png" width="880" alt="Design 1: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
+
 #### Sign in
 
 <a href="designs/design-1/01-sign-in.png"><img src="designs/design-1/01-sign-in.png" width="880" alt="Design 1: Sign in"></a>
@@ -78,11 +83,18 @@ one line runs through the whole console. Kiku's script sits above it, the person
 
 <a href="designs/design-1/10-users.png"><img src="designs/design-1/10-users.png" width="880" alt="Design 1: Users"></a>
 
+</details>
+
 ## 2. Braid
 
 Two voices, one line. Kiku is a violet rail with square corners and a specialist is a rose rail with round ones. Where they agree, the rails open into a lens that holds the shared words.
 
 [Direction notes](designs/design-2/DIRECTION.md) · [Source](designs/design-2/src)
+
+<a href="designs/design-2/04-call-audit.png"><img src="designs/design-2/04-call-audit.png" width="880" alt="Design 2: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
 
 #### Sign in
 
@@ -124,11 +136,18 @@ Two voices, one line. Kiku is a violet rail with square corners and a specialist
 
 <a href="designs/design-2/10-users.png"><img src="designs/design-2/10-users.png" width="880" alt="Design 2: Users"></a>
 
+</details>
+
 ## 3. Galley Proof
 
 Kiku sets the type and your team marks it up. Every karaoke line reads like a proof sheet: Kiku's script in black, cut words struck through in proof red, and the specialist's own words raised above the line.
 
 [Direction notes](designs/design-3/DIRECTION.md) · [Source](designs/design-3/src)
+
+<a href="designs/design-3/04-call-audit.png"><img src="designs/design-3/04-call-audit.png" width="880" alt="Design 3: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
 
 #### Sign in
 
@@ -170,11 +189,18 @@ Kiku sets the type and your team marks it up. Every karaoke line reads like a pr
 
 <a href="designs/design-3/10-users.png"><img src="designs/design-3/10-users.png" width="880" alt="Design 3: Users"></a>
 
+</details>
+
 ## 4. Split Reel
 
 every call is two tracks. Kiku writes on the top track, a person speaks on the bottom one, and the console shows where they run together and where they split.
 
 [Direction notes](designs/design-4/DIRECTION.md) · [Source](designs/design-4/src)
+
+<a href="designs/design-4/04-call-audit.png"><img src="designs/design-4/04-call-audit.png" width="880" alt="Design 4: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
 
 #### Sign in
 
@@ -216,11 +242,18 @@ every call is two tracks. Kiku writes on the top track, a person speaks on the b
 
 <a href="designs/design-4/10-users.png"><img src="designs/design-4/10-users.png" width="880" alt="Design 4: Users"></a>
 
+</details>
+
 ## 5. Duet Stave
 
 Kiku and the specialist are two voices on one line of music. Words they share sit on the line. Kiku's unspoken words rise above it. The person's own words drop below it.
 
 [Direction notes](designs/design-5/DIRECTION.md) · [Source](designs/design-5/src)
+
+<a href="designs/design-5/04-call-audit.png"><img src="designs/design-5/04-call-audit.png" width="880" alt="Design 5: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
 
 #### Sign in
 
@@ -262,11 +295,18 @@ Kiku and the specialist are two voices on one line of music. Words they share si
 
 <a href="designs/design-5/10-users.png"><img src="designs/design-5/10-users.png" width="880" alt="Design 5: Users"></a>
 
+</details>
+
 ## 6. Proof Desk
 
 A desk for proofreading voice calls. Karaoke turns are marked up like a proof, as one line of prose where the words Kiku wrote but nobody said are struck and the words the specialist improvised are underlined. Navigation sits in a command dock at the bottom of the screen, and that dock becomes the call's control bar whenever a human is on the line.
 
 [Direction notes](designs/design-6/DIRECTION.md) · [Source](designs/design-6/src)
+
+<a href="designs/design-6/04-call-audit.png"><img src="designs/design-6/04-call-audit.png" width="880" alt="Design 6: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
 
 #### Sign in
 
@@ -308,11 +348,18 @@ A desk for proofreading voice calls. Karaoke turns are marked up like a proof, a
 
 <a href="designs/design-6/10-users.png"><img src="designs/design-6/10-users.png" width="880" alt="Design 6: Users"></a>
 
+</details>
+
 ## 7. Interlinear
 
 a console that reads like an annotated script. The specialist's words are the text, and what Kiku wrote hangs above each improvised phrase like a translator's gloss.
 
 [Direction notes](designs/design-7/DIRECTION.md) · [Source](designs/design-7/src)
+
+<a href="designs/design-7/04-call-audit.png"><img src="designs/design-7/04-call-audit.png" width="880" alt="Design 7: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
 
 #### Sign in
 
@@ -354,11 +401,18 @@ a console that reads like an annotated script. The specialist's words are the te
 
 <a href="designs/design-7/10-users.png"><img src="designs/design-7/10-users.png" width="880" alt="Design 7: Users"></a>
 
+</details>
+
 ## 8. Pencil & Yolk
 
 Kiku writes in pencil and people speak in yolk. Every call reads as a duet: Kiku's lines sit on the left, the people's lines sit on the right, and the recording runs down the spine between them.
 
 [Direction notes](designs/design-8/DIRECTION.md) · [Source](designs/design-8/src)
+
+<a href="designs/design-8/04-call-audit.png"><img src="designs/design-8/04-call-audit.png" width="880" alt="Design 8: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
 
 #### Sign in
 
@@ -400,11 +454,18 @@ Kiku writes in pencil and people speak in yolk. Every call reads as a duet: Kiku
 
 <a href="designs/design-8/10-users.png"><img src="designs/design-8/10-users.png" width="880" alt="Design 8: Users"></a>
 
+</details>
+
 ## 9. Twin Track
 
 Every karaoke line is shown as two aligned lanes, with Kiku's script on the upper lane and the human voice on the lower one, so you can see at a glance where the specialist kept the script, skipped it or improvised.
 
 [Direction notes](designs/design-9/DIRECTION.md) · [Source](designs/design-9/src)
+
+<a href="designs/design-9/04-call-audit.png"><img src="designs/design-9/04-call-audit.png" width="880" alt="Design 9: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
 
 #### Sign in
 
@@ -446,11 +507,18 @@ Every karaoke line is shown as two aligned lanes, with Kiku's script on the uppe
 
 <a href="designs/design-9/10-users.png"><img src="designs/design-9/10-users.png" width="880" alt="Design 9: Users"></a>
 
+</details>
+
 ## 10. Stitchline
 
 Kiku's script and the specialist's words sit side by side as two readable columns. Where the specialist kept Kiku's words, a dashed thread stitches the two columns together across a gutter.
 
 [Direction notes](designs/design-10/DIRECTION.md) · [Source](designs/design-10/src)
+
+<a href="designs/design-10/04-call-audit.png"><img src="designs/design-10/04-call-audit.png" width="880" alt="Design 10: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
 
 #### Sign in
 
@@ -492,11 +560,18 @@ Kiku's script and the specialist's words sit side by side as two readable column
 
 <a href="designs/design-10/10-users.png"><img src="designs/design-10/10-users.png" width="880" alt="Design 10: Users"></a>
 
+</details>
+
 ## 11. Crosswire
 
 two voices, two colours, joined line by line. Kiku writes in orchid, the human speaks in saffron, and every screen shows which one is on the line.
 
 [Direction notes](designs/design-11/DIRECTION.md) · [Source](designs/design-11/src)
+
+<a href="designs/design-11/04-call-audit.png"><img src="designs/design-11/04-call-audit.png" width="880" alt="Design 11: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
 
 #### Sign in
 
@@ -538,11 +613,18 @@ two voices, two colours, joined line by line. Kiku writes in orchid, the human s
 
 <a href="designs/design-11/10-users.png"><img src="designs/design-11/10-users.png" width="880" alt="Design 11: Users"></a>
 
+</details>
+
 ## 12. Switchboard
 
 Kiku works like the hotel's old telephone exchange. The app sits above a yellow operator's desk, calls are lines with lamps, and karaoke mode is a patch bay: numbered cords join the words a specialist kept from Kiku's script.
 
 [Direction notes](designs/design-12/DIRECTION.md) · [Source](designs/design-12/src)
+
+<a href="designs/design-12/04-call-audit.png"><img src="designs/design-12/04-call-audit.png" width="880" alt="Design 12: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
 
 #### Sign in
 
@@ -584,11 +666,18 @@ Kiku works like the hotel's old telephone exchange. The app sits above a yellow 
 
 <a href="designs/design-12/10-users.png"><img src="designs/design-12/10-users.png" width="880" alt="Design 12: Users"></a>
 
+</details>
+
 ## 13. Anaglyph
 
 Two inks, one call. Kiku prints in cyan, people print in magenta, and wherever the specialist says exactly what Kiku wrote, the two inks overprint into a deep blue.
 
 [Direction notes](designs/design-13/DIRECTION.md) · [Source](designs/design-13/src)
+
+<a href="designs/design-13/04-call-audit.png"><img src="designs/design-13/04-call-audit.png" width="880" alt="Design 13: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
 
 #### Sign in
 
@@ -630,11 +719,18 @@ Two inks, one call. Kiku prints in cyan, people print in magenta, and wherever t
 
 <a href="designs/design-13/10-users.png"><img src="designs/design-13/10-users.png" width="880" alt="Design 13: Users"></a>
 
+</details>
+
 ## 14. Shared Run
 
 Kiku and the human are two overlapping voices. The console reads the specialist's speech as a single line, and the words Kiku wrote that went unsaid float above it as small struck glosses.
 
 [Direction notes](designs/design-14/DIRECTION.md) · [Source](designs/design-14/src)
+
+<a href="designs/design-14/04-call-audit.png"><img src="designs/design-14/04-call-audit.png" width="880" alt="Design 14: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
 
 #### Sign in
 
@@ -676,11 +772,18 @@ Kiku and the human are two overlapping voices. The console reads the specialist'
 
 <a href="designs/design-14/10-users.png"><img src="designs/design-14/10-users.png" width="880" alt="Design 14: Users"></a>
 
+</details>
+
 ## 15. Lime Splice
 
 Kiku and the specialist are two strands of one call; the console shows where they run together and where they split apart.
 
 [Direction notes](designs/design-15/DIRECTION.md) · [Source](designs/design-15/src)
+
+<a href="designs/design-15/04-call-audit.png"><img src="designs/design-15/04-call-audit.png" width="880" alt="Design 15: Call audit"></a>
+
+<details>
+<summary>All 10 screens</summary>
 
 #### Sign in
 
@@ -721,6 +824,8 @@ Kiku and the specialist are two strands of one call; the console shows where the
 #### Users
 
 <a href="designs/design-15/10-users.png"><img src="designs/design-15/10-users.png" width="880" alt="Design 15: Users"></a>
+
+</details>
 
 ## Layout
 
