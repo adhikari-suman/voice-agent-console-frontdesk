@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku: Upsell calls</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .content { display: grid; grid-template-rows: auto minmax(0,1fr); gap: 18px; padding-top: 18px; }
+  .offers { display: grid; grid-template-columns: auto repeat(3, 1fr); border: 1px solid var(--rule); background: var(--paper); }
+  .offers .intro { padding: 14px 20px; border-right: 1px solid var(--rule); max-width: 230px; }
+  .offers .intro .h2 { font-size: 20px; }
+  .offers .intro p { font-size: 12.5px; color: var(--text-2); margin-top: 4px; }
+  .offer { padding: 14px 20px; border-right: 1px solid var(--rule); display: grid; grid-template-columns: 32px 1fr; gap: 2px 12px; }
+  .offer:last-child { border-right: 0; }
+  .offer > svg { width: 22px; height: 22px; grid-row: 1 / 4; color: var(--ink); margin-top: 2px; }
+  .offer b { font-size: 15px; }
+  .offer .d { font-size: 12.5px; color: var(--text-2); }
+  .offer .p { font-family: var(--f-display); font-weight: 700; font-size: 19px; }
+  .offer .p small { font-family: var(--f-ui); font-weight: 500; font-size: 12px; color: var(--text-2); margin-left: 6px; }
+
+  .paths { display: grid; grid-template-columns: 420px minmax(0,1fr); gap: 22px; min-height: 0; }
+  .path { background: #fff; border: 1px solid var(--rule-2); display: flex; flex-direction: column; min-height: 0; }
+  .path .ph { padding: 14px 20px 12px; border-bottom: 1px solid var(--rule); display: flex; align-items: baseline; gap: 10px; }
+  .path .ph .h2 { font-size: 22px; }
+  .path .ph .k { background: var(--ink); color: #fff; width: 28px; height: 28px; display: grid; place-items: center; align-self: center; }
+  .path .pb { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; flex: 1; min-height: 0; }
+  .path .pf { padding: 12px 20px; border-top: 1px solid var(--rule); display: flex; align-items: center; gap: 12px; background: var(--paper); }
+  .path .pf .note { font-size: 12.5px; color: var(--text-2); margin-right: auto; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .matched { border: 1px solid #A9D6C5; background: var(--ok-tint); padding: 10px 12px; display: grid; grid-template-columns: 18px 1fr; gap: 8px; font-size: 13.5px; }
+  .matched svg { color: var(--ok); width: 17px; height: 17px; }
+  .matched b { display: block; font-size: 12px; color: var(--ok); }
+  .tog { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--rule); font-size: 13.5px; }
+  .tog:last-child { border-bottom: 0; }
+  .tog .pr { margin-left: auto; font-family: var(--f-display); font-weight: 700; font-size: 16px; }
+
+  .filerow { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 10px 14px; border: 1px solid var(--rule-2); background: var(--paper); }
+  .cols { font-size: 12.5px; color: var(--text-2); }
+  .cols code { font-family: var(--f-ui); font-weight: 700; color: var(--text); background: var(--stone); padding: 0 5px; }
+  .prev { border: 1px solid var(--rule); min-height: 0; }
+  .prev .t td { font-size: 13px; padding: 7px 10px; }
+  .prev .t td.r { font-family: var(--f-display); font-weight: 600; font-size: 14.5px; color: var(--text-2); width: 44px; }
+  .prev .t tr.bad td { background: var(--fail-tint); }
+  .prev .t tr.bad td.why { color: var(--fail); font-weight: 600; }
+  .skip td { text-align: center; font-size: 12px !important; color: var(--text-3); padding: 4px !important; background: repeating-linear-gradient(var(--slant), transparent 0 5px, rgba(133,126,143,.12) 5px 6px); }
+</style>
+</head>
+<body>
+<script>
+const { K, icon, shell, esc } = V;
+const S = K.upsellSingle, U = K.upsellCsv;
+const c = shell({ role: "admin", active: "upsell", title: "Upsell calls", ctx: "Kiku calls guests with a booking and offers extras" });
+const oIcon = { pickup: "car-front", breakfast: "coffee", dinner: "utensils-crossed" };
+const offerById = id => K.offers.find(o => o.id === id);
+const OK = `<span class="okglyph">${V.STATUS.completed.svg.replace("<svg", '<svg width="13" height="13"')}Ready</span>`;
+const BAD = e => `<span class="errglyph">${V.STATUS.failed.svg.replace("<svg", '<svg width="13" height="13"')}${e}</span>`;
+c.innerHTML = `
+<div class="offers">
+  <div class="intro"><div class="h2">What Kiku offers</div><p>Every upsell call offers these three. Turn one off per call if it doesn't fit the guest.</p></div>
+  ${K.offers.map(o => `<div class="offer">${icon(oIcon[o.id])}<b>${o.name}</b><span class="d">${o.detail}</span><span class="p">${o.price.replace(/ per.*/, "")}<small>${o.price.replace(/^£\d+ /, "")}${o.alt ? `. ${o.alt}` : ""}</small></span></div>`).join("")}
+</div>
+
+<div class="paths">
+  <section class="path">
+    <div class="ph"><span class="k">${icon("user-round")}</span><span class="h2">Call one guest</span></div>
+    <div class="pb">
+      <div class="two">
+        <div class="field"><label>Phone</label><div class="input">${S.phone}</div></div>
+        <div class="field"><label>Confirmation number</label><div class="input focus">${S.confirmation}</div></div>
+      </div>
+      <div class="matched">${icon("circle-check")}<span><b>Booking found</b>${S.match}</span></div>
+      <div>
+        <div class="lbl" style="margin-bottom:2px">Offer on this call</div>
+        ${S.offers.map(id => { const o = offerById(id); return `<div class="tog"><span class="toggle on"></span>${o.name}<span class="pr">${o.price.replace(/ per.*/, "")}</span></div>`; }).join("")}
+      </div>
+    </div>
+    <div class="pf"><span class="note">Kiku places the call straight away. It appears in call logs.</span><button class="btn go">${icon("phone-outgoing")}Call now</button></div>
+  </section>
+
+  <section class="path">
+    <div class="ph"><span class="k">${icon("sheet")}</span><span class="h2">Call a list of guests</span><span class="cols" style="margin-left:auto">Columns: <code>${U.columns[0]}</code> <code>${U.columns[1]}</code></span></div>
+    <div class="pb">
+      <div class="filerow"><span class="file" style="padding:0;border:0;background:none"><span class="ic">CSV</span></span>
+        <div><b>${U.file}</b><div class="small muted">${U.size}, ${U.rows} rows. Each row is matched to a booking before calling.</div></div>
+        <div class="tally"><span><span class="num ok">${U.ready}</span><span class="lb">ready</span></span><span><span class="num bad">${U.errors}</span><span class="lb">errors</span></span></div>
+      </div>
+      <div class="prev scroll">
+        <table class="t">
+          <thead><tr><th>Row</th><th>Phone</th><th>Confirmation</th><th>Matched guest</th><th>Check</th></tr></thead>
+          <tbody>
+            ${U.preview.map((r, i) => `${i === 4 ? `<tr class="skip"><td colspan="5">Rows 5 to 13 ready</td></tr>` : ""}${i === 5 ? `<tr class="skip"><td colspan="5">Rows 15 to 26 ready</td></tr>` : ""}
+              <tr class="${r.ok ? "" : "bad"}"><td class="r">${r.row}</td><td>${r.phone}</td><td>${r.confirmation || `<span class="faint">Empty</span>`}</td><td>${r.guest || `<span class="faint">No match</span>`}</td><td class="why">${r.ok ? OK : BAD(r.error)}</td></tr>`).join("")}
+            <tr class="skip"><td colspan="5">Rows 28 to 38 ready</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="pf"><span class="note">Rows 14 and 27 are skipped. Fix them in the file and upload it again to include them.</span><button class="btn">Replace file</button><button class="btn go">${icon("phone-outgoing")}Start ${U.ready} calls</button></div>
+  </section>
+</div>`;
+</script>
+</body>
+</html>

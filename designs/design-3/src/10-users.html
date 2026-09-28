@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku: Users</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .content { display: grid; grid-template-columns: minmax(0,1fr) 420px; gap: 0; padding: 0; }
+  .listside { padding: 18px 28px 24px 32px; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+  .bar { display: flex; gap: 12px; align-items: center; }
+  .bar .search { width: 280px; height: 34px; }
+  .bar .counts { font-size: 13px; color: var(--text-2); margin-left: auto; }
+  .tablewrap { background: var(--paper); border: 1px solid var(--rule); min-height: 0; }
+  .t td { font-size: 13.5px; padding: 12px 10px; }
+  .u { display: flex; gap: 11px; align-items: center; }
+  .u .avatar { width: 32px; height: 32px; font-size: 14px; }
+  .u b { display: block; font-weight: 700; font-size: 14px; }
+  .u span.e { font-size: 12.5px; color: var(--text-2); }
+  .role { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; font-size: 13px; }
+  .role svg { width: 14px; height: 14px; }
+  .ust { display: inline-flex; gap: 7px; align-items: center; font-weight: 600; font-size: 13px; }
+  .ust i { width: 10px; height: 10px; display: block; }
+  .ust.Active { color: var(--ok); } .ust.Active i { background: var(--ok); border-radius: 50%; }
+  .ust.Invited { color: var(--kiku); } .ust.Invited i { border: 2px dashed var(--kiku); border-radius: 50%; }
+  .ust.Deactivated { color: var(--text-2); } .ust.Deactivated i { background: var(--text-3); clip-path: polygon(0 40%, 100% 40%, 100% 60%, 0 60%); }
+  tr.off td { color: var(--text-2); }
+  tr.off .avatar { opacity: .5; }
+  .tk { font-family: var(--f-display); font-weight: 700; font-size: 18px; }
+  .tkbar { display: inline-block; height: 8px; background: repeating-linear-gradient(to right, var(--human) 0 2px, transparent 2px 4px); vertical-align: middle; margin-left: 8px; }
+  td.last { font-size: 13px; color: var(--text-2); }
+
+  .drawer { background: #fff; border-left: 1px solid var(--ink); display: flex; flex-direction: column; min-height: 0; position: relative; }
+  .dh { padding: 20px 26px 14px; display: flex; align-items: flex-start; gap: 10px; border-bottom: 1px solid var(--rule); }
+  .dh .h2 { font-size: 26px; }
+  .dh p { font-size: 13px; color: var(--text-2); margin-top: 3px; }
+  .dh button { margin-left: auto; color: var(--text-2); padding: 4px; }
+  .db { padding: 18px 26px; display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0; }
+  .rolecard { border: 1px solid var(--rule-2); padding: 12px 14px; display: grid; grid-template-columns: 18px 1fr; gap: 6px 11px; }
+  .rolecard.on { border: 2px solid var(--ink); padding: 11px 13px; background: var(--paper); }
+  .rolecard .radio { margin-top: 2px; }
+  .rolecard b { font-size: 14.5px; }
+  .rolecard ul { grid-column: 2; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .rolecard li { font-size: 13px; display: flex; gap: 7px; align-items: flex-start; color: var(--text-2); }
+  .rolecard.on li { color: var(--text); }
+  .rolecard li svg { width: 14px; height: 14px; margin-top: 2px; color: var(--ok); }
+  .rolecard:not(.on) li svg { color: var(--text-3); }
+  .df { padding: 14px 26px; border-top: 1px solid var(--rule); display: flex; gap: 10px; align-items: center; background: var(--paper); }
+  .df .note { font-size: 12.5px; color: var(--text-2); margin-right: auto; }
+</style>
+</head>
+<body>
+<script>
+const { K, icon, shell } = V;
+const N = K.newUserDraft;
+const c = shell({ role: "admin", active: "users", title: "Users", ctx: "Who can sign in to Kiku at The Brenlow",
+  right: `<button class="btn primary">${icon("user-plus")}Add user</button>` });
+const max = Math.max(...K.users.map(u => u.takeovers30d));
+const cnt = s => K.users.filter(u => u.status === s).length;
+c.innerHTML = `
+<div class="listside">
+  <div class="bar"><div class="input search">${icon("search")}<span class="faint">Name or email</span></div>
+    <div class="seg"><button class="on">Everyone</button><button>Admins</button><button>Specialists</button></div>
+    <span class="counts">${cnt("Active")} active, ${cnt("Invited")} invited, ${cnt("Deactivated")} deactivated</span></div>
+  <div class="tablewrap scroll">
+    <table class="t">
+      <thead><tr><th>Person</th><th>Role</th><th>Status</th><th>Last active</th><th>Takeovers, 30 days</th></tr></thead>
+      <tbody>
+        ${K.users.map(u => `<tr class="${u.status === "Deactivated" ? "off" : ""}">
+          <td><div class="u"><span class="avatar">${u.initials}</span><span><b>${u.name}</b><span class="e">${u.email}</span></span></div></td>
+          <td><span class="role">${icon(u.role === "Admin" ? "shield" : "headset")}${u.role}</span></td>
+          <td><span class="ust ${u.status}"><i></i>${u.status}</span></td>
+          <td class="last">${u.lastActive}</td>
+          <td><span class="tk">${u.takeovers30d}</span>${u.takeovers30d ? `<span class="tkbar" style="width:${Math.round(u.takeovers30d / max * 90)}px"></span>` : ""}</td>
+        </tr>`).join("")}
+        <tr style="background:var(--kiku-tint)"><td><div class="u"><span class="avatar" style="background:var(--kiku);color:#fff">GM</span><span><b>${N.name}</b><span class="e">${N.email}</span></span></div></td><td><span class="role">${icon("headset")}${N.role}</span></td><td><span class="ust Invited"><i></i>Not sent yet</span></td><td class="last">Being added</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<aside class="drawer">
+  <div class="dh"><div><div class="h2">Add a user</div><p>They get an email invite to set a password.</p></div><button title="Close">${icon("x")}</button></div>
+  <div class="db scroll">
+    <div class="field"><label>Full name</label><div class="input">${N.name}</div></div>
+    <div class="field"><label>Work email</label><div class="input focus">${N.email}</div></div>
+    <div class="field"><label>Role</label>
+      ${["Specialist", "Admin"].map(r => `<div class="rolecard${N.role === r ? " on" : ""}"><span class="radio${N.role === r ? " on" : ""}"></span><b>${r}</b>
+        <ul>${K.roles[r].map(p => `<li>${icon("check")}${p}</li>`).join("")}</ul></div>`).join("")}
+    </div>
+  </div>
+  <div class="df"><span class="note">Role can be changed later.</span><button class="btn">Cancel</button><button class="btn go">${icon("send")}Send invite</button></div>
+</aside>`;
+</script>
+</body>
+</html>

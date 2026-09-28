@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku, make a call</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+.two { height: 100%; display: grid; grid-template-columns: 430px 1fr; gap: 16px; }
+.path { display: flex; flex-direction: column; min-height: 0; }
+.path .panel-h { padding: 16px 20px 6px; }
+.path .inner { flex: 1; min-height: 0; padding: 8px 20px 16px; display: flex; flex-direction: column; gap: 16px; }
+.pathlbl { font-size: 12px; font-weight: 700; color: var(--mauve-d); background: var(--mauve-t); padding: 1px 7px; border-radius: 4px; }
+.purpose { font: 500 18px/1.5 var(--display); min-height: 230px; padding: 16px 18px; font-size: 20px; }
+.brief { background: var(--panel-2); border: 1px solid var(--hair); border-radius: 8px; padding: 12px 14px; font-size: 13px; color: var(--ink-2); display: flex; gap: 10px; }
+.brief svg { width: 16px; height: 16px; color: var(--mauve); margin-top: 1px; }
+.act { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-top: 1px solid var(--hair); }
+.prev { border: 1px solid var(--hair); border-radius: 8px; overflow: hidden; }
+.prev td { height: 46px; font-size: 13px; }
+.prev th { background: var(--panel-2); }
+.prev td.pp { color: var(--ink-2); max-width: 360px; }
+tr.bad td { background: var(--fail-t); }
+.rowerr { display: inline-flex; gap: 6px; align-items: center; color: var(--fail); font-weight: 600; font-size: 12.5px; white-space: nowrap; }
+.okc { display: inline-flex; gap: 6px; align-items: center; color: var(--done); font-size: 12.5px; font-weight: 600; }
+.rowerr svg, .okc svg { width: 14px; height: 14px; }
+.gaprow td { height: 26px; font-size: 12px; color: var(--ink-3); text-align: center; background: var(--panel-2); }
+.tpl { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 8px; background: var(--mauve-tt); font-size: 13px; }
+.tpl svg { color: var(--mauve-d); }
+.cols { display: inline-flex; gap: 4px; }
+</style>
+</head><body>
+<script>
+const { K, esc, ic, topbar, mount } = UI;
+const one = K.makeCallSingle, csv = K.makeCallCsv;
+const good = csv.preview.filter(r => r.ok), bad = csv.preview.filter(r => !r.ok);
+const row = r => `<tr class="${r.ok ? "" : "bad"}"><td class="num muted">${r.row}</td><td class="num" style="white-space:nowrap">${r.phone || '<span class="muted">empty</span>'}</td><td style="white-space:nowrap">${r.name ? esc(r.name) : '<span class="muted">No name</span>'}</td><td class="pp">${esc(r.purpose)}</td><td>${r.ok ? `<span class="okc">${ic("circle-check")}Ready</span>` : `<span class="rowerr">${ic("circle-x")}${esc(r.error)}</span>`}</td></tr>`;
+
+mount("specialist", "make", `
+${topbar(`<div><div class="crumb">Outbound calls</div><h1 style="margin-top:3px">Make a call</h1></div>`)}
+<div class="body"><div class="two">
+  <section class="panel path">
+    <div class="panel-h"><span class="pathlbl">One call</span><h2>Tell Kiku why it's calling</h2></div>
+    <div class="inner">
+      <div class="field"><label>Purpose</label><div class="input ta purpose focus">${esc(one.purpose)}</div><span class="hint">Write it as you'd brief a colleague. Kiku opens with this and asks what the guest would like.</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Name <span class="opt">(optional)</span></label><div class="input">${esc(one.name)}</div></div>
+        <div class="field"><label>Phone</label><div class="input num">${one.phone}</div></div>
+      </div>
+      <div class="brief">${ic("info")}<span>If the guest asks for a person, Kiku escalates and the call appears on the live board for a specialist.</span></div>
+    </div>
+    <div class="act"><span class="small muted">Kiku calls straight away</span><button class="btn btn-ink" style="margin-left:auto">${ic("phone-outgoing")}Place call</button></div>
+  </section>
+  <section class="panel path">
+    <div class="panel-h"><span class="pathlbl">Many calls</span><h2>Call from a file</h2></div>
+    <div class="inner">
+      <div class="tpl">${ic("file-down")}<span>Use one row per call with columns <span class="cols">${csv.columns.map(c => `<span class="tag">${c}</span>`).join("")}</span></span><a class="link small" style="margin-left:auto" href="#">${ic("download")}Download template</a></div>
+      <div class="file"><span class="ico">${ic("file-spreadsheet")}</span>
+        <div style="flex:1"><div class="fn">${csv.file} <span class="muted small" style="font-weight:400">${csv.size}</span></div><div class="small soft"><b>${csv.rows}</b> rows, <b style="color:var(--done)">${csv.ready}</b> ready, <b style="color:var(--fail)">${csv.errors}</b> with an error</div>
+        <div class="readybar"><i style="flex:${csv.ready}"></i><i class="e" style="flex:${csv.errors}"></i></div></div>
+        <button class="btn sm btn-ghost">${ic("replace")}Replace file</button></div>
+      <div class="prev"><table>
+        <thead><tr><th>Row</th><th>Phone</th><th>Name</th><th>Purpose</th><th>Check</th></tr></thead>
+        <tbody>${good.map(row).join("")}<tr class="gaprow"><td colspan="5">Rows 5 to 12, errors shown below</td></tr>${bad.map(row).join("")}</tbody>
+      </table></div>
+    </div>
+    <div class="act"><span class="small muted">The row with an error is skipped. Add the phone number and upload again to include it.</span><button class="btn btn-ink" style="margin-left:auto">${ic("phone-outgoing")}Place ${csv.ready} calls</button></div>
+  </section>
+</div></div>`);
+</script>
+</body></html>

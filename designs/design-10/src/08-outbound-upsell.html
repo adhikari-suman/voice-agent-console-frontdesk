@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Upsell calls</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Shippori+Mincho+B1:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; padding: 18px 28px 18px; }
+  .ttl { display: flex; align-items: baseline; gap: 12px; }
+  .ttl h1 { font-size: 26px; }
+  .offers { display: grid; grid-template-columns: 150px repeat(3, 1fr); }
+  .offers > div { padding: 14px 18px; border-left: 1px solid var(--line-2); }
+  .offers .lead { border-left: 0; font-size: 13px; font-weight: 700; color: var(--ink-2); display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+  .offers .lead span { font-weight: 400; color: var(--ink-3); font-size: 12px; }
+  .offer { display: grid; grid-template-columns: 34px 1fr; gap: 0 12px; }
+  .offer .oi { grid-row: span 3; width: 34px; height: 34px; border-radius: 50%; background: var(--kiku-wash); border: 1px solid var(--kiku-soft); color: var(--kiku); display: grid; place-items: center; }
+  .offer b { font-size: 14.5px; }
+  .offer .d { font-size: 12.5px; color: var(--ink-3); }
+  .offer .pr { font-family: var(--serif); font-weight: 700; font-size: 16px; margin-top: 3px; }
+  .offer .pr small { font-family: var(--sans); font-weight: 500; font-size: 12px; color: var(--ink-2); margin-left: 6px; }
+
+  .paths { flex: 1; min-height: 0; display: grid; grid-template-columns: 440px minmax(0,1fr); gap: 18px; }
+  .path { min-height: 0; display: flex; flex-direction: column; }
+  .ph2 { padding: 14px 20px 12px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+  .ph2 .pl { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+  .ph2 h2 { font-size: 16px; font-weight: 700; }
+  .pbody { flex: 1; min-height: 0; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+  .match { display: grid; grid-template-columns: 22px 1fr; gap: 10px; padding: 12px 14px; background: var(--kiku-wash); border: 1px solid var(--kiku-soft); border-radius: 3px; font-size: 13.5px; }
+  .match svg { color: var(--kiku); }
+  .match .l { font-size: 12px; font-weight: 700; color: var(--kiku); }
+  .toggles { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 3px; background: #fff; }
+  .tg { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-top: 1px solid var(--line-2); font-size: 13.5px; }
+  .tg:first-child { border-top: 0; }
+  .tg .sw2 { width: 34px; height: 20px; border-radius: 10px; background: var(--kiku); position: relative; flex: none; }
+  .tg .sw2::after { content: ""; position: absolute; top: 3px; right: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+  .tg .pr { margin-left: auto; font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .pfoot { padding: 14px 20px; border-top: 1px solid var(--line); background: var(--paper-2); display: flex; align-items: center; gap: 10px; }
+  .pfoot .meta { margin-right: auto; }
+  .prev { flex: none; border: 1px solid var(--line); border-radius: 3px; background: #fff; overflow: hidden; }
+  .prev table.grid th { padding-top: 10px; font-size: 11.5px; background: var(--paper-2); }
+  .prev table.grid td { padding: 8px 12px; font-size: 13px; }
+  .prev .rn { color: var(--ink-3); font-variant-numeric: tabular-nums; width: 50px; }
+  .skip { font-size: 12px; color: var(--ink-3); padding: 6px 12px; border-bottom: 1px solid var(--line-2); background: var(--paper-2); text-align: center; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="shell"></div>
+  <main class="main">
+    <section class="wrap">
+      <div class="ttl"><h1 class="h-serif">Upsell calls</h1><span class="meta">Kiku calls guests with a booking and offers extras for their stay. Two ways to start.</span></div>
+      <div class="panel offers" id="offers"></div>
+      <div class="paths">
+        <section class="panel path" id="single"></section>
+        <section class="panel path" id="csv"></section>
+      </div>
+    </section>
+  </main>
+</div>
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<script>
+const { K, esc } = TT;
+TT.shell({ role: "admin", active: "08-outbound-upsell.html" });
+const icon = { pickup: "car", breakfast: "coffee", dinner: "utensils" };
+document.getElementById("offers").innerHTML = `<div class="lead">What Kiku offers<span>Prices Kiku quotes on the call</span></div>` + K.offers.map(o => `
+  <div class="offer"><span class="oi"><i data-lucide="${icon[o.id]}"></i></span><b>${o.name}</b><span class="d">${o.detail}</span><span class="pr">${o.price}${o.alt ? `<small>${o.alt}</small>` : ""}</span></div>`).join("");
+
+const u = K.upsellSingle;
+const [mName, ...mRest] = u.match.split(" · ");
+document.getElementById("single").innerHTML = `
+  <div class="ph2"><span class="pl">A</span><h2>Call one guest</h2><span class="meta" style="margin-left:auto">Kiku calls straight away</span></div>
+  <div class="pbody">
+    <div class="field"><label>Phone number</label><div class="input"><i data-lucide="phone" style="color:var(--ink-3)"></i><span class="num">${u.phone}</span></div></div>
+    <div class="field"><label>Confirmation number</label><div class="input focus"><span class="num">${u.confirmation}</span></div></div>
+    <div class="match"><i data-lucide="circle-check"></i><div><div class="l">Booking found</div><b>${mName}</b><div class="meta">${mRest.join(", ")}</div></div></div>
+    <div class="field"><label>Offers to make</label>
+      <div class="toggles">${K.offers.filter(o => u.offers.includes(o.id)).map(o => `<div class="tg"><span class="sw2" role="switch" aria-checked="true"></span>${o.name}<span class="pr">${o.price}</span></div>`).join("")}</div>
+    </div>
+  </div>
+  <div class="pfoot"><span class="meta">3 offers on</span><button class="btn human"><i data-lucide="phone-outgoing"></i>Call now</button></div>`;
+
+const c = K.upsellCsv;
+const okRows = c.preview.filter(r => r.ok), bad = c.preview.filter(r => !r.ok);
+const row = r => `<tr class="${r.ok ? "" : "err"}"><td class="rn">${r.row}</td><td class="num">${r.phone || '<span class="missing">Missing</span>'}</td><td class="num">${r.confirmation || '<span class="missing">Missing</span>'}</td><td>${r.ok ? r.guest : `<span class="rowerr"><i data-lucide="circle-alert" style="width:14px;height:14px"></i>${r.error}</span>`}</td></tr>`;
+document.getElementById("csv").innerHTML = `
+  <div class="ph2"><span class="pl">B</span><h2>Upload a list</h2><span class="meta" style="margin-left:auto">Columns</span><span class="cols">${c.columns.map(x => `<code>${x}</code>`).join("")}</span></div>
+  <div class="pbody">
+    <div class="filechip"><span class="ic">CSV</span><div><div class="name">${c.file}</div><div class="meta">${c.size}, ${c.rows} rows</div></div>
+      <div class="tally" style="margin-left:auto"><span class="ok"><i data-lucide="circle-check"></i>${c.ready} ready</span><span class="bad"><i data-lucide="circle-alert"></i>${c.errors} errors</span><button class="btn sm ghost"><i data-lucide="refresh-cw"></i>Replace file</button></div></div>
+    <div class="prev">
+      <table class="grid"><thead><tr><th>Row</th><th>Phone</th><th>Confirmation</th><th>Matched guest or problem</th></tr></thead>
+      <tbody>${okRows.map(row).join("")}<tr><td colspan="4" class="skip">${c.ready - okRows.length} more ready rows</td></tr>${bad.map(row).join("")}</tbody></table>
+    </div>
+    <div class="meta">Rows ${bad.map(r => r.row).join(" and ")} will be skipped. Fix them in the file and upload again to include them.</div>
+  </div>
+  <div class="pfoot"><span class="meta">${c.ready} of ${c.rows} rows will be called</span><button class="btn human"><i data-lucide="phone-outgoing"></i>Start ${c.ready} calls</button></div>`;
+TT.icons();
+</script>
+</body>
+</html>

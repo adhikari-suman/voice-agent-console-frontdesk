@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Live board · Kiku</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .content { display: grid; grid-template-columns: minmax(0,1fr) 350px; gap: 18px; }
+  .left { min-width: 0; display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+  .today { font-size: 15px; line-height: 1.7; color: var(--ink-2); max-width: 1100px; padding: 0 32px 14px; margin-top: -4px; }
+  .today b { font-family: var(--display); font-stretch: 80%; font-weight: 750; color: var(--ink); font-size: 17px; font-variant-numeric: tabular-nums; }
+  .today .st { display: inline-flex; align-items: center; gap: 4px; }
+  .today .st svg { width: 12px; height: 12px; vertical-align: -1px; }
+
+  .needs { background: var(--surface); border-radius: 16px; box-shadow: 0 0 0 2px var(--human); display: grid; grid-template-columns: 1fr auto; overflow: hidden; }
+  .needs .body { padding: 20px 24px 22px; }
+  .needs .top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .needs .top h2 { font-family: var(--display); font-stretch: 108%; font-weight: 750; font-size: 15px; color: var(--human-ink); }
+  .needs .gline { display: flex; align-items: center; gap: 12px; }
+  .needs .gline .nm { font-family: var(--display); font-stretch: 112%; font-weight: 780; font-size: 26px; letter-spacing: -0.01em; }
+  .needs .purpose { font-size: 16px; margin: 10px 0 12px; max-width: 56ch; }
+  .needs .meta { display: flex; gap: 20px; font-size: 13px; color: var(--ink-2); align-items: center; flex-wrap: wrap; }
+  .needs .meta .num { color: var(--ink); }
+  .needs .reason { margin-top: 14px; display: flex; gap: 8px; font-size: 13.5px; background: var(--human-soft); padding: 9px 12px; border-radius: 8px; color: var(--human-ink); }
+  .needs .reason svg { width: 15px; height: 15px; margin-top: 2px; }
+  .needs .wait { box-sizing: border-box; background: var(--human); color: var(--plum); padding: 20px 26px; display: flex; flex-direction: column; justify-content: space-between; width: 250px; }
+  .needs .wait .l { font-size: 13px; font-weight: 700; }
+  .needs .wait .big { font-family: var(--display); font-stretch: 78%; font-weight: 800; font-size: 72px; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .needs .wait .btn.lg { width: 100%; justify-content: center; background: var(--plum); color: #fff; height: 50px; font-size: 16px; }
+  .needs .wait .btn.ghost { color: var(--plum); justify-content: center; width: 100%; }
+
+  .onnow { flex: 1; display: flex; flex-direction: column; }
+  .lrow { display: grid; grid-template-columns: 30px minmax(0,1fr) 128px 62px 158px; gap: 14px; align-items: center; padding: 13px 18px; border-top: 1px solid var(--sunk); }
+  .lrow .nm { font-weight: 700; }
+  .lrow .ph { font-size: 12.5px; color: var(--ink-3); }
+  .lrow .pp { font-size: 13.5px; color: var(--ink); }
+  .lrow .dir { font-size: 12px; color: var(--ink-3); }
+  .lrow .on { font-size: 12.5px; color: var(--ink-2); margin-top: 3px; display: flex; align-items: center; gap: 5px; }
+  .lrow .on svg { width: 13px; height: 13px; }
+  .lrow .on.me { color: var(--human-ink); font-weight: 700; }
+  .lrow .dur { text-align: right; }
+  .lrow .dur .num { font-size: 16px; display: block; }
+  .lrow .dur .level { color: var(--kiku); height: 16px; }
+  .lrow .acts { display: flex; gap: 6px; justify-content: flex-end; }
+  .lrow.mine { background: linear-gradient(90deg, var(--human-soft), transparent 60%); }
+
+  .side { display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+  .recent { flex: 1; display: flex; flex-direction: column; }
+  .rrow { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; padding: 11px 18px; border-top: 1px solid var(--sunk); align-items: start; }
+  .rrow .t { font-family: var(--display); font-stretch: 76%; font-weight: 600; color: var(--ink-3); font-variant-numeric: tabular-nums; padding-top: 1px; }
+  .rrow .nm { font-weight: 700; font-size: 13.5px; }
+  .rrow .oc { font-size: 12.5px; color: var(--ink-2); margin-top: 1px; }
+  .rrow .status { font-size: 12px; }
+  .team { padding: 16px 18px; }
+  .team h2 { font-family: var(--display); font-stretch: 108%; font-weight: 720; font-size: 15px; margin-bottom: 8px; }
+  .team p { font-size: 13.5px; color: var(--ink-2); }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail" data-role="specialist" data-active="live"></aside>
+  <main class="main">
+    <header class="topbar"><div><h1>Live board</h1><div class="sub">Calls on the hotel line right now. Escalated calls wait here for a specialist.</div></div><div class="right" data-clock></div></header>
+    <p class="today" id="today"></p>
+    <section class="content">
+      <div class="left">
+        <div class="needs" id="needs"></div>
+        <div class="panel onnow">
+          <div class="panel-h"><h2>On the line now</h2><span class="meta" id="livemeta"></span></div>
+          <div class="scroll" id="live"></div>
+        </div>
+      </div>
+      <div class="side">
+        <div class="panel recent">
+          <div class="panel-h"><h2>Recently finished</h2><div class="end"><a class="btn sm ghost" href="03-call-logs.html">All call logs</a></div></div>
+          <div class="scroll" id="recent"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+const { K, esc, ic, status, dir, level, initials, SHAPES } = UI;
+const s = K.stats;
+document.getElementById("today").innerHTML =
+  `Today so far: <b>${s.callsToday}</b> calls, <b>${s.inbound}</b> in and <b>${s.outbound}</b> out. ` +
+  `<span class="st status completed">${SHAPES.completed}</span> <b>${s.completed}</b> completed, ` +
+  `<span class="st status in_progress">${SHAPES.in_progress}</span> <b>${s.inProgress}</b> in progress, ` +
+  `<span class="st status escalated">${SHAPES.escalated}</span> <b>${s.escalated}</b> escalated, ` +
+  `<span class="st status failed">${SHAPES.failed}</span> <b>${s.failed}</b> failed. ` +
+  `Specialists took over <b>${s.takeoversToday}</b> times, calls averaged <b>${s.avgHandle}</b>, and upsells added <b>${s.upsellValueToday}</b>.`;
+
+const owen = K.calls.find(c => c.id === "KK-24032");
+document.getElementById("needs").innerHTML = `
+  <div class="body">
+    <div class="top">${status("escalated", true)}<h2>Needs a specialist</h2><span class="mono-id" style="margin-left:auto">${owen.id}</span></div>
+    <div class="gline"><span class="egg guest">${initials(owen.guest)}</span><span class="nm">${owen.guest}</span></div>
+    <div class="purpose">${owen.purpose}</div>
+    <div class="meta">${dir(owen)}<span>${ic("phone")} <span class="num">${owen.phone}</span></span><span>Rang at <span class="num">${owen.started}</span></span><span>On call <span class="num">${owen.duration}</span></span><span>Kiku is holding the line</span></div>
+    <div class="reason">${ic("triangle-alert")}${owen.escalationReason}</div>
+  </div>
+  <div class="wait">
+    <div><div class="l">Waiting for you</div><div class="big">${owen.waiting}</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px"><a class="btn lg" href="06-takeover-karaoke.html">${ic("mic")}Take over</a><button class="btn ghost sm">${ic("headphones")}Listen first</button></div>
+  </div>`;
+
+const ids = ["KK-24030", "KK-24031", "KK-24029", "KK-24028"];
+const rows = ids.map(id => K.calls.find(c => c.id === id));
+document.getElementById("livemeta").textContent = `${rows.length} more calls`;
+document.getElementById("live").innerHTML = rows.map((c, i) => {
+  let on, acts, handler, mine = "";
+  if (c.id === "KK-24030") { on = `<div class="on me">${ic("mic")}You took over</div>`; acts = `<a class="btn sm take" href="06-takeover-karaoke.html">${ic("mic")}Back to call</a>`; handler = `<span class="egg me sm">PR</span>`; mine = " mine"; }
+  else if (c.id === "KK-24031") { on = `<div class="on me">${ic("headphones")}You're listening</div>`; acts = `<a class="btn sm" href="05-live-call-listening.html">${ic("headphones")}Open</a><button class="btn sm">${ic("mic")}Join</button>`; handler = `<span class="egg kiku sm">Ki</span>`; mine = " mine"; }
+  else { on = `<div class="on">${ic("bot")}Kiku alone</div>`; acts = `<button class="btn sm">${ic("headphones")}Listen</button><button class="btn sm">${ic("mic")}Join</button>`; handler = `<span class="egg kiku sm">Ki</span>`; }
+  const typ = c.direction === "outbound" ? ` <span class="tag">${c.type}</span>` : "";
+  return `<div class="lrow${mine}">${handler}
+    <div><div class="nm">${c.guest} <span class="ph num" style="font-weight:500;margin-left:6px">${c.phone}</span></div><div class="pp">${esc(c.purpose)}</div><div style="display:flex;gap:6px;align-items:center;margin-top:3px">${dir(c)}${typ}</div></div>
+    <div>${status(c.status)}${on}</div>
+    <div class="dur"><span class="num">${c.duration}</span>${level(12, i + 2, 16, true)}</div>
+    <div class="acts">${acts}</div></div>`;
+}).join("");
+
+const recent = K.calls.filter(c => c.status === "completed" || c.status === "failed").slice(0, 8);
+document.getElementById("recent").innerHTML = recent.map(c => `
+  <div class="rrow"><span class="t">${c.started}</span>
+    <div><div class="nm">${c.guest}</div><div class="oc">${esc(c.outcome || "")}</div></div>
+    ${status(c.status)}</div>`).join("");
+</script>
+</body>
+</html>

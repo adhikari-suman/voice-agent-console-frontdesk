@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku, on the line with Margaret Doyle</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+  .stage { height: 100%; display: grid; grid-template-columns: 360px 1fr 320px; }
+  .earlier { background: var(--sheet-2); border-right: 1px solid var(--line); display: grid; grid-template-rows: auto 1fr; min-height: 0; }
+  .col-h { padding: 18px 20px 10px; display: flex; justify-content: space-between; align-items: baseline; }
+  .earlier .scroll { padding: 0 20px 12px; }
+  .earlier .turn { grid-template-columns: 40px 1fr; gap: 10px; padding: 8px 0; }
+  .earlier .turn .say { font-size: 13px; }
+  .earlier .turn.guest .say { font-size: 14px; }
+  .earlier .redline { font-size: 14px; line-height: 1.65; }
+  .earlier .turn.k .who { color: var(--human); }
+  .earlier .sys { font-size: 12px; padding: 4px 10px; }
+
+  .prompter { display: grid; grid-template-rows: auto 1fr auto; min-height: 0; background: #fff; }
+  .live-head { display: flex; align-items: center; gap: 12px; padding: 16px 32px; background: var(--human-soft); color: var(--human-deep); }
+  .live-head .mic { width: 34px; height: 34px; border-radius: 50%; background: var(--human); color: #fff; display: grid; place-items: center; }
+  .live-head b { font-size: 16px; font-weight: 600; }
+  .live-head .lvl { margin-left: auto; display: inline-flex; gap: 2px; align-items: center; height: 22px; }
+  .live-head .lvl i { width: 3px; border-radius: 2px; background: var(--human); }
+  .script { padding: 24px 40px; display: flex; flex-direction: column; gap: 18px; justify-content: center; }
+  .script .meta { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-3); }
+  .script .meta .who-k b { font-weight: 600; }
+  .script .key { margin-top: 6px; }
+  .next { padding: 18px 40px 22px; border-top: 1px solid var(--line); display: grid; gap: 6px; background: var(--sheet-2); }
+  .next .lab { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--ink-3); }
+  .next p { font-size: 19px; color: var(--kiku-deep); line-height: 1.45; }
+
+  .facts-col { background: var(--sheet); border-left: 1px solid var(--line); padding: 18px 20px; display: grid; gap: 18px; align-content: start; overflow: hidden; }
+  .gcard { display: flex; gap: 12px; align-items: center; }
+  .gcard .av { width: 40px; height: 40px; font-size: 13px; }
+  .gcard b { font-size: 17px; font-weight: 600; display: block; }
+  .reason { background: var(--warn-soft); border-radius: var(--r); padding: 12px 14px; font-size: 13px; display: grid; gap: 4px; }
+  .fl { list-style: none; display: grid; }
+  .fl li { display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line-2); font-size: 13px; }
+  .fl li svg.lucide { color: var(--ink-3); margin-top: 2px; width: 15px; height: 15px; }
+</style>
+</head>
+<body>
+<script>
+const T = K.takeover;
+const live = T.transcript.find(x => x.live);
+const earlier = T.transcript.filter(x => !x.live);
+const lineNo = T.transcript.filter(x => x.karaoke).length;
+
+const turns = earlier.map(x => {
+  if (x.speaker === "system") {
+    const g = x.kind === "escalation" ? GLYPH.escalated : ic(x.kind === "join" ? "headphones" : "mic");
+    return `<div class="turn"><span class="t">${x.t}</span><span class="sys ${x.kind}">${g}${esc(x.text)}</span></div>`;
+  }
+  if (x.karaoke) return `<div class="turn k"><span class="t">${x.t}</span><div><div class="who">${ic("mic")}You, ${x.match}% of Kiku's line kept</div><p class="redline">${redline(x.diff)}</p></div></div>`;
+  const who = x.speaker === "agent" ? `${ic("audio-lines")}Kiku` : `${ic("user")}${T.guest}`;
+  return `<div class="turn ${x.speaker}"><span class="t">${x.t}</span><div><div class="who">${who}</div><div class="say">${esc(x.text)}</div></div></div>`;
+}).join("");
+const lvl = [6, 11, 17, 9, 20, 14, 7, 18, 12, 5, 15, 9].map(h => `<i style="height:${h}px"></i>`).join("");
+const [stayDates, ...stayRest] = T.stay.split(" · ");
+
+const dock = `
+<footer class="dock onair">
+  <span class="brand"><span class="glyph" aria-hidden="true">${MARK}</span></span>
+  <div class="callbar">
+    <span class="pip pulse" aria-hidden="true"></span>
+    <span class="state">You're on the line with ${T.guest}<small>Kiku is muted and writing your lines. ${T.duration} on the call, you took over at ${T.takeoverAt}.</small></span>
+    <div class="ctl">
+      <button class="btn on-dark">${ic("mic-off")}Mute me</button>
+      <button class="btn white">${ic("audio-lines")}Hand back to Kiku</button>
+      <button class="btn" style="background:#8f1d14;border-color:#8f1d14;color:#fff">${ic("phone-off")}End call</button>
+    </div>
+  </div>
+  <span class="me"><span class="av" style="background:#fff;color:var(--human-deep)">PR</span></span>
+</footer>`;
+
+shell("specialist", "live", `
+<div class="stage">
+  <aside class="earlier">
+    <div class="col-h"><h2>Earlier in this call</h2><span class="cap">${T.id}, from ${T.started}</span></div>
+    <div class="scroll" id="hist">${turns}</div>
+  </aside>
+
+  <section class="prompter">
+    <div class="live-head"><span class="mic">${ic("mic")}</span><div><b>You're speaking</b><br><span style="font-size:12.5px">The guest hears you. Read Kiku's line or say it your way.</span></div><span class="lvl" aria-hidden="true">${lvl}</span></div>
+    <div class="script">
+      <div class="meta"><span class="who-k">${ic("audio-lines")}<b>Kiku wrote</b></span><span>line ${lineNo}, at ${live.t}</span><span style="margin-left:auto" class="who-h">${ic("mic")}Your words appear as you say them</span></div>
+      <p class="redline lg">${redline(live.diff, '<span class="caret"></span>')}</p>
+      <div class="key"><span><span class="kd">struck</span> in Kiku's line, not said</span><span><span class="hi">underlined</span> your own words</span><span>Plain: said as written</span></div>
+    </div>
+    <div class="next">
+      <div class="lab"><span>${ic("corner-down-right")} Up next from Kiku</span><span class="who-k"><span class="pulse">${ic("pen-line")}</span>Writing</span></div>
+      <p>${esc(T.nextLine)}</p>
+    </div>
+  </section>
+
+  <aside class="facts-col">
+    <div class="gcard"><span class="av">MD</span><div><b>${T.guest}</b><span class="cap">${T.phone}</span></div></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${status("escalated")}${dirChip(T)}</div>
+    <div class="reason"><b style="color:var(--warn)">Why you're on this call</b>${T.escalationReason}</div>
+    <div><h3 style="margin-bottom:4px">Guest's problem</h3><p style="font-size:13px">${T.purpose}</p></div>
+    <div>
+      <h3 style="margin-bottom:6px">Booking ${T.booking}</h3>
+      <ul class="fl">
+        <li>${ic("bed-double")}<span>${stayDates}<br><span class="muted">${stayRest.join(", ")}</span></span></li>
+        ${T.facts.map(f => `<li>${ic(f.startsWith("Card") ? "credit-card" : "receipt")}<span>${f}</span></li>`).join("")}
+      </ul>
+    </div>
+  </aside>
+</div>`, dock);
+finish();
+const h = document.getElementById("hist"); h.scrollTop = h.scrollHeight;
+</script>
+</body>
+</html>

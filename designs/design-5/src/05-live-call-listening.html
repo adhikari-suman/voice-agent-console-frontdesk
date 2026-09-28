@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Kiku · Listening to Rashid Karimi</title>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+  .band { flex: none; height: 64px; background: var(--kiku-soft); border-bottom: 1px solid #C9D4EC; display: flex; align-items: center; gap: 16px; padding: 0 24px; }
+  .band .ear { width: 40px; height: 40px; border-radius: 50%; background: var(--kiku); color: #fff; display: grid; place-items: center; flex: none; }
+  .band .ear svg.lucide { width: 20px; height: 20px; }
+  .band .big { font-size: 18px; font-weight: 700; letter-spacing: -0.015em; }
+  .band .small { font-size: 13px; color: var(--ink-2); }
+  .band .acts { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .band .muted-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-2); padding: 0 10px; height: 28px; border-radius: 14px; background: #fff; border: 1px solid #C9D4EC; }
+
+  .main { padding-top: 18px; display: grid; grid-template-columns: minmax(0,1fr) 360px; gap: 20px; }
+
+  .meters { display: grid; grid-template-columns: 70px 1fr 64px; row-gap: 4px; column-gap: 12px; align-items: center; padding: 12px 22px; border-bottom: 1px solid var(--rule-2); flex: none; }
+  .meters .lab { font-size: 12px; font-weight: 650; }
+  .meters .lvl { height: 22px; gap: 3px; }
+  .meters .lvl i { width: 4px; }
+  .meters .st { font-size: 11.5px; color: var(--ink-3); text-align: right; }
+
+  .history { padding: 8px 22px 20px; }
+  .turn .txt { font-size: 14.5px; line-height: 23px; }
+  .turn.latest { background: #F6F7FA; border-radius: var(--r-m); margin: 4px -12px; padding: 10px 12px; }
+  .draft { display: grid; grid-template-columns: 52px 1fr; gap: 12px; padding: 10px 0 0; }
+  .draft .card { border: 1.5px dashed #9FB0D6; border-radius: var(--r-m); padding: 10px 14px; background: #F7F9FD; }
+  .draft .who { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--kiku); }
+  .draft .txt { color: var(--kiku); font-size: 14.5px; line-height: 23px; margin-top: 2px; }
+  .dots { display: inline-flex; gap: 3px; }
+  .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--kiku); opacity: .35; animation: dot 1.2s infinite; }
+  .dots i:nth-child(2) { animation-delay: .2s; } .dots i:nth-child(3) { animation-delay: .4s; }
+  @keyframes dot { 40% { opacity: 1; } }
+
+  .facts dt { font-size: 11.5px; color: var(--ink-3); margin-top: 10px; }
+  .facts dt:first-child { margin-top: 0; }
+  .facts dd { font-size: 13.5px; font-weight: 550; line-height: 20px; }
+  .done li { list-style: none; display: grid; grid-template-columns: 18px 1fr; gap: 8px; font-size: 13px; line-height: 19px; padding: 9px 0; border-bottom: 1px solid var(--rule-2); }
+  .done li:last-child { border-bottom: 0; }
+  .done svg.lucide { color: var(--ok); margin-top: 2px; }
+  .sect { font-size: 12.5px; font-weight: 650; color: var(--ink-2); margin-bottom: 2px; }
+  .takebox { margin-top: auto; background: var(--human-soft); border-radius: var(--r-l); padding: 14px 16px; }
+  .takebox p { font-size: 12.5px; line-height: 18px; color: var(--human-deep); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="shell"></div>
+  <div id="band"></div>
+  <main class="main" id="main"></main>
+</div>
+<script>
+const { K, esc, status, levels } = D;
+const L = K.liveCall;
+D.mount(D.shell({ role: "specialist", active: "live" }));
+
+document.getElementById("band").innerHTML = `
+<section class="band" role="status">
+  <div class="ear"><i data-lucide="headphones"></i></div>
+  <div>
+    <div class="big">Listening to ${esc(L.guest)} and Kiku</div>
+    <div class="small">The guest can't hear you. Take over when you want to speak.</div>
+  </div>
+  <div class="acts">
+    <span class="muted-pill"><i data-lucide="mic-off"></i>Your mic is off</span>
+    <button class="btn"><i data-lucide="volume-2"></i>Mute call audio</button>
+    <button class="btn"><i data-lucide="log-out"></i>Leave</button>
+    <button class="btn lg human"><i data-lucide="mic"></i>Take over</button>
+  </div>
+</section>`;
+
+const tr = L.transcript;
+let hist = "";
+tr.forEach((t, i) => {
+  const latest = i === tr.length - 1;
+  hist += `<div class="turn ${t.speaker} ${latest ? "latest" : ""}"><span class="t num">${t.t}</span><div><div class="who">${t.speaker === "agent" ? "Kiku" : esc(L.guest)}${latest ? `<span class="chip" style="height:20px;font-size:11px">Just now</span>` : ""}</div><div class="txt">${esc(t.text)}</div></div></div>`;
+});
+hist += `<div class="draft"><span class="t num" style="font-size:12px;color:var(--ink-3)">${L.duration}</span><div class="card">
+  <div class="who"><span class="dots"><i></i><i></i><i></i></span>${esc(L.agentState)}</div>
+  <div class="txt">${esc(L.agentDraft)}</div>
+</div></div>`;
+
+document.getElementById("main").innerHTML = `
+<section class="panel">
+  <div class="panel-h">
+    <h2>Live transcript</h2>${status("in_progress")}
+    <span class="end muted num" style="font-size:12.5px">${L.id}, started ${L.started}</span>
+  </div>
+  <div class="meters">
+    <span class="lab">${esc(L.guest.split(" ")[0])}</span><span style="color:var(--slate);display:flex">${levels(118, 3, 22)}</span><span class="st">paused</span>
+    <span class="lab" style="color:var(--kiku)">Kiku</span><span style="color:var(--kiku);display:flex;opacity:.35">${levels(118, 91, 8)}</span><span class="st">thinking</span>
+  </div>
+  <div class="scroll history" id="hist">${hist}</div>
+</section>
+<aside class="panel">
+  <div class="panel-h"><h2>${esc(L.guest)}</h2><span class="end num" style="font-size:22px;font-weight:700;letter-spacing:-0.02em">${L.duration}</span></div>
+  <div class="panel-b" style="display:flex;flex-direction:column;gap:18px;flex:1;min-height:0">
+    <dl class="facts">
+      <dt>Calling about</dt><dd>${esc(L.purpose)}</dd>
+      <dt>Booking</dt><dd class="num">${L.booking}</dd>
+      <dt>Stay</dt><dd>${esc(L.stay.replace(/ · /g, ", "))}</dd>
+      <dt>Phone</dt><dd class="num">${L.phone}, inbound</dd>
+      <dt>On the call</dt><dd style="display:flex;gap:6px;align-items:center">Kiku, and you listening</dd>
+    </dl>
+    <div>
+      <div class="sect">Kiku has already</div>
+      <ul class="done">${L.actionsTaken.map(a => `<li><i data-lucide="circle-check"></i><span>${esc(a)}</span></li>`).join("")}</ul>
+    </div>
+    <div class="takebox" style="display:flex;gap:10px"><i data-lucide="info" style="color:var(--human-deep);margin-top:1px"></i>
+      <p>When you take over, Kiku stops speaking and starts writing lines for you to say. You can hand the call back at any point.</p>
+    </div>
+  </div>
+</aside>`;
+D.icons();
+const h = document.getElementById("hist"); h.scrollTop = h.scrollHeight;
+</script>
+</body>
+</html>

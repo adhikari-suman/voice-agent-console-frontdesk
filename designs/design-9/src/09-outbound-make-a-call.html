@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Make a call</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .grid { flex: 1; min-height: 0; display: grid; grid-template-columns: 500px 1fr; gap: 16px; }
+  .pane { display: flex; flex-direction: column; }
+  .pane .body { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .ph .n { width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11px; display: grid; place-items: center; }
+  textarea.input { font-family: var(--voice); font-size: 16px; line-height: 1.5; color: var(--kiku-deep); }
+  .help { font-size: 12px; color: var(--ink-3); }
+  .preview { border-left: 3px solid var(--kiku); padding: 10px 14px; background: var(--kiku-tint); border-radius: 0 var(--r) var(--r) 0; }
+  .preview .spk { margin-bottom: 4px; }
+  .preview .voice { font-size: 15px; color: var(--kiku-deep); }
+  .cols { font-size: 12px; color: var(--ink-3); display: flex; gap: 6px; align-items: center; }
+  .cols code { font-family: var(--ui); font-weight: 600; font-size: 12px; background: var(--white); border: 1px solid var(--line); padding: 0 5px; border-radius: 2px; color: var(--ink-2); }
+  .tw { border: 1px solid var(--line); border-radius: var(--r); background: var(--white); overflow: hidden; }
+  .tw th { background: var(--paper); }
+  td.rn { color: var(--ink-3); width: 44px; }
+  td.pp { line-height: 1.4; }
+  .skip td { border: 0; padding: 4px 12px; font-size: 11.5px; color: var(--ink-3); background: var(--paper); text-align: center; }
+  .recent h3 { font-size: 12px; font-weight: 600; color: var(--ink-3); margin-bottom: 4px; }
+  .rr { display: flex; gap: 12px; align-items: flex-start; padding: 9px 0; border-top: 1px solid var(--line-2); font-size: 13px; }
+  .rr > div { flex: 1; }
+  .rr b { font-weight: 600; display: block; }
+  .rr > div > span { display: block; font-size: 12px; color: var(--ink-2); }
+  .tpl { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border: 1px dashed var(--line); border-radius: var(--r); font-size: 13px; }
+  .tpl svg { color: var(--kiku); }
+  .tpl .btn { margin-left: auto; }
+</style>
+</head>
+<body>
+<header class="top" id="top"></header>
+<main class="main" id="main"></main>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<script>
+shell("admin", "out");
+const M = K.makeCallSingle, V = K.makeCallCsv;
+const rows = V.preview.map((r, i) => {
+  const skip = i > 0 && r.row - V.preview[i - 1].row > 1 ? `<tr class="skip"><td colspan="5">Row ${V.preview[i - 1].row + 1} ready</td></tr>` : "";
+  return `${skip}<tr class="${r.ok ? "" : "err"}"><td class="rn">${r.row}</td><td style="white-space:nowrap">${r.phone || `<span class="faint">empty</span>`}</td><td style="white-space:nowrap">${r.name ? esc(r.name) : `<span class="faint">No name</span>`}</td><td class="pp">${esc(r.purpose)}</td>
+    <td style="white-space:nowrap">${r.ok ? `<span class="st completed">${STATUS.completed.svg}Ready</span>` : `<span class="rowerr">${STATUS.escalated.svg}${esc(r.error)}</span>`}</td></tr>`;
+}).join("");
+
+document.getElementById("main").innerHTML = `
+<div class="head"><h1>Outbound calls</h1>${outboundTabs("make")}<p class="sp">Tell Kiku who to call and why. It handles the conversation.</p></div>
+<div class="grid">
+  <section class="panel pane">
+    <div class="ph"><span class="n">a</span>Place one call</div>
+    <div class="body">
+      <div class="field"><label>What is the call for?</label><textarea class="input focus" rows="6">${esc(M.purpose)}</textarea>
+        <span class="help">Write it as you would brief a colleague. Kiku turns it into the conversation.</span></div>
+      <div class="field"><label>Name <em>(optional)</em></label><div class="input">${icon("user")}${esc(M.name)}</div></div>
+      <div class="field"><label>Phone</label><div class="input">${icon("phone")}${M.phone}</div></div>
+      <div class="recent" style="margin-top:auto"><h3>Placed today</h3>${K.calls.filter(c => c.type === "Make a call").map(c => `<div class="rr"><div><b>${esc(c.guest)}</b><span>${c.started} · ${esc(c.purpose)}</span>${c.outcome ? `<span>${esc(c.outcome)}</span>` : ""}</div>${status(c.status)}</div>`).join("")}</div>
+    </div>
+    <div class="formfoot"><span class="sp">Kiku calls straight away</span><button class="btn pri">${icon("phone-outgoing")}Place call</button></div>
+  </section>
+  <section class="panel pane">
+    <div class="ph"><span class="n">b</span>Place calls from CSV<span class="sp cols">Columns ${V.columns.map(c => `<code>${c}</code>`).join("")}</span></div>
+    <div class="body">
+      <div class="file"><span class="fi">CSV</span><div><b>${V.file}</b><div class="faint small">${V.size} · ${V.rows} rows</div></div>
+        <div class="counts" style="margin-left:auto"><span class="st completed">${STATUS.completed.svg}${V.ready} ready</span><span class="st escalated">${STATUS.escalated.svg}${V.errors} error</span></div>
+        <button class="btn sm">${icon("upload")}Replace</button></div>
+      <div class="tw scroll">
+        <table><thead><tr><th>Row</th><th>phone</th><th>name</th><th>purpose</th><th>Check</th></tr></thead><tbody>${rows}</tbody></table>
+      </div>
+      <p class="small muted">Row 6 will be skipped until it has a phone number. Showing ${V.preview.length} of ${V.rows} rows.</p>
+      <div class="tpl" style="margin-top:auto">${icon("file-down")}<span>Starting a new list? The template has the three columns, with name left blank where you don't know it.</span><button class="btn sm">${icon("download")}Download template</button></div>
+    </div>
+    <div class="formfoot"><span class="sp">${V.ready} calls, each with its own purpose</span><button class="btn">Cancel</button><button class="btn pri">${icon("phone-outgoing")}Place ${V.ready} calls</button></div>
+  </section>
+</div>`;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>

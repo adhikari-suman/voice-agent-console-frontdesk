@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku: Make a call</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .content { display: grid; grid-template-columns: 440px minmax(0,1fr); gap: 22px; padding-top: 18px; }
+  .path { background: #fff; border: 1px solid var(--rule-2); display: flex; flex-direction: column; min-height: 0; }
+  .path .ph { padding: 14px 20px 12px; border-bottom: 1px solid var(--rule); display: flex; align-items: center; gap: 10px; }
+  .path .ph .h2 { font-size: 22px; }
+  .path .ph .k { background: var(--ink); color: #fff; width: 28px; height: 28px; display: grid; place-items: center; }
+  .path .pb { padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0; }
+  .path .pf { padding: 12px 20px; border-top: 1px solid var(--rule); display: flex; align-items: center; gap: 12px; background: var(--paper); }
+  .path .pf .note { font-size: 12.5px; color: var(--text-2); margin-right: auto; }
+  .purpose { font-family: var(--f-voice); font-size: 17px; line-height: 1.5; min-height: 150px; display: block; height: auto; padding: 10px 14px; }
+  .howto { background: var(--stone); padding: 12px 14px; font-size: 13px; color: var(--text-2); display: grid; grid-template-columns: 18px 1fr; gap: 9px; }
+  .howto svg { width: 16px; height: 16px; color: var(--kiku); margin-top: 1px; }
+  .filerow { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 10px 14px; border: 1px solid var(--rule-2); background: var(--paper); }
+  .cols { font-size: 12.5px; color: var(--text-2); margin-left: auto; }
+  .cols code { font-family: var(--f-ui); font-weight: 700; color: var(--text); background: var(--stone); padding: 0 5px; }
+  .prev { border: 1px solid var(--rule); min-height: 0; }
+  .prev .t td { font-size: 13px; padding: 8px 10px; vertical-align: top; }
+  .prev .t td.r { font-family: var(--f-display); font-weight: 600; font-size: 14.5px; color: var(--text-2); width: 44px; }
+  .prev .t td.pp { font-family: var(--f-voice); font-size: 14.5px; line-height: 1.4; }
+  .prev .t td.ph2 { white-space: nowrap; }
+  .prev .t tr.bad td { background: var(--fail-tint); }
+  .skip td { text-align: center; font-size: 12px !important; color: var(--text-3); padding: 4px !important; background: repeating-linear-gradient(var(--slant), transparent 0 5px, rgba(133,126,143,.12) 5px 6px); }
+  .template { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; border: 1px dashed var(--rule-2); padding: 12px 14px; }
+  .template .ic2 { width: 34px; height: 34px; display: grid; place-items: center; background: var(--kiku-tint); color: var(--kiku); }
+  .template code { font-family: var(--f-ui); font-weight: 700; background: var(--stone); padding: 0 5px; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<script>
+const { K, icon, shell, esc } = V;
+const S = K.makeCallSingle, M = K.makeCallCsv;
+const c = shell({ role: "admin", active: "call", title: "Make a call", ctx: "Tell Kiku who to ring and what the call is for" });
+const OK = `<span class="okglyph">${V.STATUS.completed.svg.replace("<svg", '<svg width="13" height="13"')}Ready</span>`;
+const BAD = e => `<span class="errglyph">${V.STATUS.failed.svg.replace("<svg", '<svg width="13" height="13"')}${e}</span>`;
+c.innerHTML = `
+<section class="path">
+  <div class="ph"><span class="k">${icon("user-round")}</span><span class="h2">Call one person</span></div>
+  <div class="pb">
+    <div class="field"><label>What is the call for?</label>
+      <div class="input focus purpose">${esc(S.purpose)}</div>
+      <span class="hint">Write it the way you'd brief a colleague. Kiku uses it to lead the call.</span></div>
+    <div class="field"><label>Name <em>Optional</em></label><div class="input">${S.name}</div></div>
+    <div class="field"><label>Phone</label><div class="input">${S.phone}</div></div>
+    <div class="howto">${icon("info")}<span>Leave the name blank if you don't know who will answer.</span></div>
+  </div>
+  <div class="pf"><span class="note">Kiku places it straight away.</span><button class="btn go">${icon("phone-outgoing")}Place call</button></div>
+</section>
+
+<section class="path">
+  <div class="ph"><span class="k">${icon("sheet")}</span><span class="h2">Call from a list</span><span class="cols">Columns: ${M.columns.map(x => `<code>${x}</code>`).join(" ")}</span></div>
+  <div class="pb">
+    <div class="filerow"><span class="file" style="padding:0;border:0;background:none"><span class="ic">CSV</span></span>
+      <div><b>${M.file}</b><div class="small muted">${M.size}, ${M.rows} rows. One call per row, each with its own purpose.</div></div>
+      <div class="tally"><span><span class="num ok">${M.ready}</span><span class="lb">ready</span></span><span><span class="num bad">${M.errors}</span><span class="lb">error</span></span></div>
+    </div>
+    <div class="prev scroll">
+      <table class="t">
+        <thead><tr><th>Row</th><th>Phone</th><th>Name</th><th>Purpose</th><th>Check</th></tr></thead>
+        <tbody>
+          ${M.preview.map((r, i) => `${i === 4 ? `<tr class="skip"><td colspan="5">Row 5 ready</td></tr>` : ""}
+            <tr class="${r.ok ? "" : "bad"}"><td class="r">${r.row}</td><td class="ph2">${r.phone || `<span class="faint">Empty</span>`}</td><td>${r.name || `<span class="faint">No name</span>`}</td><td class="pp">${esc(r.purpose)}</td><td style="white-space:nowrap">${r.ok ? OK : BAD(r.error)}</td></tr>`).join("")}
+          <tr class="skip"><td colspan="5">Rows 7 to 12 ready</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="template"><span class="ic2">${icon("file-down")}</span><span class="small">Start from the template so the columns match: <code>phone</code>, <code>name</code> (can be blank), <code>purpose</code>.</span><a class="link small" href="#">Download template</a></div>
+  </div>
+  <div class="pf"><span class="note">Row 6 is skipped until it has a phone number.</span><button class="btn">Replace file</button><button class="btn go">${icon("phone-outgoing")}Place ${M.ready} calls</button></div>
+</section>`;
+</script>
+</body>
+</html>

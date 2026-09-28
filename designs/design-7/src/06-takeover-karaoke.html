@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku, on the line with Margaret Doyle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+.onbar { background: var(--apricot); color: var(--aub); display: flex; align-items: center; gap: 18px; padding: 14px 28px; flex: none; position: relative; }
+.onbar::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 6px; background: repeating-linear-gradient(-69deg, var(--apricot) 0 6px, transparent 6px 12px); }
+.onbar .live { display: inline-flex; align-items: center; gap: 7px; background: var(--aub); color: var(--apricot); font-weight: 700; font-size: 12px; padding: 4px 10px 4px 8px; clip-path: polygon(5px 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,0 100%,0 5px); }
+.onbar .live b { width: 8px; height: 8px; border-radius: 50%; background: var(--apricot); animation: blink 1.4s steps(2) infinite; }
+.onbar h1 { font: 700 23px/1.1 var(--display); letter-spacing: -0.015em; }
+.onbar .sub { font-size: 13px; opacity: .85; margin-top: 2px; }
+.onbar .timer { font: 700 26px/1 var(--display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.onbar .timer small { display: block; font: 500 11.5px var(--ui); letter-spacing: 0; opacity: .8; margin-top: 3px; }
+.onbar .meter i { background: var(--aub); }
+.ctl { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.ctl .btn-line { background: rgba(255,255,255,.55); box-shadow: inset 0 0 0 1px rgba(43,30,39,.25); }
+.grid6 { display: grid; grid-template-columns: 1fr 348px; gap: 16px; height: 100%; }
+.leftc { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.prompter { background: var(--aub); color: #fff; border-radius: 12px; padding: 20px 26px 22px; position: relative; overflow: hidden; }
+.pr-h { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #C9B8C2; }
+.pr-h .kdot { width: 10px; height: 10px; background: var(--mauve); transform: rotate(45deg); }
+.pr-h .hdot { width: 10px; height: 10px; background: var(--apricot); border-radius: 50%; }
+.wrote { font: 500 27px/1.32 var(--display); letter-spacing: -0.012em; margin: 8px 0 18px; color: #F4EEF1; max-width: 30em; }
+.said { margin-top: 6px; max-width: 40em; color: #F4EEF1; }
+.said .il.lg { font-size: 22px; }
+.said .il .add, .said .il .pair .m { color: var(--apricot); background: rgba(255,153,102,.14); box-shadow: 0 0 0 2px rgba(255,153,102,.14); }
+.said .il .pair .m { box-shadow: none; }
+.said .il .pair .g, .said .il .drop { color: #C9B3BD; }
+.said .il .pair .g { background: linear-gradient(#8E7680, #8E7680) left bottom / 100% 1px no-repeat, linear-gradient(#8E7680, #8E7680) left bottom / 1px 5px no-repeat, linear-gradient(#8E7680, #8E7680) right bottom / 1px 5px no-repeat; }
+.said .livecaret { background: var(--apricot); }
+.said .caret { display: inline-block; width: 2px; height: 22px; background: var(--apricot); vertical-align: -3px; margin-left: 3px; animation: blink 1s steps(2) infinite; }
+.pr-foot { display: flex; align-items: center; gap: 14px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--aub-3); font-size: 12.5px; color: #C9B8C2; }
+.pr-foot .match { color: #E9E0E5; }
+.pr-foot .match b { color: #fff; }
+.pr-foot .match .g { background: rgba(255,153,102,.3); }
+.pr-foot .match .g i { background: #C9B3BD; }
+.next { display: flex; gap: 14px; align-items: flex-start; padding: 14px 18px; background: var(--panel); border: 1px dashed var(--mauve); border-radius: 10px; }
+.next .lbl2 { font-size: 12px; font-weight: 700; color: var(--mauve-d); white-space: nowrap; display: flex; gap: 6px; align-items: center; padding-top: 2px; }
+.next .tx { font: 500 16px/1.4 var(--display); }
+.earlier { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.earlier .hist { flex: 1; padding: 0 18px 12px; }
+.side6 { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.reason6 { padding: 14px 16px; background: var(--esc-t); border: 1px solid #F5C5A6; border-radius: 10px; color: #7A3309; font-size: 13px; }
+.reason6 .status { background: #fff; margin-bottom: 8px; }
+.factlist { list-style: none; display: flex; flex-direction: column; }
+.factlist li { display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid var(--hair); font-size: 13px; }
+.factlist li svg { width: 15px; height: 15px; color: var(--mauve); margin-top: 2px; }
+.who { display: flex; flex-direction: column; gap: 10px; padding: 4px 16px 16px; }
+.who-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.who-row .meter { margin-left: auto; height: 18px; }
+.who-row .state { font-size: 12px; color: var(--ink-3); }
+.steps { list-style: none; padding: 0 16px 14px; }
+.steps li { display: grid; grid-template-columns: 44px 1fr; gap: 8px; font-size: 12.5px; color: var(--ink-2); padding: 6px 0 6px 14px; position: relative; border-left: 2px solid var(--hair); margin-left: 4px; }
+.steps li::before { content: ""; position: absolute; left: -6px; top: 10px; width: 10px; height: 10px; background: var(--panel); box-shadow: inset 0 0 0 2px var(--mauve); transform: rotate(45deg); }
+.steps li.now { color: var(--apricot-d); font-weight: 600; border-left-color: var(--apricot); }
+.steps li.now::before { background: var(--apricot); box-shadow: none; }
+.steps li span { color: var(--ink-3); font-weight: 500; }
+</style>
+</head><body>
+<script>
+const { K, esc, status, ic, transcript, stave, matchGauge, meter, mount } = UI;
+const t = K.takeover;
+const turns = t.transcript;
+const cur = turns.find(r => r.live);
+const earlier = turns.filter(r => !r.live);
+const first = t.specialist.split(" ")[0];
+
+mount("specialist", "live", `
+<div class="onbar">
+  <span class="live"><b></b>You're live</span>
+  <div><h1>You're speaking with ${esc(t.guest)}</h1><div class="sub">Kiku is muted and writing lines for you. Took over at ${t.takeoverAt}, call ${t.id}.</div></div>
+  ${meter(14, false, 3)}
+  <div class="timer">${t.duration}<small>on the call</small></div>
+  <div class="ctl">
+    <button class="btn btn-line">${ic("mic-off")}Mute</button>
+    <button class="btn btn-line">${ic("bot")}Hand back to Kiku</button>
+    <button class="btn btn-danger">${ic("phone-off")}End call</button>
+  </div>
+</div>
+<div class="body" style="padding-top:24px"><div class="grid6">
+  <div class="leftc">
+    <section class="prompter">
+      <div class="pr-h"><span class="kdot"></span>Kiku wrote at ${cur.t}. Read it, or say it your way.</div>
+      <div class="wrote">${esc(cur.wrote)}</div>
+      <div class="pr-h"><span class="hdot"></span>You're saying, live. Kiku's words you replaced sit above yours.</div>
+      <div class="said">${UI.gloss(cur.diff, { caret: true, lg: true })}</div>
+      <div class="pr-foot">${matchGauge(cur.match)}<span>so far</span><span style="margin-left:auto;display:flex;align-items:center;gap:6px">${ic("pen-line")}Improvising is fine. Kiku keeps the facts in sync.</span></div>
+    </section>
+    <div class="next"><span class="lbl2">${ic("list-end")}Up next</span><div class="tx">${esc(t.nextLine)}</div></div>
+    <section class="panel earlier">
+      <div class="panel-h"><h2>Earlier in this call</h2><span class="aside">Your own words in apricot, the Kiku words they replaced struck above</span></div>
+      <div class="hist scroll"><div class="tl">${transcript(earlier, t.specialist)}</div></div>
+    </section>
+  </div>
+  <aside class="side6">
+    <div class="reason6">${status("escalated")}<div>${esc(t.escalationReason)}</div></div>
+    <section class="panel">
+      <div class="panel-h"><h2>On the line</h2></div>
+      <div class="who">
+        <div class="who-row"><span class="avatar h">PR</span><div><div style="font-weight:600">${esc(t.specialist)} (you)</div><div class="state">Speaking</div></div>${meter(12, true, 2)}</div>
+        <div class="who-row"><span class="avatar" style="background:var(--panel-2);box-shadow:inset 0 0 0 1px var(--hair-2)">MD</span><div><div style="font-weight:600">${esc(t.guest)}</div><div class="state num">${t.phone}</div></div>${meter(12, false, 5)}</div>
+        <div class="who-row"><span class="avatar" style="background:var(--aub);color:#fff">${UI.mark(18)}</span><div><div style="font-weight:600">Kiku</div><div class="state">Muted, writing lines</div></div><span class="state" style="margin-left:auto;display:flex;gap:5px;align-items:center">${ic("mic-off")}</span></div>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Booking ${t.booking}</h2></div>
+      <div style="padding:0 16px 14px" class="scroll">
+        <div class="small soft" style="margin-bottom:10px">${esc(t.stay.replace(/ · /g, ", "))}</div>
+        <div class="small muted" style="margin-bottom:10px">${esc(t.purpose)}</div>
+        <ul class="factlist">${t.facts.map(f => `<li>${ic(/card/i.test(f) ? "credit-card" : "receipt")}<span>${esc(f)}</span></li>`).join("")}</ul>
+      </div>
+    </section>
+    <section class="panel" style="flex:1;min-height:0">
+      <div class="panel-h"><h2>How you got here</h2></div>
+      <ol class="steps">${turns.filter(r => r.speaker === "system").map(r => `<li><span class="num">${r.t}</span>${esc(r.text)}</li>`).join("")}<li class="now"><span class="num">${cur.t}</span>Line ${turns.filter(r => r.karaoke).length} of karaoke, in progress</li></ol>
+    </section>
+  </aside>
+</div></div>`);
+const h = document.querySelector(".earlier .hist"); h.scrollTop = h.scrollHeight;
+</script>
+</body></html>

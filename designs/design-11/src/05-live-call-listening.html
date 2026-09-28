@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku · Listening, KK-24031</title>
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="styles.css">
+<script src="vendor/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script><script src="app.js"></script>
+<style>
+.bandl{flex:none;background:var(--surface);border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;padding:16px 28px}
+.bandl .t{display:flex;align-items:baseline;gap:14px}
+.bandl .sub{display:flex;gap:16px;align-items:center;margin-top:6px;color:var(--ink-2);font-size:13px}
+.ctrl{display:flex;gap:8px;align-items:center}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;flex:1;min-height:0}
+.levels{display:grid;grid-template-columns:auto 1fr auto;gap:10px 14px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line);background:var(--sunk)}
+.levels .meter{height:22px;width:100%}.levels .meter i{flex:1;width:auto}
+.hist{padding:6px 22px 8px;flex:1}
+.row{display:grid;grid-template-columns:44px 120px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.row .t{font-size:12px;color:var(--ink-3);padding-top:2px}
+.row .who{align-self:start;padding-top:2px}
+.row p{font-size:14px;max-width:74ch}
+.row.guest p{color:var(--ink-2)}
+.row.latest{background:var(--sunk);margin:0 -22px;padding:14px 22px;border-top:1px solid var(--line-2)}
+.row.latest p{color:var(--ink);font-size:15.5px;font-weight:500}
+.row.latest .flag{font-size:11.5px;color:var(--ink-3);display:block;margin-top:4px}
+.draft{margin:0 -22px;padding:14px 22px;border-top:1px dashed var(--orchid-mid);background:var(--orchid-wash);display:grid;grid-template-columns:44px 120px 1fr;gap:12px}
+.draft p{font-size:14.5px;color:var(--orchid-deep);font-style:italic}
+.dots{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}
+.dots i{width:5px;height:5px;border-radius:50%;background:var(--orchid);animation:d 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes d{0%,100%{opacity:.25}50%{opacity:1}}
+.gapnote{font-size:12px;color:var(--ink-3);text-align:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.side{display:flex;flex-direction:column;gap:14px;min-height:0}
+.side .panel{flex:none}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:13px}
+dl.kv dt{color:var(--ink-3)}
+.acts li{list-style:none;display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:13px}
+.acts li:first-child{border-top:0}
+.tip{border:1px dashed var(--line-2);border-radius:6px;padding:14px 16px;font-size:12.5px;color:var(--ink-2);display:flex;gap:10px}
+</style></head>
+<body>
+<div class="app"><nav class="rail" id="rail"></nav>
+<main id="main"></main></div>
+<script>
+rail("specialist", "live");
+const L = K.liveCall;
+const tr = L.transcript;
+const rows = tr.map((t, i) => {
+  const latest = i === tr.length - 1;
+  const who = t.speaker === "agent" ? `<span class="who kiku"><span class="dot"></span>Kiku</span>` : `<span class="who guest"><span class="dot"></span>${esc(L.guest)}</span>`;
+  const gap = "";
+  return gap + `<div class="row ${t.speaker} ${latest ? "latest" : ""}"><span class="t">${t.t}</span>${who}<p>${esc(t.text)}${latest ? `<span class="flag">Latest question from the guest</span>` : ""}</p></div>`;
+}).join("");
+document.getElementById("main").innerHTML = topbar(`Live board <span class="dim">/</span> <b>${L.id}</b>`) + `
+<div class="bandl">
+  <div>
+    <div class="t"><h1>${esc(L.guest)}</h1>${status(L.status)}${dirTag(L.direction)}<span class="dim">${L.id}</span></div>
+    <div class="sub"><span class="tag" style="color:var(--ink)"><i data-lucide="headphones"></i>You're listening. The guest can't hear you.</span><span>Started ${L.started}</span><span><b style="color:var(--ink)">${L.duration}</b> on the call</span></div>
+  </div>
+  <div class="ctrl">
+    <button class="btn"><i data-lucide="mic-off"></i>Muted</button>
+    <button class="btn"><i data-lucide="log-out"></i>Leave</button>
+    <button class="btn human lg"><i data-lucide="mic"></i>Take over</button>
+  </div>
+</div>
+<div class="page">
+  <div class="grid">
+    <section class="panel">
+      <div class="levels">
+        <span class="who guest"><span class="dot"></span>Guest</span>${meter(90, 55, "var(--ink-2)", 22)}<span class="small dim">speaking</span>
+        <span class="who kiku"><span class="dot"></span>Kiku</span>${meter(90, 9, "var(--orchid-mid)", 8)}<span class="small dim">drafting</span>
+      </div>
+      <div class="scroll hist" id="hist">${rows}
+        <div class="draft"><span class="t small" style="color:var(--orchid-deep)">now</span><span class="who kiku" style="align-self:start"><span class="dot"></span>Kiku<span class="dots"><i></i><i></i><i></i></span></span>
+          <div><p>${esc(L.agentDraft)}</p><span class="small" style="color:var(--orchid-deep)">${esc(L.agentState)}. Take over now if you'd rather answer yourself.</span></div></div>
+      </div>
+    </section>
+    <aside class="side scroll">
+      <section class="panel"><div class="panel-b">
+        <h2 style="margin-bottom:12px">${esc(L.purpose)}</h2>
+        <dl class="kv">
+          <dt>Phone</dt><dd>${L.phone}</dd>
+          <dt>Booking</dt><dd>${L.booking}</dd>
+          <dt>Stay</dt><dd>${esc(L.stay)}</dd>
+          <dt>Line</dt><dd>${K.hotel.line}</dd>
+          <dt>Listening</dt><dd>${L.listening.join(", ")}</dd>
+        </dl>
+      </div></section>
+      <section class="panel"><div class="panel-b">
+        <h3 style="margin-bottom:6px">Actions Kiku already took</h3>
+        <ul class="acts">${L.actionsTaken.map(a => `<li><span class="st completed">${SHAPES.completed}</span>${esc(a)}</li>`).join("")}</ul>
+      </div></section>
+      <div class="tip"><i data-lucide="info"></i><span>Taking over mutes Kiku's voice. Kiku keeps writing the next line for you to read, and the call audit keeps both versions.</span></div>
+    </aside>
+  </div>
+</div>`;
+icons();
+const h = document.getElementById("hist"); h.scrollTop = h.scrollHeight;
+</script>
+</body></html>

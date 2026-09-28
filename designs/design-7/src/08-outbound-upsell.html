@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku, upsell calls</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+.body { display: flex; flex-direction: column; gap: 16px; }
+.offers { display: grid; grid-template-columns: auto repeat(3, 1fr); gap: 12px; align-items: stretch; }
+.offers .lead { display: flex; flex-direction: column; justify-content: center; padding-right: 12px; width: 190px; }
+.offers .lead .h2 { font-size: 17px; }
+.offer { background: var(--panel); border: 1px solid var(--hair); border-radius: 10px; padding: 12px 16px; display: grid; grid-template-columns: 38px 1fr; gap: 2px 12px; align-items: center; }
+.offer .oi { grid-row: span 2; width: 38px; height: 38px; display: grid; place-items: center; background: var(--mauve-tt); color: var(--mauve-d); clip-path: polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px); }
+.offer .oi svg { width: 18px; height: 18px; }
+.offer .n { font-weight: 650; display: flex; gap: 8px; align-items: baseline; }
+.offer .pr { grid-column: 1 / -1; font: 650 17px/1.2 var(--display); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--hair); display: flex; align-items: baseline; }
+.offer .pr .alt { margin-left: auto; font: 500 12.5px var(--ui); color: var(--ink-2); }
+.offer .d { font-size: 12.5px; color: var(--ink-2); }
+.two { flex: 1; min-height: 0; display: grid; grid-template-columns: 440px 1fr; gap: 16px; }
+.path { display: flex; flex-direction: column; min-height: 0; }
+.path .panel-h { padding: 16px 20px 6px; }
+.path .inner { flex: 1; min-height: 0; padding: 8px 20px 16px; display: flex; flex-direction: column; gap: 14px; }
+.pathlbl { font-size: 12px; font-weight: 700; color: var(--mauve-d); background: var(--mauve-t); padding: 1px 7px; border-radius: 4px; }
+.match { }
+.matchcard { display: flex; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--done-t); color: #1F5540; font-size: 13px; align-items: flex-start; }
+.matchcard svg { width: 16px; height: 16px; margin-top: 1px; }
+.tg { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--hair); font-size: 13.5px; }
+.sw { width: 34px; height: 20px; border-radius: 10px; background: var(--aub); position: relative; flex: none; }
+.sw::after { content: ""; position: absolute; right: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.tg .p { margin-left: auto; color: var(--ink-2); font-size: 12.5px; }
+.act { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-top: 1px solid var(--hair); }
+.prev { border: 1px solid var(--hair); border-radius: 8px; overflow: hidden; flex: none; min-height: 0; display: flex; flex-direction: column; }
+.prev td { height: 44px; font-size: 13px; }
+.prev th { background: var(--panel-2); }
+tr.bad td { background: var(--fail-t); }
+.rowerr { display: inline-flex; gap: 6px; align-items: center; color: var(--fail); font-weight: 600; font-size: 12.5px; }
+.rowerr svg { width: 14px; height: 14px; }
+.okc { display: inline-flex; gap: 6px; align-items: center; color: var(--done); font-size: 12.5px; font-weight: 600; }
+.okc svg { width: 14px; height: 14px; }
+.cols { display: inline-flex; gap: 4px; }
+.gaprow td { height: 26px; font-size: 12px; color: var(--ink-3); text-align: center; background: var(--panel-2); }
+</style>
+</head><body>
+<script>
+const { K, esc, ic, topbar, mount } = UI;
+const one = K.upsellSingle, csv = K.upsellCsv;
+const oIcon = { pickup: "car", breakfast: "coffee", dinner: "utensils" };
+const offers = K.offers.map(o => `<div class="offer"><span class="oi">${ic(oIcon[o.id])}</span><div class="n">${o.name}</div><div class="d">${esc(o.detail)}</div><div class="pr">${o.price}${o.alt ? `<span class="alt">${esc(o.alt)}</span>` : ""}</div></div>`).join("");
+const toggles = K.offers.map(o => `<div class="tg"><span class="sw" role="switch" aria-checked="${one.offers.includes(o.id)}"></span>${ic(oIcon[o.id])}${o.name}<span class="p">${o.price}</span></div>`).join("");
+const good = csv.preview.filter(r => r.ok), bad = csv.preview.filter(r => !r.ok);
+const row = r => `<tr class="${r.ok ? "" : "bad"}"><td class="num muted">${r.row}</td><td class="num">${r.phone || '<span class="muted">empty</span>'}</td><td class="num">${r.confirmation || '<span class="muted">empty</span>'}</td><td>${r.guest ? esc(r.guest) : '<span class="muted">No booking matched</span>'}</td><td>${r.ok ? `<span class="okc">${ic("circle-check")}Ready</span>` : `<span class="rowerr">${ic("circle-x")}${esc(r.error)}</span>`}</td></tr>`;
+
+mount("specialist", "upsell", `
+${topbar(`<div><div class="crumb">Outbound calls</div><h1 style="margin-top:3px">Upsell calls</h1></div>`)}
+<div class="body">
+  <div class="offers"><div class="lead"><div class="h2">What Kiku offers</div><div class="small soft" style="margin-top:4px">On every upsell call, for guests with an upcoming stay.</div></div>${offers}</div>
+  <div class="two">
+    <section class="panel path">
+      <div class="panel-h"><span class="pathlbl">One guest</span><h2>Call a booked guest</h2></div>
+      <div class="inner">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field"><label>Phone</label><div class="input num">${one.phone}</div></div>
+          <div class="field"><label>Confirmation number</label><div class="input num focus">${one.confirmation}</div></div>
+        </div>
+        <div class="matchcard">${ic("circle-check")}<div style="flex:1"><b>Booking ${one.confirmation} found</b>
+  <dl class="kv" style="margin-top:8px;grid-template-columns:70px 1fr;color:#1F5540">${(() => { const p = one.match.split(" · "); return [["Guest", p[0]], ["Room", p[1]], ["Arrives", p[2].replace("arrives ", "")], ["Stay", p[3] + ", " + p[4]]].map(([k, v]) => `<dt style="color:#3F7A62">${k}</dt><dd style="color:#1F5540;font-weight:600">${esc(v)}</dd>`).join(""); })()}</dl></div></div>
+        <div><div class="lbl" style="margin-bottom:4px">Offers to mention</div>${toggles}</div>
+      </div>
+      <div class="act"><span class="small muted">Kiku calls straight away</span><button class="btn btn-ink" style="margin-left:auto">${ic("phone-outgoing")}Call now</button></div>
+    </section>
+    <section class="panel path">
+      <div class="panel-h"><span class="pathlbl">Many guests</span><h2>Call from a file</h2><span class="aside">Columns: <span class="cols">${csv.columns.map(c => `<span class="tag">${c}</span>`).join("")}</span></span></div>
+      <div class="inner">
+        <div class="file"><span class="ico">${ic("file-spreadsheet")}</span>
+          <div style="flex:1"><div class="fn">${csv.file} <span class="muted small" style="font-weight:400">${csv.size}</span></div><div class="small soft"><b>${csv.rows}</b> rows, <b style="color:var(--done)">${csv.ready}</b> ready, <b style="color:var(--fail)">${csv.errors}</b> with errors</div>
+          <div class="readybar"><i style="flex:${csv.ready}"></i><i class="e" style="flex:${csv.errors}"></i></div></div>
+          <button class="btn sm btn-ghost">${ic("replace")}Replace file</button></div>
+        <div class="prev"><div class="scroll"><table>
+          <thead><tr><th>Row</th><th>Phone</th><th>Confirmation</th><th>Matched guest</th><th>Check</th></tr></thead>
+          <tbody>${good.map(row).join("")}<tr class="gaprow"><td colspan="5">Rows 5 to 38, errors shown below</td></tr>${bad.map(row).join("")}</tbody>
+        </table></div></div>
+      </div>
+      <div class="act"><span class="small muted">Rows with errors are skipped. Fix them and upload again to include them.</span><button class="btn btn-ink" style="margin-left:auto">${ic("phone-outgoing")}Start ${csv.ready} calls</button></div>
+    </section>
+  </div>
+</div>`);
+</script>
+</body></html>

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku, upsell calls</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Familjen+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .wrap { display: grid; grid-template-rows: auto 1fr; gap: 14px; height: 100%; }
+  .offers { display: grid; grid-template-columns: 200px repeat(3, 1fr); gap: 0; background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--r-lg); }
+  .offers > div { padding: 14px 18px; border-left: 1px solid var(--rule); }
+  .offers > div:first-child { border-left: 0; }
+  .offers .intro h2 { font-size: 15px; font-weight: 600; }
+  .offers .intro p { font-size: 12.5px; color: var(--ink-3); margin-top: 3px; }
+  .offer { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: start; }
+  .offer .oi { width: 34px; height: 34px; border-radius: 50%; background: var(--sheet-2); border: 1px solid var(--rule); display: grid; place-items: center; color: var(--ink-2); }
+  .offer b { font-weight: 600; display: block; }
+  .offer span { font-size: 12.5px; color: var(--ink-3); display: block; }
+  .offer .price { font-family: var(--display); font-weight: 700; font-size: 20px; font-variation-settings: 'wdth' 85; text-align: right; white-space: nowrap; }
+  .offer .price small { display: block; font-family: var(--sans); font-size: 12px; color: var(--ink-3); }
+  .two { display: grid; grid-template-columns: 440px 1fr; gap: 14px; min-height: 0; }
+  .path-h { display: flex; align-items: center; gap: 10px; }
+  .path-h .pn { width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+  .grow { flex: 1; min-height: 0; overflow: auto; }
+  .match { display: flex; gap: 12px; align-items: flex-start; padding: 11px 13px; border-radius: var(--r-md); background: var(--ok-wash); border: 1px solid #BFDFCB; margin-bottom: 16px; }
+  .match svg.lucide { color: var(--ok); margin-top: 2px; }
+  .match b { font-weight: 600; display: block; }
+  .match span { font-size: 13px; color: var(--ink-2); }
+  .ot { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #E4E2EC; }
+  .ot:last-child { border-bottom: 0; }
+  .ot .l { flex: 1; } .ot .l b { font-weight: 600; } .ot .l span { display: block; font-size: 12.5px; color: var(--ink-3); }
+  .foot { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-top: 1px solid var(--rule); }
+  .foot .sum { font-size: 13px; color: var(--ink-2); margin-right: auto; }
+  .cols-chip { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; color: var(--ink-3); }
+  .cols-chip code { font-family: var(--sans); font-weight: 600; color: var(--ink); background: var(--sheet-2); border: 1px solid var(--rule); border-radius: 5px; padding: 0 6px; }
+  td.rn { color: var(--ink-3); width: 50px; }
+  .empty { color: var(--ink-3); font-style: italic; }
+  .gap-row td { text-align: center; color: var(--ink-3); font-size: 12.5px; background: var(--sheet-2); padding: 5px; }
+</style>
+</head>
+<body>
+<script>
+const O = K.offers, U = K.upsellSingle, V = K.upsellCsv;
+const oIcon = { pickup: "car", breakfast: "coffee", dinner: "utensils" };
+const rows = V.preview.map((r, i) => {
+  const gap = i > 0 && r.row - V.preview[i - 1].row > 1 ? `<tr class="gap-row"><td colspan="5">Rows ${V.preview[i - 1].row + 1}–${r.row - 1} ready</td></tr>` : "";
+  return gap + `<tr class="${r.ok ? "" : "err"}"><td class="rn">${r.row}</td>
+    <td class="num">${r.phone ? esc(r.phone) : '<span class="empty">empty</span>'}</td>
+    <td>${r.confirmation || '<span class="empty">empty</span>'}</td>
+    <td>${r.guest ? esc(r.guest) : '<span class="muted">No match</span>'}</td>
+    <td>${r.ok ? `<span class="status completed">${STATUS.completed.svg}Ready</span>` : `<span class="errtxt">${ic("circle-x")}${esc(r.error)}</span>`}</td></tr>`;
+}).join("") + `<tr class="gap-row"><td colspan="5">Rows 28–38 ready</td></tr>`;
+
+shell({
+  role: "admin", active: "upsell", title: "Upsell calls",
+  crumb: "Kiku offers extras on an existing booking",
+  body: `<div class="wrap">
+  <div class="offers">
+    <div class="intro"><h2>Offers Kiku makes</h2><p>Choose which to offer on each call</p></div>
+    ${O.map(o => `<div class="offer"><span class="oi">${ic(oIcon[o.id])}</span><div><b>${o.name}</b><span>${esc(o.detail)}</span></div>
+      <div class="price">${o.price.split(" ")[0]}<small>${o.price.split(" ").slice(1).join(" ")}</small>${o.alt ? `<small>${esc(o.alt)}</small>` : ""}</div></div>`).join("")}
+  </div>
+  <div class="two">
+    <div class="panel">
+      <div class="panel-h"><div class="path-h"><span class="pn">1</span><h2>Call one guest</h2></div></div>
+      <div class="panel-b grow">
+        <div class="field"><label class="fl">Guest phone</label><div class="input">${esc(U.phone)}</div></div>
+        <div class="field"><label class="fl">Confirmation number</label><div class="input focus">${U.confirmation}</div></div>
+        <div class="match">${ic("circle-check")}<div><b>Booking found</b><span>${esc(U.match)}</span></div></div>
+        <h3>Offer on this call</h3>
+        ${O.map(o => `<div class="ot"><span class="oi" style="color:var(--ink-3)">${ic(oIcon[o.id])}</span><div class="l"><b>${o.name}</b><span>${o.price}</span></div><span class="toggle ${U.offers.includes(o.id) ? "on" : ""}"></span></div>`).join("")}
+      </div>
+      <div class="foot"><span class="sum">3 offers to Marcus Hale</span><button class="btn primary">${ic("phone-outgoing")}Call now</button></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><div class="path-h"><span class="pn">2</span><h2>Call a list of guests</h2></div><span class="aside cols-chip">Columns <code>${V.columns[0]}</code><code>${V.columns[1]}</code></span></div>
+      <div class="panel-b" style="padding-bottom:10px">
+        <div class="file"><span class="ic">${ic("file-spreadsheet")}</span><div style="flex:1"><b>${V.file}</b><span>${V.size}, ${V.rows} rows</span></div>
+          <div class="tally"><span class="ok">${ic("circle-check")}${V.ready} ready</span><span class="bad">${ic("circle-x")}${V.errors} errors</span></div>
+          <button class="btn sm ghost">${ic("upload")}Replace</button></div>
+      </div>
+      <div class="grow" style="border-top:1px solid var(--rule)">
+        <table><thead><tr><th>Row</th><th>Phone</th><th>Confirmation</th><th>Matched guest</th><th>Check</th></tr></thead><tbody>${rows}</tbody></table>
+      </div>
+      <div class="foot"><span class="sum">Rows 14 and 27 will be skipped. Fix them in the file and upload again to include them.</span><button class="btn primary">${ic("phone-outgoing")}Start ${V.ready} calls</button></div>
+    </div>
+  </div>
+</div>`
+});
+done();
+</script>
+</body>
+</html>

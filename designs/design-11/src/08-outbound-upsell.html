@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku · Upsell calls</title>
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="styles.css">
+<script src="vendor/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script><script src="app.js"></script>
+<link rel="stylesheet" href="outbound.css">
+</head>
+<body>
+<div class="app"><nav class="rail" id="rail"></nav>
+<main id="main"></main></div>
+<script>
+rail("admin", "upsell");
+const U = K.upsellSingle, V = K.upsellCsv, O = K.offers;
+const icon = { pickup: "car", breakfast: "coffee", dinner: "utensils" };
+const toggles = O.map(o => `<label class="tog on"><span class="sw"><i></i></span><i data-lucide="${icon[o.id]}"></i><span><b>${o.name}</b><small>${o.price}</small></span></label>`).join("");
+const prev = V.preview.map(r => `<tr class="${r.ok ? "" : "bad"}"><td class="rn">${r.row}</td><td>${esc(r.phone) || `<span class="miss">empty</span>`}</td><td>${esc(r.confirmation) || `<span class="miss">empty</span>`}</td>
+  <td>${r.ok ? `<span class="st completed" style="font-weight:500">${SHAPES.completed}${esc(r.guest)}</span>` : `<span class="st failed">${SHAPES.failed}${esc(r.error)}</span>`}</td></tr>`).join("");
+document.getElementById("main").innerHTML = topbar(`Outbound <span class="dim">/</span> <b>Upsell</b>`) + `
+<div class="page">
+  <div class="hrow"><h1>Upsell calls</h1><p>Kiku calls guests with an existing booking and offers extras for their stay</p></div>
+  <div class="offers">${O.map(o => `<div class="offer"><span class="oi"><i data-lucide="${icon[o.id]}"></i></span><div><b>${o.name}</b><p>${esc(o.detail)}</p></div><div class="price"><span class="num">${o.price.split(" ")[0]}</span><small>${o.price.split(" ").slice(1).join(" ")}${o.alt ? `<br>${o.alt}` : ""}</small></div></div>`).join("")}</div>
+  <div class="paths">
+    <section class="panel">
+      <div class="panel-h"><span class="pn">A</span><h2>Call one guest</h2><span class="dim small">Find the booking, pick offers, call now</span></div>
+      <div class="panel-b scroll" style="flex:1;display:flex;flex-direction:column;gap:14px">
+        <div class="two">
+          <div class="field"><label>Phone</label><div class="input">${U.phone}</div></div>
+          <div class="field"><label>Confirmation number</label><div class="input">${U.confirmation}</div></div>
+        </div>
+        <div class="match"><span class="st completed">${SHAPES.completed}Booking found</span><p>${esc(U.match)}</p></div>
+        <div class="field"><label>Offers Kiku will make</label><div class="togs">${toggles}</div></div>
+      </div>
+      <div class="actions"><span class="small dim" style="margin-right:auto">Kiku calls from ${K.hotel.line}</span><button class="btn primary"><i data-lucide="phone-outgoing"></i>Call now</button></div>
+    </section>
+    <section class="panel">
+      <div class="panel-h"><span class="pn">B</span><h2>Upload a list</h2><span class="dim small">Columns: ${V.columns.map(c => `<code>${c}</code>`).join(" ")}</span></div>
+      <div class="panel-b" style="display:flex;flex-direction:column;gap:12px;flex:1;min-height:0">
+        <div class="file"><span class="ic"><i data-lucide="file-spreadsheet"></i></span>
+          <div><b>${V.file}</b> <span class="dim small">${V.size} · ${V.rows} rows</span><div class="rows"><span class="st completed" style="font-weight:500">${SHAPES.completed}${V.ready} ready</span><span class="st failed" style="font-weight:500">${SHAPES.failed}${V.errors} errors</span></div></div>
+          <button class="btn sm ghost">Replace</button></div>
+        <div class="tbl scroll"><table><thead><tr><th>Row</th><th>phone</th><th>confirmation</th><th>Matched booking</th></tr></thead><tbody>${prev}</tbody></table></div>
+        <p class="hint">Showing the first 4 ready rows and both errors. Rows with errors are skipped; fix them in the file and upload again to include them.</p>
+      </div>
+      <div class="actions"><span class="small dim" style="margin-right:auto">All three offers, same as the single call</span><button class="btn primary"><i data-lucide="phone-outgoing"></i>Start ${V.ready} calls</button></div>
+    </section>
+  </div>
+</div>`;
+icons();
+</script>
+</body></html>

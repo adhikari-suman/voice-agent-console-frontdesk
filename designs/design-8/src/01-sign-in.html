@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sign in · Kiku</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  body { display: grid; grid-template-columns: 600px 1fr; }
+  .brand { background: var(--human); color: var(--ink); padding: 56px 56px 44px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+  .brand .wm { font-family: var(--display); font-stretch: 145%; font-weight: 900; font-size: 128px; line-height: .9; letter-spacing: -0.02em; }
+  .brand .wm { position: relative; }
+  .brand .wm .tick { display: inline-block; width: 30px; height: 36px; border-radius: 50% 50% 46% 46% / 58% 58% 42% 42%; background: var(--ink); margin-left: 8px; }
+  .brand .hotel { margin-top: 22px; font-size: 20px; color: var(--ink); position: relative; }
+  .brand .hotel b { font-weight: 700; }
+  .bigegg { position: absolute; width: 460px; height: 560px; right: -120px; bottom: -250px; border-radius: 50% 50% 46% 46% / 58% 58% 42% 42%; background: var(--surface); box-shadow: inset 0 0 0 3px var(--ink); }
+  .brand .foot { margin-top: auto; display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink); position: relative; }
+  .brand .foot .num { font-size: 15px; }
+  .formside { display: grid; place-items: center; position: relative; }
+  form { width: 380px; display: flex; flex-direction: column; gap: 18px; }
+  form h1 { font-family: var(--display); font-stretch: 118%; font-weight: 800; font-size: 30px; letter-spacing: -0.015em; }
+  form p.lead { color: var(--ink-2); margin-top: -8px; }
+  .row { display: flex; justify-content: space-between; align-items: center; }
+  .row a { color: var(--kiku-ink); font-weight: 700; font-size: 13px; text-decoration: none; }
+  .input { height: 46px; font-size: 15px; }
+  .input svg.lucide { color: var(--ink-3); }
+  .btn.lg { justify-content: center; height: 48px; width: 100%; }
+  .demo { position: absolute; bottom: 28px; left: 0; right: 0; text-align: center; }
+</style>
+</head>
+<body>
+  <section class="brand">
+    <div class="wm">Kiku<span class="tick"></span></div>
+    <div class="hotel"><b>The Brenlow</b>, Edinburgh</div>
+    <div class="bigegg" aria-hidden="true"></div>
+    <div class="foot"><span>Voice agent console</span><span>Hotel line <span class="num">+44 131 496 0400</span></span></div>
+  </section>
+  <section class="formside">
+    <form onsubmit="return false">
+      <h1>Welcome back</h1>
+      <p class="lead">Use your Brenlow staff email.</p>
+      <label class="field"><span>Email</span><div class="input focus"><i data-lucide="mail"></i>priya.raman@brenlow.example</div></label>
+      <label class="field"><span>Password</span><div class="input"><i data-lucide="lock"></i><span style="letter-spacing:3px">••••••••••••</span><i data-lucide="eye" style="margin-left:auto"></i></div></label>
+      <div class="row"><span></span><a href="#">Forgot password?</a></div>
+      <button class="btn lg primary">Sign in</button>
+    </form>
+    <div class="demo demo-note" id="demo"></div>
+  </section>
+<script>document.getElementById("demo").textContent = UI.K.synthetic;</script>
+</body>
+</html>

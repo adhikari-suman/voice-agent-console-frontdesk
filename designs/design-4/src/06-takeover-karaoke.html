@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku, you are on the line</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+.onair {
+  flex: none; height: 92px; background: var(--human); color: #fff; display: flex; align-items: center; gap: 22px; padding: 0 28px;
+  background-image: repeating-linear-gradient(35deg, transparent 0 14px, rgba(255,255,255,.05) 14px 15px);
+}
+.onair .mic { width: 52px; height: 52px; border-radius: 50%; background: #fff; color: var(--human); display: grid; place-items: center; box-shadow: 0 0 0 6px rgba(255,255,255,.22), 0 0 0 12px rgba(255,255,255,.1); }
+.onair .mic svg.lucide { width: 24px; height: 24px; stroke-width: 2; }
+.onair h2 { font-size: 24px; font-weight: 700; letter-spacing: -.015em; line-height: 1.15; }
+.onair p { font-size: 13.5px; opacity: .92; margin-top: 3px; }
+.onair .sp { flex: 1; }
+.onair .timer { text-align: right; line-height: 1; }
+.onair .timer b { font: 700 44px/1 var(--f-count); letter-spacing: .02em; display: block; }
+.onair .timer span { font-size: 12px; opacity: .85; }
+.onair .ctl { display: flex; gap: 10px; }
+.onair .btn { height: 44px; border-color: rgba(255,255,255,.45); background: rgba(255,255,255,.1); color: #fff; font-size: 13.5px; }
+.onair .btn.hand { background: #fff; color: var(--ink); border-color: #fff; }
+.onair .btn.end { background: var(--ink); border-color: var(--ink); }
+
+.stage { flex: 1; min-height: 0; display: grid; grid-template-columns: 380px 1fr 318px; }
+.hist { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; background: var(--paper); }
+.hist .hh { padding: 14px 20px 8px; display: flex; align-items: center; gap: 8px; }
+.hist .hh h3 { font-size: 14px; font-weight: 700; }
+.hist .list { padding: 0 20px 14px; flex: 1; }
+.hist .turn { grid-template-columns: 38px 1fr; gap: 8px; padding: 7px 0; }
+.hist .turn .t { font-size: 13px; }
+.hist .turn .body { font-size: 13px; }
+.hist .turn.guest .body { font-size: 14px; }
+.hist .kturn { padding: 9px 10px 10px; }
+.hist .kturn .khead { flex-wrap: wrap; row-gap: 4px; margin-bottom: 8px; }
+.hist .kturn .khead > .t { display: none; }
+.hist .lanekey { display: none; }
+.hist .lanes { --lh: 21px; font-size: 12.5px; row-gap: 5px; }
+.hist .meter .bar { width: 40px; }
+.hist .readback { grid-template-columns: 1fr; margin-top: 0; padding-top: 0; border: 0; gap: 2px; }
+.hist .readback dd { margin-bottom: 6px; }
+.hist .readback dt { font-size: 11.5px; }
+
+.prompter { background: var(--ink); color: #e6eff3; display: flex; flex-direction: column; justify-content: center; min-height: 0; padding: 26px 34px 22px;
+  --surface-bridge: var(--ink); --text: #fff; --line: #3b6178; --kiku-bg: rgba(177,212,224,.13); --kiku: #9fcbe0; --kiku-edge: #5d8ea8;
+  --human-bg: rgba(222,94,114,.2); --human-edge: #a14b5d; --hatch: repeating-linear-gradient(35deg, transparent 0 5px, rgba(255,255,255,.09) 5px 6px); }
+.prompter .lab { display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 600; color: #9fb9c6; }
+.prompter .lab b { font: 700 16px/1 var(--f-count); letter-spacing: .05em; color: #cfe0e7; }
+.prompter .lab .sp { flex: 1; }
+.wrote { font-size: 26px; line-height: 1.45; font-weight: 500; color: #b9d7e4; margin: 10px 0 22px; letter-spacing: -.005em; }
+.saying { font: italic 400 34px/1.32 var(--f-voice); color: #fff; margin: 10px 0 20px; }
+.saying .caret { background: var(--human-hi); height: .9em; width: 3px; }
+.prompter .lanes { --lh: 27px; font-size: 14.5px; }
+.prompter .seg.ins > span.s { color: #ffd6dd; }
+.lanebox { display: flex; padding: 14px 0 16px; border-top: 1px solid #2a4c61; border-bottom: 1px solid #2a4c61; }
+.prompter .lanekey { grid-template-rows: 27px 27px; color: #9fb9c6; }
+.next { margin-top: 26px; padding: 14px 16px; border: 1px dashed #3f667d; border-radius: var(--r); }
+.next .lab { margin-bottom: 6px; }
+.next p { font-size: 17px; line-height: 1.45; color: #86a6b6; }
+.voicechip { display: inline-flex; align-items: center; gap: 7px; padding: 3px 10px 3px 4px; border-radius: 14px; background: var(--human-hi); color: #fff; font-weight: 700; font-size: 12px; }
+.voicechip .av { width: 20px; height: 20px; font-size: 9px; background: #fff; color: var(--human); }
+
+.facts { background: var(--surface); display: flex; flex-direction: column; min-height: 0; }
+.facts section { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.facts h3 { font-size: 13.5px; font-weight: 700; margin-bottom: 8px; display: flex; gap: 7px; align-items: center; }
+.facts .reason { background: var(--human-bg); border: 1px solid var(--human-edge); padding: 10px 12px; font-size: 13px; border-radius: var(--r); }
+.facts dl { display: grid; grid-template-columns: 70px 1fr; gap: 7px 10px; font-size: 13px; }
+.facts dt { color: var(--muted); }
+.facts ul { list-style: none; display: flex; flex-direction: column; gap: 7px; font-size: 13px; }
+.facts ul li { display: grid; grid-template-columns: 16px 1fr; gap: 8px; }
+.facts ul li svg.lucide { width: 15px; height: 15px; margin-top: 2px; color: var(--muted); }
+.lv { display: grid; grid-template-columns: 78px 1fr; align-items: center; gap: 6px 10px; font-size: 12.5px; color: var(--muted); }
+.prompter .k { text-decoration-color: #6f9fb8; }
+.prompter .x { color: #7fa6ba; text-decoration-color: rgba(159,203,224,.7); opacity: .75; }
+.prompter .saying .n { color: #fff; background: rgba(222,94,114,.32); }
+.prompter .saying .k { text-decoration-color: var(--human-hi); }
+.howto { display: flex; gap: 18px; align-items: center; padding: 12px 0; border-top: 1px solid #2a4c61; border-bottom: 1px solid #2a4c61; font-size: 12px; color: #9fb9c6; }
+.howto span { white-space: nowrap; display: inline-flex; gap: 6px; align-items: center; }
+.howto .sp { flex: 1; }
+.prompter .meter { color: #9fb9c6; } .prompter .meter b { color: #fff; } .prompter .meter .bar { background: rgba(222,94,114,.3); } .prompter .meter .bar i { background: var(--mist); }
+.hist .readback .n { font-size: 13.5px; }
+</style></head>
+<body>
+<div class="app">
+  <nav class="spine" id="spine"></nav>
+  <main class="main">
+    <header class="top" id="top"></header>
+    <div class="onair" id="onair"></div>
+    <div class="stage">
+      <div class="hist"><div class="hh"><h3>Earlier in this call</h3><span class="h3" style="font-weight:500;margin-left:auto">Scroll up for Kiku's part</span></div><div class="list scroll" id="hist"></div></div>
+      <div class="prompter" id="prompter"></div>
+      <aside class="facts scroll" id="facts"></aside>
+    </div>
+  </main>
+</div>
+<script>
+const { K, esc, icon, status, shell, turn, lanes, level } = TT; const T = K.takeover;
+shell({ role: 'specialist', active: 'live', crumb: `<a href="02-live-overview.html">Live</a>${icon('chevron-right')}`, title: esc(T.guest), after: `${status('escalated')}<span class="id">${T.id}</span>` });
+
+document.getElementById('onair').innerHTML = `
+  <div class="mic">${icon('mic')}</div>
+  <div><h2>You're on the line with Margaret Doyle</h2><p>Kiku is silent and writing your lines. The guest hears only you.</p></div>
+  <div class="sp"></div>
+  ${level(26, 5, false).replace('class="level "', 'class="level" style="--x:1"').replace(/background:[^;"]*/g, '')}
+  <div class="timer"><b class="tc">${T.duration}</b><span>You took over at ${T.takeoverAt}</span></div>
+  <div class="ctl"><button class="btn">${icon('mic-off')}Mute</button><button class="btn hand">${icon('bot')}Hand back to Kiku</button><button class="btn end">${icon('phone-off')}End call</button></div>`;
+document.querySelectorAll('.onair .level i').forEach(i => i.style.background = '#fff');
+
+const live = T.transcript[T.transcript.length - 1];
+document.getElementById('prompter').innerHTML = `
+  <div class="lab">${icon('bot')}Kiku wrote <b>${live.t}</b><span class="sp"></span><span>Line 3 of this takeover</span></div>
+  <div class="wrote">${TT.sides(live.diff).wrote}</div>
+  <div class="lab"><span class="voicechip"><span class="av">PR</span>You're saying</span><span style="color:#9fb9c6">live, partial</span><span class="sp"></span>${level(34, 3, true)}</div>
+  <div class="saying">${TT.sides(live.diff).said}<i class="caret"></i></div>
+  <div class="howto"><span><span class="k">matched</span>as Kiku wrote</span><span><span class="x">struck</span>skipped</span><span><span class="n">rose</span>your words</span><span class="sp"></span>${TT.meter(live.match)}</div>
+  <div class="next"><div class="lab">${icon('list-end')}Up next, queued by Kiku<span class="sp"></span><span>Shows when Margaret replies</span></div><p>${esc(T.nextLine)}</p></div>`;
+
+const names = { guest: T.guest, specialist: T.specialist };
+const h = document.getElementById('hist');
+h.innerHTML = T.transcript.slice(0, -1).map(e => turn(e, names, { compact: true })).join('');
+
+document.getElementById('facts').innerHTML = `
+  <section><h3>${icon('triangle-alert')}Why Kiku escalated</h3><div class="reason">${esc(T.escalationReason)}</div></section>
+  <section><h3>${icon('book-open')}Booking ${T.booking}</h3>
+    <dl><dt>Guest</dt><dd>${esc(T.guest)}</dd><dt>Phone</dt><dd class="num">${esc(T.phone)}</dd><dt>Stay</dt><dd>${esc(T.stay)}</dd><dt>Purpose</dt><dd>${esc(T.purpose)}</dd></dl></section>
+  <section><h3>${icon('credit-card')}Payment facts</h3>
+    <ul>${T.facts.map((f, i) => `<li>${icon(['receipt', 'hourglass', 'credit-card'][i])}<span>${esc(f)}</span></li>`).join('')}</ul></section>
+  <section style="border:0"><h3>${icon('audio-lines')}Line levels</h3>
+    <div class="lv"><span>You</span>${level(30, 3, true)}<span>Margaret</span>${level(30, 17, false).replace(/<i /g, '<i style="opacity:.35" ').replace(/style="opacity:.35" style="/g, 'style="opacity:.35;')}<span>Kiku</span><span style="display:flex;align-items:center;gap:6px">${icon('volume-x')}Silent, prompting</span></div></section>`;
+TT.draw();
+h.scrollTop = h.scrollHeight;
+</script>
+</body></html>

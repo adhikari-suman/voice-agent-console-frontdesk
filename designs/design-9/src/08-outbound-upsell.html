@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Upsell calls</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .offers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; flex: none; }
+  .offer { padding: 14px 16px; display: grid; grid-template-columns: 36px 1fr auto; gap: 4px 12px; align-items: start; }
+  .offer .oi { width: 36px; height: 36px; border-radius: var(--r); background: var(--kiku-tint); color: var(--kiku-deep); display: grid; place-items: center; grid-row: span 2; }
+  .offer .oi svg { width: 18px; height: 18px; }
+  .offer b { font-size: 15px; font-weight: 600; }
+  .offer .pr { font-weight: 600; font-size: 14px; text-align: right; }
+  .offer .d { font-size: 12.5px; color: var(--ink-2); }
+  .offer .alt { font-size: 12px; color: var(--ink-3); text-align: right; }
+  .grid { flex: 1; min-height: 0; display: grid; grid-template-columns: 460px 1fr; gap: 16px; }
+  .pane { display: flex; flex-direction: column; }
+  .pane .body { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .matchcard { border: 1px solid #B9D0DE; background: #F1F6F9; border-radius: var(--r); padding: 10px 12px; display: flex; gap: 10px; font-size: 13px; }
+  .matchcard svg { color: var(--ok); margin-top: 2px; }
+  .matchcard b { display: block; font-size: 14px; }
+  .tog { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line-2); font-size: 13px; }
+  .tog:last-child { border-bottom: 0; }
+  .tog span:nth-child(2) { flex: 1; }
+  .tog small { color: var(--ink-3); font-size: 12px; }
+  .ph .n { width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11px; display: grid; place-items: center; }
+  .cols { font-size: 12px; color: var(--ink-3); display: flex; gap: 6px; align-items: center; }
+  .cols code { font-family: var(--ui); font-weight: 600; font-size: 12px; background: var(--white); border: 1px solid var(--line); padding: 0 5px; border-radius: 2px; color: var(--ink-2); }
+  table td { padding: 8px 12px; }
+  .tw { border: 1px solid var(--line); border-radius: var(--r); background: var(--white); overflow: hidden; }
+  .tw th { background: var(--paper); }
+  td.rn { color: var(--ink-3); width: 44px; }
+  .skip td { border: 0; padding: 4px 12px; font-size: 11.5px; color: var(--ink-3); background: var(--paper); text-align: center; }
+</style>
+</head>
+<body>
+<header class="top" id="top"></header>
+<main class="main" id="main"></main>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<script>
+shell("admin", "out");
+const U = K.upsellSingle, V = K.upsellCsv;
+const oIcon = { pickup: "car", breakfast: "coffee", dinner: "utensils" };
+const offers = K.offers.map(o => `<section class="panel offer"><span class="oi">${icon(oIcon[o.id])}</span><b>${o.name}</b><span class="pr">${o.price}</span><span class="d">${o.detail}</span><span class="alt">${o.alt || ""}</span></section>`).join("");
+
+const prevRows = V.preview.map((r, i) => {
+  const skip = i > 0 && r.row - V.preview[i - 1].row > 1 ? `<tr class="skip"><td colspan="5">Rows ${V.preview[i - 1].row + 1}–${r.row - 1} ready</td></tr>` : "";
+  return `${skip}<tr class="${r.ok ? "" : "err"}"><td class="rn">${r.row}</td><td>${r.phone || `<span class="faint">empty</span>`}</td><td>${r.confirmation || `<span class="faint">empty</span>`}</td><td>${r.guest ? esc(r.guest) : `<span class="faint">No match</span>`}</td>
+    <td>${r.ok ? `<span class="st completed">${STATUS.completed.svg}Ready</span>` : `<span class="rowerr">${STATUS.escalated.svg}${esc(r.error)}</span>`}</td></tr>`;
+}).join("");
+
+document.getElementById("main").innerHTML = `
+<div class="head"><h1>Outbound calls</h1>${outboundTabs("upsell")}<p class="sp">Kiku calls guests with a booking and offers extras for their stay.</p></div>
+<div class="offers">${offers}</div>
+<div class="grid">
+  <section class="panel pane">
+    <div class="ph"><span class="n">a</span>Call one guest</div>
+    <div class="body">
+      <div class="two">
+        <div class="field"><label>Phone</label><div class="input">${icon("phone")}${U.phone}</div></div>
+        <div class="field"><label>Confirmation number</label><div class="input focus">${icon("hash")}${U.confirmation}</div></div>
+      </div>
+      <div class="matchcard">${STATUS.completed.svg}<div><span class="faint small">Booking found</span><b>${esc(U.match.split(" · ")[0])}</b>${esc(U.match.split(" · ").slice(1).join(" · "))}</div></div>
+      <div class="field"><label>Offers Kiku will make</label>
+        <div>${K.offers.map(o => `<div class="tog"><span class="toggle ${U.offers.includes(o.id) ? "on" : ""}"></span><span>${o.name}</span><small>${o.price}</small></div>`).join("")}</div>
+      </div>
+    </div>
+    <div class="formfoot"><span class="sp">Kiku calls straight away</span><button class="btn pri">${icon("phone-outgoing")}Call now</button></div>
+  </section>
+  <section class="panel pane">
+    <div class="ph"><span class="n">b</span>Call a list from CSV<span class="sp cols">Columns ${V.columns.map(c => `<code>${c}</code>`).join("")}</span></div>
+    <div class="body">
+      <div class="file"><span class="fi">CSV</span><div><b>${V.file}</b><div class="faint small">${V.size} · ${V.rows} rows</div></div>
+        <div class="counts" style="margin-left:auto"><span class="st completed">${STATUS.completed.svg}${V.ready} ready</span><span class="st escalated">${STATUS.escalated.svg}${V.errors} errors</span></div>
+        <button class="btn sm">${icon("upload")}Replace</button></div>
+      <div class="tw scroll">
+        <table><thead><tr><th>Row</th><th>phone</th><th>confirmation</th><th>Matched guest</th><th>Check</th></tr></thead><tbody>${prevRows}</tbody></table>
+      </div>
+      <p class="small muted">Rows 14 and 27 will be skipped. Fix them in the file and upload it again to include them. Kiku offers arrival pickup, breakfast and dinner on each call.</p>
+    </div>
+    <div class="formfoot"><span class="sp">${V.ready} guests, one call each</span><button class="btn">Cancel</button><button class="btn pri">${icon("phone-outgoing")}Start ${V.ready} calls</button></div>
+  </section>
+</div>`;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>

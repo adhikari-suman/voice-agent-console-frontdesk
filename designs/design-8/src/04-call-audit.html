@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Call audit · Kiku</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .page { display: grid; grid-template-columns: 356px minmax(0,1fr); gap: 0; height: 100vh; }
+  .dossier { background: var(--surface); box-shadow: 1px 0 0 var(--rule); padding: 20px 24px 20px; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+  .crumb { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-3); }
+  .crumb a { color: var(--ink-2); text-decoration: none; font-weight: 700; display: inline-flex; gap: 4px; align-items: center; }
+  .crumb svg.lucide { width: 14px; height: 14px; }
+  .dossier h1 { font-family: var(--display); font-stretch: 118%; font-weight: 800; font-size: 27px; letter-spacing: -0.015em; line-height: 1.05; margin: 6px 0 8px; }
+  .chips { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .purpose { font-size: 13.5px; color: var(--ink-2); margin-top: 8px; }
+  .kv { display: grid; grid-template-columns: 84px 1fr; gap: 7px 12px; font-size: 13.5px; padding-top: 14px; border-top: 1px solid var(--sunk); }
+  .kv dt { color: var(--ink-3); font-size: 12.5px; padding-top: 1px; }
+  .kv .num { font-size: 15px; }
+  .sec h2 { font-family: var(--display); font-stretch: 108%; font-weight: 750; font-size: 15px; margin-bottom: 8px; display: flex; align-items: baseline; gap: 8px; }
+  .sec h2 small { font-family: var(--body); font-weight: 400; font-size: 12.5px; color: var(--ink-3); }
+  .sec { padding-top: 14px; border-top: 1px solid var(--sunk); }
+  .ksent { font-size: 14px; color: var(--ink-2); margin-bottom: 10px; }
+  .ksent b { font-family: var(--display); font-stretch: 80%; font-weight: 800; font-size: 20px; color: var(--ink); }
+  .eggs { display: flex; justify-content: space-between; }
+  .eggs .e { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .eggs .shell { width: 30px; height: 36px; border-radius: 50% 50% 46% 46% / 58% 58% 42% 42%; background: var(--human-soft); box-shadow: inset 0 0 0 1.5px var(--human-ink); position: relative; overflow: hidden; }
+  .eggs .shell b { position: absolute; left: 0; right: 0; bottom: 0; background: var(--kiku); }
+  .eggs .e.asw .shell { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+  .eggs .p { font-family: var(--display); font-stretch: 76%; font-weight: 700; font-size: 12px; }
+  .eggs .t { font-family: var(--display); font-stretch: 76%; font-weight: 500; font-size: 11px; color: var(--ink-3); }
+  .legend { display: flex; gap: 12px; margin-top: 8px; font-size: 11.5px; color: var(--ink-3); }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+  .outc li { list-style: none; display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; padding: 5px 0; font-size: 13px; align-items: start; line-height: 1.35; }
+  .outc li svg.lucide { width: 15px; height: 15px; margin-top: 1px; }
+  .outc li.added svg { color: var(--ok); }
+  .outc li.declined { color: var(--ink-3); }
+  .outc li.declined .it { text-decoration: line-through; text-decoration-color: var(--rule-2); }
+  .outc .amt { font-family: var(--display); font-stretch: 80%; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .total { display: flex; align-items: baseline; justify-content: space-between; padding-top: 8px; margin-top: 4px; border-top: 1px dashed var(--rule-2); }
+  .total .num { font-size: 24px; font-weight: 800; }
+  .note { margin-top: 8px; font-size: 12.5px; display: flex; gap: 7px; color: var(--ink-2); }
+  .note svg { width: 14px; height: 14px; margin-top: 2px; flex: none; }
+
+  .score { display: flex; flex-direction: column; min-height: 0; padding: 16px 24px 0; }
+  .player { display: grid; grid-template-columns: auto auto 1fr; gap: 16px; align-items: center; background: var(--surface); border-radius: 40px; padding: 8px 24px 8px 8px; box-shadow: 0 0 0 1px var(--rule); }
+  .play { width: 42px; height: 42px; border-radius: 50%; background: var(--ink); color: #fff; border: 0; display: grid; place-items: center; }
+  .play svg.lucide { width: 18px; height: 18px; fill: #fff; }
+  .player .time { font-size: 13px; color: var(--ink-3); white-space: nowrap; }
+  .player .time .num { font-size: 16px; color: var(--ink); }
+  .bar { position: relative; height: 38px; }
+  .bar .trk { position: absolute; top: 24px; height: 5px; border-radius: 4px; }
+  .bar .k { left: 0; background: var(--kiku); opacity: .45; }
+  .bar .h { right: 0; background: var(--human); }
+  .bar .mk { position: absolute; top: 0; height: 36px; width: 2px; background: var(--ink); }
+  .bar .mk .lbl { position: absolute; top: 0; left: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; }
+  .bar .mk.esc { background: var(--human-ink); }
+  .bar .mk.esc .lbl { color: var(--human-ink); left: auto; right: 6px; }
+  .bar .mk .lbl svg { width: 11px; height: 11px; }
+  .bar .kt { position: absolute; top: 22px; width: 7px; height: 9px; border-radius: 50% 50% 46% 46% / 58% 58% 42% 42%; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--human-ink); transform: translateX(-50%); }
+  .bar .kt.asw { background: var(--ink); box-shadow: none; }
+  .scorepanel { flex: 1; min-height: 0; display: flex; flex-direction: column; margin-top: 10px; }
+  .lanehead { padding: 0; }
+  .scorescroll { flex: 1; min-height: 0; position: relative; padding-bottom: 20px; -webkit-mask-image: linear-gradient(transparent, #000 18px, #000 calc(100% - 18px), transparent); mask-image: linear-gradient(transparent, #000 18px, #000 calc(100% - 18px), transparent); }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail" data-role="specialist" data-active="logs"></aside>
+  <div class="page">
+    <aside class="dossier scroll" id="dossier"></aside>
+    <section class="score">
+      <div class="player" id="player"></div>
+      <div class="scorepanel">
+        <div class="lanehead" id="lanes"></div>
+        <div class="scroll scorescroll"><div class="duet" id="duet"></div></div>
+      </div>
+    </section>
+  </div>
+</div>
+<script>
+const { K, esc, ic, status, duetRows } = UI;
+const a = K.audit;
+const sec = t => { const [m, s] = t.split(":").map(Number); return m * 60 + s; };
+const total = sec(a.duration);
+const pct = t => (sec(t) / total * 100).toFixed(2) + "%";
+const first = a.specialist.split(" ")[0];
+const kturns = a.transcript.filter(x => x.karaoke);
+const ks = a.karaokeSummary;
+
+document.getElementById("dossier").innerHTML = `
+  <div>
+    <div class="crumb"><a href="03-call-logs.html">${ic("arrow-left")}Call logs</a><span>/</span><span class="mono-id">${a.id}</span></div>
+    <h1>${a.guest}</h1>
+    <div class="chips">${status(a.status, true)}<span class="dir">${ic("phone-outgoing")}Outbound</span><span class="tag">${a.type}</span></div>
+    <div class="purpose">${a.purpose}</div>
+  </div>
+  <dl class="kv">
+    <dt>Phone</dt><dd class="num">${a.phone}</dd>
+    <dt>Booking</dt><dd class="num">${a.booking}</dd>
+    <dt>Stay</dt><dd>${a.stay}</dd>
+    <dt>Started</dt><dd>${a.started}, <span class="num">${a.duration}</span> long</dd>
+    <dt>Handled by</dt><dd>${a.agent}, then ${a.specialist} from <span class="num">${a.takeoverAt}</span></dd>
+  </dl>
+  <div class="sec">
+    <h2>Karaoke<small>${first} on the line</small></h2>
+    <div class="ksent"><b>${ks.lines}</b> lines. <b>${ks.asWritten}</b> spoken as written, <b>${ks.improvised}</b> improvised.</div>
+    <div class="eggs">${kturns.map(x => `<div class="e${x.asWritten ? " asw" : ""}"><span class="shell"><b style="height:${x.match}%"></b></span><span class="p">${x.match}%</span><span class="t">${x.t}</span></div>`).join("")}</div>
+    <div class="legend"><span><i style="background:var(--kiku)"></i>Kiku's words kept</span><span><i style="background:var(--human-soft);box-shadow:inset 0 0 0 1px var(--human-ink)"></i>${first}'s own words</span></div>
+  </div>
+  <div class="sec">
+    <h2>Outcome</h2>
+    <ul class="outc">${a.outcome.map(o => `<li class="${o.result}">${ic(o.result === "added" ? "circle-check" : "circle-minus")}<span class="it">${o.item}</span><span class="amt">${o.result === "added" ? o.amount : "Declined"}</span></li>`).join("")}</ul>
+    <div class="total"><span class="label">Added to ${a.booking}</span><span class="num">${a.total}</span></div>
+    <div class="note">${ic("sticky-note")}${a.note}</div>
+  </div>`;
+
+document.getElementById("player").innerHTML = `
+  <button class="play" aria-label="Play recording">${ic("play")}</button>
+  <span class="time"><span class="num">00:00</span> / <span class="num">${a.duration}</span></span>
+  <div class="bar">
+    <span class="trk k" style="width:${pct(a.takeoverAt)}"></span>
+    <span class="trk h" style="left:${pct(a.takeoverAt)}"></span>
+    ${kturns.map(x => `<span class="kt${x.asWritten ? " asw" : ""}" style="left:${pct(x.t)}"></span>`).join("")}
+    <span class="mk esc" style="left:${pct("00:36")}"><span class="lbl">${ic("triangle-alert")}Escalated 00:36</span></span>
+    <span class="mk" style="left:${pct(a.takeoverAt)}"><span class="lbl">${ic("mic")}${first} took over 00:52</span></span>
+  </div>`;
+
+document.getElementById("lanes").innerHTML = `
+  <div class="l"><span><b>Kiku</b>, what it said, then the lines it wrote</span><span class="egg sm kiku">Ki</span></div>
+  <div></div>
+  <div class="r"><span class="egg sm guest">EV</span><span><b>People</b>, ${a.guest} and ${a.specialist}</span></div>`;
+
+const duet = document.getElementById("duet");
+duet.innerHTML = duetRows(a.transcript, { guest: a.guest, specFirst: first, specInitials: "TN", specLabel: first });
+const sc = duet.parentElement;
+requestAnimationFrame(() => { const e = duet.querySelector(".sysrow.escalation"); if (e) sc.scrollTop = e.offsetTop - 70; });
+</script>
+</body>
+</html>

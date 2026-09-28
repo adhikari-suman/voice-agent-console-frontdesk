@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku, upsell calls</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+  .page { height: 100%; display: grid; grid-template-rows: auto auto; align-content: center; max-width: 1360px; margin: 0 auto; padding-bottom: 12px; }
+  .split { display: grid; grid-template-columns: 1fr 56px 1.25fr; align-content: start; padding: 0 28px 16px; min-height: 0; }
+  .or { display: grid; grid-template-rows: 1fr auto 1fr; justify-items: center; }
+  .or::before, .or::after { content: ""; width: 1px; background: var(--line); }
+  .or span { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--ground); display: grid; place-items: center; font-size: 12px; color: var(--ink-3); margin: 8px 0; }
+  .pane { display: grid; grid-template-rows: auto auto auto; align-content: start; min-height: 0; }
+  .pane-h { display: flex; align-items: baseline; gap: 10px; padding-bottom: 12px; }
+  .pane-h h2 { font-size: 18px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 16px; align-content: start; min-height: 0; overflow: hidden; }
+  .pane-f { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding-top: 12px; }
+  .pane-f .sum { margin-right: auto; font-size: 13px; color: var(--ink-2); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .match { display: flex; gap: 10px; align-items: flex-start; background: var(--ok-soft); border-radius: 8px; padding: 10px 12px; font-size: 13px; }
+  .match svg.lucide { color: var(--ok); margin-top: 1px; }
+  .match b { font-weight: 600; display: block; }
+  .offer { display: grid; grid-template-columns: 36px 1fr auto 44px; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line-2); }
+  .offer .oi { width: 36px; height: 36px; border-radius: 8px; background: var(--kiku-soft); color: var(--kiku-deep); display: grid; place-items: center; }
+  .offer b { font-weight: 500; display: block; }
+  .offer .d { font-size: 12.5px; color: var(--ink-3); }
+  .offer .pr { text-align: right; font-weight: 600; font-size: 15px; line-height: 1.2; }
+  .offer .pr small { display: block; font-size: 11.5px; font-weight: 400; color: var(--ink-3); }
+  .sw { width: 40px; height: 24px; border-radius: 12px; background: var(--ink); position: relative; }
+  .sw::after { content: ""; position: absolute; right: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; }
+  .sw svg { position: absolute; left: 6px; top: 6px; width: 11px; height: 11px; color: #fff; }
+
+  .file { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+  .file .fi { width: 34px; height: 40px; border-radius: 4px; display: grid; place-items: center; background: var(--ok-soft); color: var(--ok); }
+  .file .counts { display: flex; gap: 12px; font-size: 12.5px; }
+  .okc { color: var(--ok); font-weight: 500; display: inline-flex; gap: 4px; align-items: center; }
+  .badc { color: var(--fail); font-weight: 500; display: inline-flex; gap: 4px; align-items: center; }
+  .okc svg.lucide, .badc svg.lucide { width: 13px; height: 13px; }
+  .cols { font-size: 12.5px; color: var(--ink-3); display: flex; gap: 6px; align-items: center; }
+  .cols code { font-family: var(--sans); font-weight: 600; color: var(--ink); background: var(--sheet-2); border: 1px solid var(--line); padding: 0 6px; border-radius: 4px; }
+  .pv { display: grid; }
+  .pr-row { display: grid; grid-template-columns: 40px 150px 110px 1fr; gap: 10px; align-items: center; padding: 8px 0; font-size: 13px; border-top: 1px solid var(--line-2); }
+  .pr-row.h { font-size: 12px; color: var(--ink-3); border-top: 0; padding-top: 0; }
+  .pr-row .rn { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .pr-row.err { background: var(--fail-soft); margin: 0 -20px; padding: 8px 20px; grid-template-columns: 40px 150px 110px 1fr; }
+  .pr-row.err .rn { color: var(--fail); font-weight: 600; }
+  .gap { font-size: 12px; color: var(--ink-3); padding: 5px 0; border-top: 1px dashed var(--line); }
+  .missing { color: var(--fail); font-style: italic; }
+</style>
+</head>
+<body>
+<script>
+const U = K.upsellSingle, V = K.upsellCsv;
+const OI = { pickup: "car", breakfast: "coffee", dinner: "utensils" };
+const offers = U.offers.map(id => { const o = K.offers.find(x => x.id === id); const [amt, ...unit] = o.price.split(" ");
+  return `<div class="offer"><span class="oi">${ic(OI[id])}</span><div><b>${o.name}</b><span class="d">${o.detail}${o.alt ? `. ${o.alt}` : ""}</span></div><div class="pr">${amt}<small>${unit.join(" ")}</small></div><span class="sw" role="switch" aria-checked="true" aria-label="Offer ${o.name}"><svg viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span></div>`; }).join("");
+const [mName, ...mRest] = U.match.split(" · ");
+let rows = "", last = 0;
+V.preview.forEach(r => {
+  if (r.row - last > 1) rows += `<div class="gap">Rows ${last + 1}–${r.row - 1} ready</div>`;
+  last = r.row;
+  rows += r.ok ? `<div class="pr-row"><span class="rn">${r.row}</span><span>${r.phone}</span><span>${r.confirmation}</span><span class="okc">${ic("circle-check")}${r.guest}</span></div>`
+    : `<div class="pr-row err"><span class="rn">${r.row}</span><span>${r.phone}</span><span>${r.confirmation || '<span class="missing">empty</span>'}</span><span class="badc">${ic("circle-x")}${r.error}</span></div>`;
+});
+if (last < V.rows) rows += `<div class="gap">Rows ${last + 1}–${V.rows} ready</div>`;
+
+shell("admin", "upsell", `
+<div class="page">
+  <div class="ph"><h1>Upsell calls</h1><span class="sub">Kiku calls guests with a booking and offers extras for their stay. Call one guest or a whole list.</span></div>
+  <div class="split">
+    <section class="pane">
+      <div class="pane-h"><h2>One guest</h2><span class="sub">Phone and confirmation number</span></div>
+      <div class="card">
+        <div class="two">
+          <div class="field"><label>Guest phone</label><span class="input">${ic("phone")}<input value="${U.phone}"></span></div>
+          <div class="field"><label>Confirmation number</label><span class="input">${ic("hash")}<input value="${U.confirmation}"></span></div>
+        </div>
+        <div class="match">${ic("circle-check")}<div><b>Booking found: ${mName}</b>${mRest.join(", ")}</div></div>
+        <div class="field"><span class="lab">Offers Kiku will make</span><div>${offers}</div></div>
+      </div>
+      <div class="pane-f"><span class="sum">Kiku calls ${mName} with 3 offers</span><button class="btn primary">${ic("phone-outgoing")}Call now</button></div>
+    </section>
+    <div class="or" aria-hidden="true"><span>or</span></div>
+    <section class="pane">
+      <div class="pane-h"><h2>A list from CSV</h2><span class="cols">Columns ${V.columns.map(c => `<code>${c}</code>`).join("")}</span></div>
+      <div class="card">
+        <div class="file"><span class="fi">${ic("file-spreadsheet")}</span><div><b style="font-weight:500">${V.file}</b> <span class="cap">${V.size}</span><div class="counts"><span class="muted">${V.rows} rows</span><span class="okc">${ic("circle-check")}${V.ready} ready</span><span class="badc">${ic("circle-x")}${V.errors} errors</span></div></div><button class="btn sm">${ic("refresh-cw")}Replace file</button></div>
+        <div class="pv"><div class="pr-row h"><span>Row</span><span>Phone</span><span>Confirmation</span><span>Booking matched, or the problem</span></div>${rows}</div>
+        <p class="hint">Rows with errors are skipped. Fix them in the file and upload it again to include them.</p>
+      </div>
+      <div class="pane-f"><span class="sum">All three offers on every call</span><button class="btn">${ic("download")}Error report</button><button class="btn primary">${ic("phone-outgoing")}Start ${V.ready} calls</button></div>
+    </section>
+  </div>
+</div>`);
+finish();
+</script>
+</body>
+</html>

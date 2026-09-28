@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku: Campaign calls</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .content { display: grid; grid-template-columns: 470px minmax(0,1fr); gap: 24px; padding-top: 18px; }
+  .list { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  .camp { background: var(--paper); border: 1px solid var(--rule); padding: 16px 18px; position: relative; }
+  .camp.open { background: #fff; border-color: var(--ink); }
+  .camp.open::after { content: ""; position: absolute; right: -13px; top: 26px; width: 12px; height: 24px; background: var(--ink); clip-path: polygon(0 0, 100% 50%, 0 100%); }
+  .camp .top { display: flex; align-items: baseline; gap: 12px; }
+  .camp .code { font-family: var(--f-display); font-weight: 800; font-size: 28px; line-height: 1; letter-spacing: .02em; }
+  .camp .name { font-size: 13.5px; color: var(--text-2); white-space: nowrap; }
+  .cst { margin-left: auto; display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+  .cst svg { width: 14px; height: 14px; }
+  .cst.paused { color: var(--human-ink); }
+  .cst.sched { color: var(--kiku); }
+  .cst.draft { color: var(--text-2); }
+  .camp .offer { font-family: var(--f-voice); font-size: 15.5px; margin: 8px 0 10px; }
+  .camp .meta { display: flex; gap: 16px; font-size: 12.5px; color: var(--text-2); flex-wrap: wrap; }
+  .camp .meta span { display: inline-flex; gap: 5px; align-items: center; }
+  .camp .meta svg { width: 14px; height: 14px; }
+  .prog { margin-top: 14px; }
+  .pbar { height: 16px; position: relative; background: repeating-linear-gradient(to right, var(--rule-2) 0 1px, transparent 1px 8px); border-bottom: 1px solid var(--rule-2); }
+  .pbar i { position: absolute; top: 0; bottom: 0; display: block; }
+  .pbar .called { background: #C9C4D0; }
+  .pbar .ans { background: var(--kiku); }
+  .pbar .book { background: var(--ok); }
+  .pnums { display: grid; grid-template-columns: repeat(5, 1fr); margin-top: 10px; }
+  .pnums div { display: flex; flex-direction: column; }
+  .pnums .num { font-size: 22px; line-height: 1; }
+  .pnums span.l { font-size: 12px; color: var(--text-2); display: inline-flex; gap: 5px; align-items: center; margin-top: 3px; }
+  .pnums span.l i { width: 9px; height: 9px; display: inline-block; }
+  .camp .actions { display: flex; gap: 8px; margin-top: 14px; }
+
+  .setup { background: #fff; border: 1px solid var(--ink); display: flex; flex-direction: column; min-height: 0; }
+  .setup .sh { padding: 18px 24px 14px; border-bottom: 1px solid var(--rule); display: flex; align-items: baseline; gap: 12px; }
+  .setup .sh .h2 { font-size: 26px; }
+  .setup .body { padding: 18px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; align-content: start; flex: 1; min-height: 0; }
+  .full { grid-column: 1 / -1; }
+  .input.code { font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: .04em; }
+  .days { display: flex; gap: 4px; }
+  .days span { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid var(--rule-2); font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+  .days span.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .timerow { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .timerow .input { width: 100px; height: 34px; font-family: var(--f-display); font-weight: 600; font-size: 17px; }
+  .stepper { display: inline-flex; border: 1px solid var(--rule-2); height: 40px; }
+  .stepper button { width: 40px; display: grid; place-items: center; }
+  .stepper .num { width: 54px; display: grid; place-items: center; font-size: 22px; border-left: 1px solid var(--rule); border-right: 1px solid var(--rule); }
+  .opening { font-family: var(--f-voice); font-size: 16px; line-height: 1.55; min-height: 92px; }
+  .filecard { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 12px 14px; border: 1px solid var(--rule-2); background: var(--paper); }
+  .filecard .tally .num { font-size: 22px; }
+  .sf { padding: 14px 24px; border-top: 1px solid var(--rule); display: flex; align-items: center; gap: 12px; background: var(--paper); }
+  .sf .btn.go { height: 44px; font-size: 15px; }
+  .sf .summary { font-size: 13px; color: var(--text-2); margin-right: auto; }
+</style>
+</head>
+<body>
+<script>
+const { K, icon, shell, esc } = V;
+const D = K.campaignDraft;
+const c = shell({ role: "admin", active: "campaign", title: "Campaign calls", ctx: "Kiku calls a list of guests about one promo code",
+  right: `<button class="btn">${icon("plus")}New campaign</button>` });
+const st = s => s.startsWith("Paused") ? ["paused", "circle-pause"] : s.startsWith("Scheduled") ? ["sched", "calendar-clock"] : ["draft", "pencil-line"];
+const pct = (n, d) => d ? n / d * 100 : 0;
+c.innerHTML = `
+<div class="list scroll">
+  ${K.campaigns.map(x => { const [cls, ic] = st(x.status); return `
+  <article class="camp${x.code === D.code ? " open" : ""}">
+    <div class="top"><span class="code">${x.code}</span><span class="name">${x.name}</span><span class="cst ${cls}">${icon(ic)}${x.status}</span></div>
+    <p class="offer">${x.offer}</p>
+    <div class="meta"><span>${icon("file-spreadsheet")}${x.audience}</span><span>${icon("clock-3")}${x.window}</span></div>
+    ${x.called ? `<div class="prog">
+      <div class="pbar"><i class="called" style="left:0;width:${pct(x.called, x.contacts)}%"></i><i class="ans" style="left:0;width:${pct(x.answered, x.contacts)}%"></i><i class="book" style="left:0;width:${pct(x.booked, x.contacts)}%"></i></div>
+      <div class="pnums">
+        <div><span class="num">${x.contacts}</span><span class="l">Contacts</span></div>
+        <div><span class="num">${x.called}</span><span class="l"><i style="background:#C9C4D0"></i>Called</span></div>
+        <div><span class="num">${x.answered}</span><span class="l"><i style="background:var(--kiku)"></i>Answered</span></div>
+        <div><span class="num">${x.booked}</span><span class="l"><i style="background:var(--ok)"></i>Booked</span></div>
+        <div><span class="num" style="color:var(--fail)">${x.failed}</span><span class="l">${V.STATUS.failed.svg.replace("<svg", '<svg width="10" height="10" style="color:var(--fail)"')}Failed</span></div>
+      </div></div>` : ""}
+    ${x.code === "AUTUMN26" ? `<div class="actions"><button class="btn sm">${icon("play")}Resume now</button><button class="btn sm ghost">View calls</button></div>` : ""}
+    ${x.code === "HOGMANAY26" ? `<div class="meta" style="margin-top:10px"><span>${icon("users")}${x.contacts} contacts loaded. Nothing called yet.</span><button class="btn sm" style="margin-left:auto">Edit</button></div>` : ""}
+  </article>`; }).join("")}
+</div>
+
+<section class="setup">
+  <div class="sh"><span class="h2">Set up ${D.code}</span><span class="muted small">${K.campaigns[2].name}. Draft, not scheduled yet</span></div>
+  <div class="body scroll">
+    <div class="field"><label>Promo code</label><div class="input code">${D.code}</div></div>
+    <div class="field"><label>Offer</label><div class="input" style="height:auto;min-height:40px;padding:9px 12px;display:block">${K.campaigns[2].offer}</div></div>
+    <div class="field full"><label>Audience</label>
+      <div class="filecard"><span class="file" style="padding:0;border:0;background:none"><span class="ic">CSV</span></span>
+        <div><b>${D.file}</b><div class="small muted">${D.rows} rows read. Rows with errors are skipped.</div></div>
+        <div class="tally"><span><span class="num ok">${D.ready}</span><span class="lb">ready</span></span><span><span class="num bad">${D.errors}</span><span class="lb">errors</span></span></div>
+      </div>
+      <div class="hint" style="display:flex;gap:14px;align-items:center"><span class="errglyph">${V.STATUS.failed.svg.replace("<svg", '<svg width="13" height="13"')}${D.errors} rows can't be called</span><a class="link" href="#">Download the ${D.errors} rows to fix</a><a class="link" href="#">Replace file</a></div>
+    </div>
+    <div class="field"><label>Call window</label>
+      <div class="days">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d, i) => `<span class="${i < 5 ? "on" : ""}">${d.slice(0, 2)}</span>`).join("")}</div>
+      <div class="timerow"><div class="input">10:00</div><span class="muted">to</span><div class="input">18:00</div><span class="hint">${K.hotel.tz}, guest's local time</span></div>
+    </div>
+    <div class="field"><label>Max attempts per guest</label>
+      <div style="display:flex;gap:14px;align-items:center"><div class="stepper"><button>${icon("minus")}</button><span class="num">${D.maxAttempts}</span><button>${icon("plus")}</button></div><span class="hint">Kiku stops after ${D.maxAttempts} unanswered calls.</span></div>
+    </div>
+    <div class="field full"><label>Opening line <em>Kiku says this first, then follows the guest</em></label>
+      <div class="input opening" style="height:auto;padding:12px 14px;display:block">${esc(D.opening).replace("{first_name}", '<span class="token">{first_name}</span>')}</div>
+      <div class="hint">Use <span class="token">{first_name}</span> to insert the guest's first name from the file.</div>
+    </div>
+  </div>
+  <div class="sf"><span class="summary">${D.ready} guests, ${D.window}, up to ${D.maxAttempts} attempts each</span><button class="btn">Save draft</button><button class="btn go">${icon("calendar-check")}Schedule campaign</button></div>
+</section>`;
+</script>
+</body>
+</html>

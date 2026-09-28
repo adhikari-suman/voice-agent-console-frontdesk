@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku live call</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..800&family=Young+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+  .live { display: grid; grid-template-columns: 1fr 340px; gap: 18px; height: 100%; }
+  .callpane { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .callpane .ph { border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+  .callpane .scroll { flex: 1; padding: 4px 22px 12px; }
+  .turn.latest .txt { background: var(--sheet-2); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 12px; margin-left: -13px; }
+  .turn.latest .spk::after { content: "Latest question"; font-size: 11px; font-weight: 600; color: var(--ink); border: 1px solid var(--line-2); border-radius: 10px; padding: 0 7px; background: var(--sheet); }
+  .draft { margin: 8px 0 4px 62px; border: 1.5px dashed var(--cyan); border-radius: var(--r); padding: 10px 14px; background: #F4FBFD; }
+  .draft .l { font-size: 12px; font-weight: 650; color: var(--cyan-ink); display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+  .dots { display: inline-flex; gap: 3px; }
+  .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); display: block; animation: blink 1.2s infinite; }
+  .dots i:nth-child(2) { animation-delay: .2s; opacity: .7; } .dots i:nth-child(3) { animation-delay: .4s; opacity: .4; }
+  @keyframes blink { 50% { opacity: .2; } }
+  .draft p { color: var(--cyan-ink); font-size: 14px; }
+  .draft p::after { content: ""; display: inline-block; width: 2px; height: 15px; background: var(--cyan); margin-left: 3px; vertical-align: -2px; }
+
+  .dock { border-top: 3px double var(--line-2); padding: 14px 20px; display: flex; align-items: center; gap: 16px; background: var(--sheet); }
+  .you { display: flex; gap: 10px; align-items: center; font-size: 13px; }
+  .you b { display: block; font-weight: 650; }
+  .you span.m { color: var(--ink-3); font-size: 12px; white-space: nowrap; }
+  .you b { white-space: nowrap; }
+  .you .hp { width: 34px; height: 34px; border-radius: 50%; background: var(--violet-tint); color: var(--violet); display: grid; place-items: center; }
+  .levels { display: flex; gap: 12px; align-items: center; }
+  .lv { display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; color: var(--ink-3); font-weight: 600; }
+  .dock .ctrl { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  .side { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+  .side .panel { padding: 16px 18px; }
+  .side h2 { font-size: 15px; font-weight: 650; margin-bottom: 10px; }
+  dl.kv { display: grid; grid-template-columns: 92px 1fr; gap: 8px 12px; font-size: 13px; }
+  dl.kv dt { color: var(--ink-3); }
+  .acts li { list-style: none; display: grid; grid-template-columns: 22px 1fr; gap: 8px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 13px; }
+  .acts li:first-child { border-top: 0; padding-top: 0; }
+  .acts svg { color: var(--ok); margin-top: 2px; }
+  .on-line li { list-style: none; display: flex; gap: 10px; align-items: center; padding: 6px 0; font-size: 13px; }
+  .on-line li span.r { margin-left: auto; font-size: 12px; color: var(--ink-3); }
+  .timer { font-size: 22px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<script>
+const L = K.liveCall;
+const body = shell({ role: "specialist", page: "live", title: L.guest,
+  sub: `Live call ${L.id}, inbound on the hotel line, started ${L.started}`,
+  right: `${st("in_progress")}<span class="timer">${L.duration}</span><span class="line-chip">${ic("headphones")}You're listening</span>` });
+
+const tx = transcript(L.transcript, { guest: "Rashid Karimi" }).replace(/<div class="turn guest" data-t="02:51">/, '<div class="turn guest latest" data-t="02:51">');
+
+body.innerHTML = `<div class="live">
+  <section class="panel callpane">
+    <div class="ph"><h2>Live transcript</h2><span class="muted small">Kiku is handling this call on its own</span>
+      <span class="aside legend"><span><span class="chan"><i class="k"></i></span>Kiku speaking</span><span><span class="chan"><i style="background:var(--ink-2)"></i></span>Guest</span></span></div>
+    <div class="scroll" id="tx">
+      <div class="tx">${tx}</div>
+      <div class="draft">
+        <div class="l">${ic("pen-line")}${L.agentState}<span class="dots"><i></i><i></i><i></i></span></div>
+        <p>${L.agentDraft}</p>
+      </div>
+    </div>
+    <div class="dock">
+      <div class="you"><span class="hp">${ic("headphones")}</span><div><b>You're listening</b><span class="m">The guest can't hear you</span></div></div>
+      <div class="levels">
+        <div class="lv">Guest${meter("g", 16, .72, 3)}</div>
+        <div class="lv">Kiku${meter("k", 16, .2, 11)}</div>
+      </div>
+      <div class="ctrl">
+        <button class="btn">${ic("volume-x")}Mute audio</button>
+        <button class="btn">${ic("log-out")}Leave</button>
+        <button class="btn human lg">${ic("mic")}Take over</button>
+      </div>
+    </div>
+  </section>
+
+  <aside class="side">
+    <section class="panel">
+      <h2>Call facts</h2>
+      <dl class="kv">
+        <dt>Phone</dt><dd>${L.phone}</dd>
+        <dt>Booking</dt><dd>${L.booking}</dd>
+        <dt>Stay</dt><dd>${L.stay.replace(/ · /g, ", ")}</dd>
+        <dt>Calling about</dt><dd>${L.purpose}</dd>
+      </dl>
+    </section>
+    <section class="panel">
+      <h2>Kiku already did</h2>
+      <ul class="acts">${L.actionsTaken.map(a => `<li>${ic("circle-check")}<span>${a}</span></li>`).join("")}</ul>
+    </section>
+    <section class="panel">
+      <h2>On this call</h2>
+      <ul class="on-line">
+        <li><span class="av k">Ki</span>Kiku<span class="r">Speaking with guest</span></li>
+        <li><span class="av" style="background:var(--sheet-2);color:var(--ink-2)">RK</span>Rashid Karimi<span class="r">Guest</span></li>
+        <li><span class="av">PR</span>Priya Raman (you)<span class="r">Listening</span></li>
+      </ul>
+    </section>
+    <p class="small muted" style="padding:0 4px">Taking over puts you on the line. Kiku keeps writing each reply for you to read or adapt.</p>
+  </aside>
+</div>`;
+done();
+const p = document.getElementById("tx"); p.scrollTop = p.scrollHeight;
+</script>
+</body>
+</html>

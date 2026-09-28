@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku live board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..800&family=Young+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+  .grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; height: 100%; }
+  .col { display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+  .lead { position: relative; border: 1px solid #F0B5E1; border-radius: var(--r); background: var(--sheet); display: grid; grid-template-columns: 1fr 250px; overflow: hidden; }
+  .lead::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--magenta); }
+  .lead .info { padding: 22px 24px 20px; }
+  .lead .kicker { display: flex; gap: 12px; align-items: center; font-size: 13px; font-weight: 600; color: var(--magenta-ink); }
+  .lead h2 { font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1.15; margin: 10px 0 4px; }
+  .lead .meta { display: flex; gap: 16px; color: var(--ink-2); font-size: 13px; flex-wrap: wrap; }
+  .lead .meta span { display: inline-flex; gap: 6px; align-items: center; }
+  .lead .purpose { font-size: 16px; margin-top: 14px; max-width: 56ch; }
+  .lead .why { margin-top: 12px; display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--ink-2); background: var(--magenta-tint); border-radius: var(--r); padding: 8px 12px; width: fit-content; }
+  .lead .why svg { color: var(--magenta-ink); margin-top: 1px; }
+  .lead .act { background: var(--sheet-2); border-left: 1px solid var(--line); padding: 22px 22px 20px; display: flex; flex-direction: column; }
+  .wait { font-size: 12px; color: var(--ink-3); font-weight: 600; }
+  .wait b { display: block; font-family: var(--serif); font-weight: 400; font-size: 52px; line-height: 1; color: var(--magenta-ink); margin-top: 6px; letter-spacing: -0.01em; }
+  .hold { font-size: 12px; color: var(--ink-2); margin-top: 8px; display: flex; gap: 8px; align-items: center; }
+  .act .btns { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
+  .act .btn.human { width: 100%; }
+
+  .today { font-size: 14.5px; line-height: 1.7; color: var(--ink-2); padding: 2px 4px; max-width: 92ch; }
+  .today b { color: var(--ink); font-weight: 700; }
+  .today .st { font-size: 15px; vertical-align: -1px; }
+  .today .st svg { width: 13px; height: 13px; }
+
+  .now { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .liverow { display: grid; grid-template-columns: 26px 1fr 118px 176px 160px; gap: 16px; align-items: center; padding: 12px 18px; border-top: 1px solid var(--line); }
+  .liverow .g b { font-weight: 650; }
+  .liverow .g .id { font-size: 12px; color: var(--ink-3); margin-left: 8px; }
+  .liverow .g .pp { display: block; font-size: 13px; color: var(--ink-2); margin-top: 2px; }
+    .liverow .p { font-size: 13px; color: var(--ink-2); }
+  .liverow .d { font-size: 13px; }
+  .liverow .d b { display: block; font-weight: 600; }
+  .liverow .on { font-size: 12.5px; color: var(--ink-2); display: flex; gap: 6px; align-items: center; }
+  .liverow .acts { display: flex; gap: 6px; justify-content: flex-end; }
+  .chan.lg i { width: 16px; height: 16px; }
+  .chan.lg i.h { margin-left: -7px; }
+
+  .recent .item { padding: 12px 18px; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; row-gap: 3px; }
+  .recent .item b { font-weight: 650; }
+  .recent .item .o { grid-column: 1 / -1; font-size: 13px; color: var(--ink-2); }
+  .recent .item .m { font-size: 12px; color: var(--ink-3); display: flex; gap: 10px; align-items: center; grid-column: 1 / -1; }
+  .recent .item.sel { background: var(--violet-tint); }
+</style>
+</head>
+<body>
+<script>
+const body = shell({ role: "specialist", page: "live", title: "Live board", sub: "Calls on the hotel line and outbound right now" });
+const by = id => K.calls.find(c => c.id === id);
+const owen = by("KK-24032"), s = K.stats;
+
+const rows = [
+  { c: by("KK-24030"), h: true, on: `${ic("mic")}Priya (you) took over`, acts: `<button class="btn sm human">${ic("mic")}Return to call</button>` },
+  { c: by("KK-24031"), h: true, on: `${ic("headphones")}Priya (you) listening`, acts: `<button class="btn sm">${ic("headphones")}Open</button><button class="btn sm">Join</button>` },
+  { c: by("KK-24029"), h: false, on: `${ic("bot")}Kiku alone`, acts: `<button class="btn sm">${ic("headphones")}Listen</button><button class="btn sm">Join</button>` },
+  { c: by("KK-24028"), h: false, on: `${ic("bot")}Kiku alone`, acts: `<button class="btn sm">${ic("headphones")}Listen</button><button class="btn sm">Join</button>` },
+];
+const dir = c => c.direction === "inbound" ? `${ic("phone-incoming")}Inbound` : `${ic("phone-outgoing")}${c.type}`;
+
+const recent = ["KK-24027","KK-24026","KK-24025","KK-24024","KK-24023","KK-24022"].map(by);
+
+body.innerHTML = `<div class="grid">
+  <div class="col">
+    <section class="lead" aria-label="Needs a specialist">
+      <div class="info">
+        <div class="kicker">${st("escalated")}<span>Needs a specialist</span><span class="muted" style="font-weight:500">${owen.id}</span></div>
+        <h2>${owen.guest}</h2>
+        <div class="meta"><span>${ic("phone")}${owen.phone}</span><span>${ic("phone-incoming")}Inbound to the hotel line</span><span>${ic("clock")}Started ${owen.started}, on call ${owen.duration}</span></div>
+        <p class="purpose">${owen.purpose}.</p>
+        <div class="why">${ic("shield-alert")}<span>${owen.escalationReason}</span></div>
+      </div>
+      <div class="act">
+        <div class="wait">Waiting for a person<b>${owen.waiting}</b></div>
+        <div class="hold"><span class="chan"><i class="k"></i></span>Kiku is holding the line</div>
+        <div class="btns">
+          <button class="btn human lg">${ic("mic")}Take over</button>
+          <button class="btn">${ic("headphones")}Listen first</button>
+        </div>
+      </div>
+    </section>
+
+    <p class="today">Today so far: <b>${s.callsToday} calls</b>, ${s.inbound} inbound and ${s.outbound} outbound.
+      <b>${s.completed}</b> ${st("completed")}, <b>${s.inProgress}</b> ${st("in_progress")}, <b>${s.escalated}</b> ${st("escalated")}, <b>${s.failed}</b> ${st("failed")}.
+      The team took over <b>${s.takeoversToday}</b> times, average handle time is <b>${s.avgHandle}</b>, and upsells added <b>${s.upsellValueToday}</b>.</p>
+
+    <section class="panel now">
+      <div class="ph"><h2>On the line now</h2><span class="aside legend"><span><span class="chan"><i class="k"></i></span>Kiku</span><span><span class="chan"><i class="k"></i><i class="h"></i></span>Kiku and a person</span></span></div>
+      <div class="scroll">
+      ${rows.map(r => `<div class="liverow">
+        <span class="chan lg"><i class="k"></i>${r.h ? '<i class="h"></i>' : ""}</span>
+        <div class="g"><b>${r.c.guest}</b><span class="id">${r.c.phone}</span><span class="pp">${r.c.purpose}</span></div>
+        <div class="d"><span class="tag">${dir(r.c)}</span><b>${r.c.duration}</b></div>
+        <div>${st(r.c.status)}<div class="on" style="margin-top:4px">${r.on}</div></div>
+        <div class="acts">${r.acts}</div>
+      </div>`).join("")}
+      </div>
+    </section>
+  </div>
+
+  <aside class="panel recent" style="display:flex;flex-direction:column;min-height:0">
+    <div class="ph"><h2>Recently finished</h2><a class="aside" href="#" style="color:var(--violet);font-weight:600;text-decoration:none">All call logs</a></div>
+    <div class="scroll">
+    ${recent.map((c, i) => `<div class="item">
+      <b>${c.guest}</b>${st(c.status)}
+      <div class="o">${c.outcome}</div>
+      <div class="m"><span>${c.started}</span><span>${c.direction === "inbound" ? "Inbound" : c.type}</span><span>${c.duration}</span>${c.specialist ? `<span class="chan"><i class="k"></i><i class="h"></i></span><span>${c.specialist}</span>` : `<span class="chan"><i class="k"></i></span><span>Kiku</span>`}</div>
+    </div>`).join("")}
+    </div>
+  </aside>
+</div>`;
+done();
+</script>
+</body>
+</html>

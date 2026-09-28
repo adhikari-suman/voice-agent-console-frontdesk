@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Kiku, karaoke mode</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  /* a person is on the line: the whole canvas turns rose and is ringed by the human rail */
+  .content { background: var(--human-tint); box-shadow: inset 0 0 0 3px var(--human); padding: 18px 28px 18px; display: flex; flex-direction: column; gap: 14px; }
+  .who-line { display: flex; align-items: center; gap: 16px; flex: none; }
+  .me { width: 52px; height: 52px; border-radius: 50%; background: var(--human); color: #fff; display: grid; place-items: center; position: relative; flex: none; }
+  .me svg { width: 22px; height: 22px; }
+  .me::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--human); opacity: .45; }
+  .who-line .big { font-family: var(--round); font-size: 24px; font-weight: 700; line-height: 1.15; color: var(--ink); }
+  .who-line .sub { font-size: 13px; color: var(--ink-soft); }
+  .clock-big { margin-left: auto; text-align: right; }
+  .clock-big b { display: block; font-size: 34px; font-weight: 900; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .clock-big span { font-size: 12px; color: var(--ink-soft); }
+
+  /* conveyor: earlier lines, the line being spoken, the line queued next */
+  .conveyor { flex: 1; min-height: 0; display: grid; grid-template-columns: 300px minmax(0,1fr) 220px; gap: 14px; }
+  .past { background: rgba(255,255,255,.55); border: 1px solid var(--human-tint-2); display: flex; flex-direction: column; min-height: 0; }
+  .past-head { padding: 10px 14px; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); border-bottom: 1px solid var(--human-tint-2); display: flex; justify-content: space-between; }
+  .past .scroll { padding: 4px 14px 10px; }
+  .pm { padding: 8px 0; border-bottom: 1px solid var(--human-tint-2); }
+  .pm:last-child { border-bottom: 0; }
+  .pm .h { font-size: 11.5px; color: var(--ink-mute); display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+  .pm .h b { color: var(--ink-2); font-weight: 700; }
+  .pm .tx { font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+  .pm.guest .tx { font-family: var(--round); }
+  .pm .braid-wrap { grid-template-columns: 1fr; }
+  .pm .braid-keys { display: none; }
+  .pm .w { font-size: 12.5px; }
+  .pm.sys { font-size: 12px; font-weight: 700; color: var(--human-deep); }
+  .pm.sys.escalation { color: var(--esc); }
+
+  .now { background: var(--sheet); border: 2px solid var(--human); display: flex; flex-direction: column; min-height: 0; }
+  .now-head { display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-bottom: 1px solid var(--line-soft); font-size: 13px; color: var(--ink-soft); }
+  .now-head b { color: var(--ink); }
+  .speaking { margin-left: auto; font-family: var(--round); font-weight: 700; color: var(--human-deep); display: flex; gap: 8px; align-items: center; }
+  .lv { display: flex; gap: 2px; height: 16px; align-items: center; }
+  .lv i { width: 3px; height: 100%; background: var(--human); border-radius: 2px; display: block; animation: lvl 1s ease-in-out infinite; }
+  .heard { padding: 14px 20px 0; font-size: 13px; color: var(--ink-soft); }
+  .heard q { font-family: var(--round); color: var(--ink); font-size: 15px; quotes: "\201C" "\201D"; }
+  .script-lbl { padding: 14px 20px 0; font-size: 12px; font-weight: 700; color: var(--kiku); display: flex; gap: 8px; align-items: center; }
+  .script { padding: 4px 20px 0; font-size: 25px; line-height: 1.38; letter-spacing: -0.005em; color: var(--ink); max-width: 60ch; }
+  .live-braid { margin: 16px 20px 0; padding-top: 14px; border-top: 1px dashed var(--line); }
+  .live-braid .cap { font-size: 12px; color: var(--ink-soft); display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+  .dock { margin-top: auto; display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-top: 1px solid var(--line-soft); }
+  .rbtn { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: var(--ink-2); }
+  .rbtn span.c { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; background: var(--sheet); }
+  .rbtn span.c svg { width: 20px; height: 20px; }
+  .rbtn.end span.c { background: var(--fail); border-color: var(--fail); color: #fff; }
+  .rbtn.back span.c { border-color: var(--kiku); color: var(--kiku); border-radius: 0; }
+
+  .next { background: var(--sheet); border: 1.5px dashed var(--kiku); display: flex; flex-direction: column; min-height: 0; }
+  .next-head { padding: 10px 14px; font-size: 12.5px; font-weight: 700; color: var(--kiku); display: flex; gap: 8px; align-items: center; border-bottom: 1px dashed var(--kiku-tint-2); }
+  .next p { padding: 12px 14px; font-size: 16px; line-height: 1.5; color: var(--ink-2); }
+  .next .hint { padding: 0 14px 12px; margin-top: auto; }
+
+  .facts { flex: none; display: grid; grid-template-columns: 1fr 1.3fr 1.3fr; gap: 14px; }
+  .fc { background: var(--sheet); border: 1px solid var(--human-tint-2); padding: 12px 16px; font-size: 13px; }
+  .fc .h2 { font-size: 13.5px; margin-bottom: 6px; }
+  .fc .row { display: grid; grid-template-columns: 70px 1fr; gap: 8px; padding: 2px 0; }
+  .fc .row .k { color: var(--ink-mute); font-size: 12px; }
+  .fc .f { display: flex; gap: 8px; padding: 2px 0; }
+  .fc .f svg { width: 14px; height: 14px; margin-top: 3px; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<script>
+  const { K, icon, status, dir, mount, braid, meter, SHAPE } = UI;
+  const c = K.takeover;
+  const cur = c.transcript.find(x => x.live);
+  const earlier = c.transcript.filter(x => !x.live);
+  const lastGuest = [...earlier].reverse().find(x => x.speaker === "guest");
+  const firstName = c.guest.split(" ")[0];
+  const past = earlier.map(x => {
+    if (x.speaker === "system") return `<div class="pm sys ${x.kind}">${x.t}&nbsp; ${x.text}</div>`;
+    if (x.speaker === "agent") return `<div class="pm"><div class="h"><span class="kiku-chip" style="width:14px;height:14px;font-size:7px">K</span><b>Kiku</b>${x.t}</div><div class="tx">${x.text}</div></div>`;
+    if (x.speaker === "guest") return `<div class="pm guest"><div class="h"><span class="avatar muted" style="width:14px;height:14px;font-size:0"></span><b>${c.guest}</b>${x.t}</div><div class="tx">${x.text}</div></div>`;
+    return `<div class="pm"><div class="h"><span class="avatar" style="width:14px;height:14px;font-size:0"></span><b>You, karaoke</b>${x.t}<span style="margin-left:auto">${x.match}% kept</span></div>${braid(x.diff, { who: "You" })}</div>`;
+  }).join("");
+  const bars = Array.from({ length: 14 }, (_, i) => `<i style="animation-delay:${((i * 3) % 10) / 10}s;animation-duration:${0.7 + ((i * 7) % 6) / 10}s"></i>`).join("");
+
+  mount({ role: "specialist", active: "live", title: "On the line", crumb: "Live board" }, `
+    <div class="who-line" role="status">
+      <span class="me">${icon("mic")}</span>
+      <div><div class="big">You're speaking with ${c.guest}</div><div class="sub">Karaoke mode since ${c.takeoverAt}. Kiku's voice is off; it keeps writing your next line.</div></div>
+      <span style="margin-left:24px">${status(c.status)}</span>
+      <div class="clock-big"><b>${c.duration}</b><span>${c.id}, started ${c.started}</span></div>
+    </div>
+    <div class="conveyor">
+      <section class="past" aria-label="Earlier in this call">
+        <div class="past-head"><span>Earlier</span><span class="faint" style="font-weight:400">from ${c.started}</span></div>
+        <div class="scroll">${past}</div>
+      </section>
+      <section class="now" aria-label="Karaoke prompter">
+        <div class="now-head"><span class="kiku-chip" style="width:18px;height:18px;font-size:9px">K</span><span>Line Kiku wrote at <b class="num">${cur.t}</b></span>
+          <span class="speaking"><span class="lv">${bars}</span>You're speaking</span></div>
+        <div class="heard">${firstName} just said <q>${lastGuest.text}</q></div>
+        <p class="script">${cur.wrote}</p>
+        <div class="live-braid">
+          <div class="cap">Live, as you speak<span style="flex:1"></span>${meter(cur.match)}<b class="num" style="color:var(--ink)">${cur.match}%</b> of Kiku's words so far</div>
+          ${braid(cur.diff, { who: "You", live: true })}
+        </div>
+        <div class="dock">
+          <button class="rbtn"><span class="c">${icon("mic")}</span>Mute</button>
+          <button class="rbtn back"><span class="c">${icon("back")}</span>Hand back to Kiku</button>
+          <span style="flex:1"></span>
+          <button class="rbtn end"><span class="c">${icon("hangup")}</span>End call</button>
+        </div>
+      </section>
+      <section class="next" aria-label="Queued next line">
+        <div class="next-head"><span class="kiku-chip" style="width:16px;height:16px;font-size:8px">K</span>Queued next</div>
+        <p>${c.nextLine}</p>
+        <span class="hint">Moves to the centre when you finish this line.</span>
+      </section>
+    </div>
+    <div class="facts">
+      <div class="fc"><div class="h2">Why it escalated</div><div style="color:var(--esc);display:flex;gap:8px">${icon("alert")}<span>${c.escalationReason}</span></div></div>
+      <div class="fc"><div class="h2">${c.guest}</div>
+        <div class="row"><span class="k">Phone</span><span class="num">${c.phone}</span></div>
+        <div class="row"><span class="k">Booking</span><span>${c.booking}</span></div>
+        <div class="row"><span class="k">Stay</span><span>${c.stay}</span></div>
+        <div class="row"><span class="k">Purpose</span><span>${c.purpose}</span></div></div>
+      <div class="fc"><div class="h2">Booking facts</div>${c.facts.map((f, i) => `<div class="f">${icon(i === 2 ? "card" : "booking")}<span>${f}</span></div>`).join("")}</div>
+    </div>`);
+  const pane = document.querySelector(".past .scroll"); pane.scrollTop = pane.scrollHeight;
+</script>
+</body>
+</html>

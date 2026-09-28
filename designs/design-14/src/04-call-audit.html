@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku · Call audit KK-24027</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="icons.js"></script>
+<script src="app.js"></script>
+<style>
+  .wrap { height: 100%; display: grid; grid-template-columns: 364px 1fr; gap: 16px; padding: 18px 22px 18px 18px; min-height: 0; min-width: 0; }
+
+  /* dossier */
+  .dossier { overflow: hidden; }
+  .dz { padding: 16px 20px 14px; border-bottom: 1px solid var(--rule-2); }
+  .crumb { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-3); }
+  .crumb a { color: var(--ink-2); text-decoration: none; display: inline-flex; gap: 5px; align-items: center; font-weight: 600; }
+  .dz h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.05; margin: 12px 0 10px; }
+  .dz .tags { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  dl { padding: 6px 20px 8px; }
+  dl div { display: grid; grid-template-columns: 84px 1fr; gap: 10px; padding: 5px 0; font-size: 13px; line-height: 1.4; }
+  dt { color: var(--ink-3); }
+  dd b { font-weight: 600; }
+  .why { margin: 4px 20px 14px; background: var(--amber-wash); border-radius: 4px; padding: 9px 12px; font-size: 12.5px; color: #5E3A08; display: grid; grid-template-columns: 16px 1fr; gap: 8px; line-height: 1.4; }
+  .why svg { width: 14px; height: 14px; color: var(--amber); margin-top: 2px; }
+  .dossier { display: flex; flex-direction: column; }
+  .receipt { border-top: 1px dashed var(--rule); margin: auto 20px 0; padding-top: 12px; }
+  .receipt h2 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .item { display: grid; grid-template-columns: 18px 1fr auto; gap: 10px; padding: 6px 0; font-size: 13px; align-items: start; line-height: 1.35; }
+  .item .a { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .item svg.lucide { margin-top: 1px; }
+  .item.added svg.lucide { color: var(--kiku-deep); }
+  .item.declined { color: var(--ink-3); }
+  .item.declined .n { text-decoration: line-through; }
+  .item .r { font-size: 12px; font-weight: 500; }
+  .tot { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0 6px; border-top: 1px solid var(--rule); margin-top: 4px; }
+  .tot span { font-weight: 600; font-size: 13px; }
+  .tot b { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .note { display: flex; gap: 8px; font-size: 12.5px; color: var(--ink-2); padding-bottom: 12px; }
+
+  /* transcript */
+  .tx-head { padding: 12px 20px; border-bottom: 1px solid var(--rule-2); display: grid; grid-template-columns: auto 1fr; gap: 12px 22px; align-items: center; }
+  .tx-head h2 { font-size: 15px; font-weight: 700; }
+  .player { display: flex; align-items: center; gap: 12px; }
+  .play { width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; border: 0; flex: none; }
+  .play svg.lucide { width: 15px; height: 15px; fill: #fff; }
+  .time { font-family: var(--machine); font-size: 12.5px; white-space: nowrap; }
+  .time span { color: var(--ink-3); }
+  .scrub { position: relative; flex: 1; height: 36px; }
+  .scrub .track { position: absolute; left: 0; right: 0; top: 22px; height: 6px; display: flex; border-radius: 3px; overflow: hidden; }
+  .scrub .track i { display: block; height: 100%; }
+  .scrub .pos { position: absolute; top: 17px; width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 3px solid var(--ink); margin-left: -8px; }
+  .scrub .pin { position: absolute; top: 0; font-size: 11px; font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+  .scrub .pin svg { width: 11px; height: 11px; }
+  .scrub .tick { position: absolute; top: 14px; height: 20px; border-left: 2px solid; }
+  .chain { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; }
+  .chain .sumtxt { font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+  .chain .sumtxt b { color: var(--ink); font-size: 15px; }
+  .links { display: flex; gap: 4px; flex: 1; }
+  .links a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 5px 0 4px; border-radius: 4px; text-decoration: none; color: var(--ink-3); font-size: 11px; background: var(--paper-2); border: 1px solid var(--rule-2); }
+  .links a b { font-size: 12px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .links a.ex { background: var(--ink); color: #C9CFCA; border-color: var(--ink); }
+  .links a.ex b { color: #fff; }
+  .legend { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+  .legend .f-del { vertical-align: 0; font-size: 11px; }
+  .legend .f-ins { font-family: var(--voice); font-size: 14.5px; }
+
+  .rows { padding: 8px 0 20px; }
+  .row { display: grid; grid-template-columns: 62px 26px 1fr; align-items: stretch; }
+  .row .t { font-family: var(--machine); font-size: 11.5px; color: var(--ink-3); text-align: right; padding-top: 12px; }
+  .row .sp { position: relative; }
+  .row .sp::before { content: ""; position: absolute; left: 12px; top: 0; bottom: 0; width: 2px; background: var(--kiku); }
+  .row.after .sp::before { background: var(--human); }
+  .row .node { position: absolute; left: 7px; top: 14px; width: 12px; height: 12px; border-radius: 50%; background: var(--paper); border: 2px solid var(--kiku); }
+  .row.after .node { border-color: var(--human); }
+  .row.guest .node { border-color: var(--ink-3); border-radius: 2px; transform: rotate(45deg) scale(.85); }
+  .row.sysrow .node { display: grid; place-items: center; width: 22px; height: 22px; left: 2px; top: 7px; border: 0; }
+  .row.sysrow.escalation .node { background: var(--amber); color: #fff; clip-path: polygon(50% 0, 100% 92%, 0 92%); }
+  .row.sysrow.join .node { background: var(--paper); color: var(--ink-2); border: 1.5px dashed var(--ink-3); }
+  .row.sysrow.takeover .node { background: var(--human-deep); color: #fff; }
+  .row.sysrow.end .node { background: var(--ink); color: #fff; }
+  .row.sysrow .node svg.lucide { width: 12px; height: 12px; }
+  .row.sysrow.escalation .node svg.lucide { width: 12px; height: 12px; margin-top: 5px; }
+  .row .c { padding: 9px 26px 9px 12px; min-width: 0; }
+  .row .who { font-size: 12px; font-weight: 600; display: flex; gap: 10px; align-items: center; margin-bottom: 2px; }
+  .row.agent .who { color: var(--kiku-deep); }
+  .row.guest .who { color: var(--ink-2); }
+  .row.agent .tx { font-family: var(--machine); font-size: 13px; line-height: 1.6; max-width: 780px; }
+  .row.guest .tx { font-size: 14.5px; line-height: 1.5; max-width: 780px; }
+  .row.sysrow .c { padding-top: 11px; padding-bottom: 11px; font-size: 13px; font-weight: 600; }
+  .row.sysrow.escalation .c { color: var(--amber); }
+  .row.sysrow.takeover .c { color: var(--human-deep); }
+  .row.sysrow.join .c, .row.sysrow.end .c { color: var(--ink-2); }
+  .row.kara .who { color: var(--human-deep); }
+  .row.kara .who .grow { flex: 1; }
+  .row.kara .flow { max-width: 800px; }
+  .row.playing .c { background: linear-gradient(90deg, var(--human-wash), rgba(236,231,248,0) 70%); }
+  .row.playing .node { background: var(--ink); border-color: var(--ink); box-shadow: 0 0 0 4px var(--human-wash); }
+  .now { font-size: 11px; font-weight: 700; color: var(--ink); display: inline-flex; align-items: center; gap: 4px; }
+  .now svg.lucide { width: 11px; height: 11px; fill: currentColor; }
+</style></head>
+<body>
+<div class="wrap">
+  <section class="panel dossier" id="dossier"></section>
+  <section class="panel" id="tx">
+    <div class="tx-head" id="txhead"></div>
+    <div class="scroll" id="scroll"><div class="rows" id="rows"></div></div>
+  </section>
+</div>
+<script>
+  shell('specialist', 'logs');
+  const A = K.audit;
+  const first = A.specialist.split(' ')[0];
+  document.getElementById('dossier').innerHTML = `
+    <div class="dz">
+      <div class="crumb"><a href="03-call-logs.html">${ic('arrow-left')}Call logs</a><span>/</span><span class="code">${A.id}</span></div>
+      <h1>${A.guest}</h1>
+      <div class="tags">${status(A.status, true)}<span class="tag">${ic('phone-outgoing')}Outbound</span><span class="tag" style="font-weight:600;color:var(--ink)">${A.type}</span></div>
+    </div>
+    <dl>
+      <div><dt>Phone</dt><dd>${A.phone}</dd></div>
+      <div><dt>Booking</dt><dd class="code" style="font-size:12.5px">${A.booking}</dd></div>
+      <div><dt>Stay</dt><dd>${A.stay}</dd></div>
+      <div><dt>Purpose</dt><dd>${A.purpose}</dd></div>
+      <div><dt>Started</dt><dd>${A.started}</dd></div>
+      <div><dt>Duration</dt><dd>${A.duration}</dd></div>
+      <div><dt>Handled by</dt><dd>${A.agent}, then <b style="color:var(--human-deep)">${A.specialist}</b> from ${A.takeoverAt}</dd></div>
+    </dl>
+    <div class="why">${SHAPE.escalated}<span>${A.escalationReason}</span></div>
+    <div class="receipt">
+      <h2>Outcome</h2>
+      ${A.outcome.map(o => `<div class="item ${o.result}">${ic(o.result === 'added' ? 'circle-check' : 'circle-minus')}<span class="n">${o.item}</span><span class="a">${o.result === 'added' ? o.amount : '<span class="r">Declined</span>'}</span></div>`).join('')}
+      <div class="tot"><span>Added to ${A.booking}</span><b>${A.total}</b></div>
+      <div class="note">${ic('notebook-pen')}${A.note}</div>
+    </div>`;
+
+  const total = 161, escS = 36, tk = 52, at = 72;
+  const pct = s => (s / total * 100) + '%';
+  const turns = A.transcript.filter(m => m.karaoke);
+  const S = A.karaokeSummary;
+  document.getElementById('txhead').innerHTML = `
+    <h2>Message history</h2>
+    <div class="player">
+      <button class="play" aria-label="Play recording">${ic('play')}</button>
+      <span class="time">01:12 <span>/ ${A.duration}</span></span>
+      <div class="scrub">
+        <div class="track"><i style="width:${pct(tk)};background:var(--kiku)"></i><i style="flex:1;background:var(--human)"></i></div>
+        <span class="tick" style="left:${pct(escS)};color:var(--amber)"></span>
+        <span class="tick" style="left:${pct(tk)};color:var(--human-deep)"></span>
+        <span class="pin" style="right:calc(100% - ${pct(escS)} + 6px);color:var(--amber)">${SHAPE.escalated.replace('<svg', '<svg width="11" height="11"')}Escalated 00:36</span>
+        <span class="pin" style="left:calc(${pct(tk)} + 6px);color:var(--human-deep)">${ic('mic')}Tomasz took over 00:52</span>
+        <span class="pos" style="left:${pct(at)}"></span>
+      </div>
+      <button class="btn sm ghost">1×</button>
+    </div>
+    <div class="chain">
+      <span class="sumtxt"><b>${S.lines}</b> karaoke lines<br><b>${S.asWritten}</b> as written, <b>${S.improvised}</b> improvised</span>
+      <div class="links">${turns.map(m => `<a href="#k${m.t}" class="${m.asWritten ? 'ex' : ''}">${overlap(m.match, 14).replace(/#1E2421/g, m.asWritten ? '#fff' : '#1E2421')}<b>${m.match}%</b>${m.t}</a>`).join('')}</div>
+      <div class="legend"><span><span class="f-del"><s>Kiku wrote</s></span> dropped by ${first}</span><span><span class="f-ins">${first}'s own</span> words</span></div>
+    </div>`;
+
+  const sysIcon = { escalation: 'triangle-alert', join: 'headphones', takeover: 'mic', end: 'phone-off' };
+  const toS = t => +t.slice(0, 2) * 60 + +t.slice(3);
+  document.getElementById('rows').innerHTML = A.transcript.map(m => {
+    const after = toS(m.t) >= tk && m.kind !== 'takeover' ? 'after' : '';
+    if (m.speaker === 'system') return `<div class="row sysrow ${m.kind} ${after}"><span class="t">${m.t}</span><span class="sp"><span class="node">${m.kind === 'escalation' ? '<svg class="lucide" viewBox="0 0 24 24"><path d="M12 5v8" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/><circle cx="12" cy="18.5" r="2" fill="#fff"/></svg>' : ic(sysIcon[m.kind])}</span></span><div class="c">${m.text}</div></div>`;
+    if (m.karaoke) {
+      const playing = m.t === '01:12';
+      return `<div class="row kara after ${playing ? 'playing' : ''}" id="k${m.t}"><span class="t">${m.t}</span><span class="sp"><span class="node"></span></span>
+        <div class="c"><div class="who"><span>${first}, from Kiku's line</span>${playing ? `<span class="now">${ic('play')}Playing</span>` : ''}<span class="grow"></span>${kept(m, 16)}</div>${flow(m.diff)}</div></div>`;
+    }
+    const who = m.speaker === 'agent' ? 'Kiku' : A.guest;
+    return `<div class="row ${m.speaker} ${after}" ${m.t === '00:21' ? 'id="top21"' : ''}><span class="t">${m.t}</span><span class="sp"><span class="node"></span></span><div class="c"><div class="who">${who}</div><div class="tx">${m.text}</div></div></div>`;
+  }).join('');
+  const sc = document.getElementById('scroll');
+  sc.scrollTop = document.getElementById('top21').getBoundingClientRect().top - sc.getBoundingClientRect().top;
+</script>
+</body></html>

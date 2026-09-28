@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..800&family=Young+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+  .sign { display: grid; grid-template-columns: 1fr 1fr; height: 100vh; }
+  .brandside { position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 44px 56px; background: var(--sheet); border-right: 1px solid var(--line); overflow: hidden; }
+  .brandside .mark { font-size: 44px; text-shadow: -3px 0 rgba(18,165,198,.75), 3px 0 rgba(251,107,213,.8); }
+  .brandside .hotel { font-size: 15px; color: var(--ink-2); margin-top: 10px; }
+  .disc { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -46%); }
+  .disc circle { mix-blend-mode: multiply; }
+  .key { display: flex; gap: 28px; font-size: 13px; color: var(--ink-2); }
+  .key span { display: inline-flex; gap: 8px; align-items: center; }
+  .key i.d { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .formside { display: flex; align-items: center; justify-content: center; }
+  form { width: 380px; display: flex; flex-direction: column; gap: 18px; }
+  form h1 { font-family: var(--serif); font-weight: 400; font-size: 32px; line-height: 1.1; }
+  form p.lead { color: var(--ink-2); margin-top: -8px; }
+  .row { display: flex; justify-content: space-between; align-items: center; }
+  form a { color: var(--violet); font-weight: 600; text-decoration: none; font-size: 13px; }
+  .foot { font-size: 12px; color: var(--ink-3); border-top: 3px double var(--line-2); padding-top: 14px; margin-top: 10px; display: flex; gap: 8px; }
+  .check { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink-2); }
+  .box { width: 16px; height: 16px; border: 1.5px solid var(--line-2); border-radius: 4px; background: var(--sheet); }
+</style>
+</head>
+<body>
+<div class="sign">
+  <section class="brandside">
+    <div>
+      <div class="mark">Kiku</div>
+      <div class="hotel">The Brenlow, Edinburgh</div>
+    </div>
+    <svg class="disc" width="460" height="320" viewBox="0 0 460 320" aria-hidden="true">
+      <circle cx="170" cy="160" r="140" fill="#12A5C6"/>
+      <circle cx="290" cy="160" r="140" fill="#FB6BD5"/>
+    </svg>
+    <div class="key">
+      <span><i class="d" style="background:var(--cyan)"></i>What Kiku writes</span>
+      <span><i class="d" style="background:var(--magenta)"></i>What your team says</span>
+      <span><i class="d" style="background:var(--violet)"></i>Where they agree</span>
+    </div>
+  </section>
+  <section class="formside">
+    <form onsubmit="return false">
+      <h1>Sign in to the console</h1>
+      <p class="lead">Use your Brenlow staff account.</p>
+      <div class="field"><label for="e">Email</label><input id="e" class="input" value="priya.raman@brenlow.example"></div>
+      <div class="field">
+        <div class="row"><label for="p">Password</label><a href="#">Forgot password?</a></div>
+        <input id="p" class="input" type="password" value="password-demo">
+      </div>
+      <label class="check"><span class="box"></span>Keep me signed in on this device</label>
+      <button class="btn ink lg" type="submit">Sign in</button>
+      <div class="foot"><span>Demo data. All names, numbers and bookings are fictional.</span></div>
+    </form>
+  </section>
+</div>
+<script>done();</script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku, sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+body { background: var(--aub); }
+.wrap { display: grid; grid-template-columns: 1fr 560px; height: 100vh; }
+.art { position: relative; overflow: hidden; }
+.bar { position: absolute; left: -40px; height: 96px; clip-path: polygon(0 0, 100% 0, calc(100% - 37px) 100%, 0 100%); }
+.b1 { top: 250px; width: 620px; background: var(--apricot); }
+.b2 { top: 402px; width: 820px; background: #F4EEF1; }
+.b3 { top: 554px; width: 520px; background: var(--mauve); }
+.art .brand-big { position: absolute; left: 72px; top: 72px; color: #fff; }
+.brand-big .w { font: 800 44px/1 var(--display); letter-spacing: -0.03em; }
+.brand-big .h { font-size: 15px; color: #CDBDC6; margin-top: 8px; }
+.lane-note { position: absolute; font-size: 13px; font-weight: 600; }
+.ln1 { top: 285px; left: 620px; color: var(--apricot); }
+.ln2 { top: 437px; left: 820px; color: #F4EEF1; }
+.ln3 { top: 589px; left: 520px; color: #C9B3BD; }
+.formside { background: var(--paper); display: flex; flex-direction: column; justify-content: center; padding: 0 88px; position: relative; }
+.formside h1 { font: 700 32px/1.1 var(--display); letter-spacing: -0.02em; }
+.formside .sub { color: var(--ink-2); margin: 8px 0 32px; font-size: 15px; }
+.formside form { display: flex; flex-direction: column; gap: 18px; }
+.formside .input { height: 44px; font-size: 15px; }
+.row { display: flex; justify-content: space-between; align-items: baseline; }
+.formside .btn { width: 100%; margin-top: 8px; }
+.demo { position: absolute; left: 88px; right: 88px; bottom: 36px; font-size: 12px; color: var(--ink-3); display: flex; gap: 8px; align-items: flex-start; }
+.demo svg { width: 14px; height: 14px; margin-top: 1px; }
+</style>
+</head><body>
+<script>
+const { K, ic, mark } = UI;
+document.body.innerHTML = `<div class="wrap">
+  <div class="art" aria-hidden="true">
+    <div class="brand-big"><div style="display:flex;align-items:center;gap:14px">${mark(52)}<span class="w">kiku</span></div><div class="h">${K.product.tagline}</div></div>
+    <div class="bar b1"></div><div class="bar b2"></div><div class="bar b3"></div>
+  </div>
+  <div class="formside">
+    <h1>Sign in to Kiku</h1>
+    <p class="sub">${K.hotel.name}, ${K.hotel.city}</p>
+    <form onsubmit="return false">
+      <div class="field"><label for="e">Work email</label><div class="input focus" id="e">${K.people.specialist.email}</div></div>
+      <div class="field"><div class="row"><label for="p">Password</label><a class="link small" href="#">Forgot password?</a></div><div class="input" id="p" style="letter-spacing:.3em">••••••••••••</div></div>
+      <button class="btn lg btn-ink">Sign in</button>
+    </form>
+    <div class="demo">${ic("info")}<span>Demo data. ${K.synthetic.replace("Demo data. ", "")}</span></div>
+  </div>
+</div>`;
+lucide.createIcons();
+</script>
+</body></html>

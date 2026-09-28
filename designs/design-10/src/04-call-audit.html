@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Call audit KK-24027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Shippori+Mincho+B1:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .audit { flex: 1; min-width: 0; display: grid; grid-template-columns: 350px minmax(0,1fr); }
+
+  /* dossier */
+  .dossier { min-height: 0; background: var(--sheet); border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+  .dz { flex: 1; min-height: 0; padding: 18px 24px 20px; }
+  .crumbs { font-size: 12.5px; color: var(--ink-3); display: flex; align-items: center; gap: 10px; }
+  .crumbs a { color: var(--human); font-weight: 700; text-decoration: none; display: inline-flex; gap: 4px; align-items: center; }
+  .dz h1 { font-size: 30px; line-height: 1.1; margin-top: 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+  .facts { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; padding: 14px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .facts .wide { grid-column: 1 / -1; }
+  .facts dt { font-size: 11.5px; color: var(--ink-3); }
+  .facts dd { font-size: 13.5px; font-weight: 500; }
+  .blk { padding: 16px 0 14px; border-bottom: 1px solid var(--line); }
+  .blk:last-child { border-bottom: 0; }
+  .blk h2 { font-size: 13.5px; font-weight: 700; display: flex; align-items: baseline; gap: 8px; }
+  .big { display: flex; align-items: baseline; gap: 10px; margin-top: 6px; }
+  .big b { font-family: var(--serif); font-size: 32px; font-weight: 800; line-height: 1; white-space: nowrap; }
+  .big span { color: var(--ink-2); font-size: 13px; }
+  .knots { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 12px; }
+  .knot { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .knot .c { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; }
+  .knot .c i { width: 20px; height: 20px; border-radius: 50%; background: var(--sheet); display: grid; place-items: center; font-style: normal; font-size: 9.5px; font-weight: 700; color: var(--ink-2); }
+  .knot.full .c i { background: var(--kiku); color: #fff; }
+  .outcome li { list-style: none; display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line-2); font-size: 13px; }
+  .outcome li:last-child { border-bottom: 0; }
+  .outcome li.declined { color: var(--ink-3); }
+  .outcome .amt { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .outcome li.declined .amt { font-weight: 400; }
+  .total { display: flex; justify-content: space-between; align-items: baseline; padding-top: 8px; }
+  .total b { font-family: var(--serif); font-size: 24px; }
+  .note { display: flex; gap: 8px; margin-top: 10px; padding: 8px 10px; background: var(--paper-2); border-radius: 2px; font-size: 12.5px; }
+
+  /* history */
+  .hist { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+  .hbar { flex: none; display: flex; align-items: center; gap: 16px; padding: 12px 28px; border-bottom: 1px solid var(--line); }
+  .play { width: 38px; height: 38px; border-radius: 50%; background: var(--ink); border: 0; display: grid; place-items: center; flex: none; }
+  .play svg { width: 16px; height: 16px; fill: #fff; margin-left: 2px; }
+  .ptime { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--ink-2); line-height: 1.25; white-space: nowrap; }
+  .ptime b { color: var(--ink); font-size: 15px; }
+  .scrub { position: relative; width: 340px; height: 40px; flex: none; }
+  .scrub .rail { position: absolute; left: 0; right: 0; top: 12px; height: 4px; background: var(--line); border-radius: 2px; }
+  .scrub .rail i { position: absolute; top: 0; bottom: 0; border-radius: 2px; }
+  .scrub .mk { position: absolute; top: 4px; width: 2px; height: 20px; }
+  .scrub .lb { position: absolute; top: 24px; font-size: 10.5px; font-weight: 700; white-space: nowrap; display: flex; gap: 4px; align-items: center; }
+  .scrub .head { position: absolute; left: 0; top: 8px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink); transform: translateX(-50%); box-shadow: 0 0 0 3px var(--paper); }
+  .hbar .spacer { flex: 1; }
+  .hsub { flex: none; display: flex; align-items: center; justify-content: space-between; padding: 12px 28px 8px; }
+
+  .tx { flex: 1; min-height: 0; padding: 0 28px 30px; }
+  .row { display: grid; grid-template-columns: 40px 22px minmax(0,1fr); column-gap: 12px; }
+  .row .t { font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; padding-top: 12px; text-align: right; }
+  .spine { position: relative; }
+  .spine::before { content: ""; position: absolute; left: 10px; top: 0; bottom: 0; width: 3px; background: var(--c, var(--kiku)); }
+  .spine .dot { position: absolute; left: 5px; top: 13px; width: 13px; height: 13px; border-radius: 50%; background: var(--paper); border: 3px solid var(--c, var(--kiku)); }
+  .row.guest .spine .dot { background: var(--ink-3); border: 0; width: 9px; height: 9px; left: 7px; top: 15px; }
+  .row .body { padding: 10px 0 12px; border-bottom: 1px solid var(--line-2); min-width: 0; }
+  .who { font-size: 11.5px; font-weight: 700; margin-bottom: 2px; display: flex; gap: 6px; align-items: center; }
+  .who.agent { color: var(--kiku); } .who.guest { color: var(--ink-2); }
+  .say { max-width: 760px; }
+  .say.agent { font-family: var(--serif); font-weight: 500; font-size: 14.5px; color: #33461A; }
+  .row.sys .body { padding: 10px 0; }
+  .sysline { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; }
+  .sysline.escalation { color: var(--esc); } .sysline.join { color: var(--ink-2); } .sysline.takeover { color: var(--human); } .sysline.end { color: var(--ink-3); }
+  .row.sys .spine .dot { border-radius: 2px; transform: rotate(45deg); width: 11px; height: 11px; left: 6px; top: 12px; }
+  .row.kara .body { padding: 12px 0 14px; }
+  .row.kara .stitch { max-width: 940px; }
+  .kfoot { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
+  .kidx { font-size: 11.5px; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="shell"></div>
+  <main class="main">
+    <section class="audit">
+      <aside class="dossier"><div class="dz scroll" id="dossier"></div></aside>
+      <section class="hist">
+        <div class="hbar" id="hbar"></div>
+        <div class="hsub"><div class="sec-title">Message history <span class="aside">Time runs down the spine</span></div><div id="key"></div></div>
+        <div class="tx scroll fade-end" id="tx"></div>
+      </section>
+    </section>
+  </main>
+</div>
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<script>
+const { K, esc, status, stitch, matchMeter, laneKey } = TT;
+TT.shell({ role: "specialist", active: "03-call-logs.html" });
+const a = K.audit;
+const first = a.specialist.split(" ")[0];
+const sec = t => { const [m, s] = t.split(":").map(Number); return m * 60 + s; };
+const total = sec(a.duration);
+const pct = t => (sec(t) / total * 100).toFixed(2) + "%";
+const kturns = a.transcript.filter(x => x.karaoke);
+const escT = a.transcript.find(x => x.kind === "escalation").t;
+const escSvg = w => TT.STATUS.escalated.svg.replace('<svg', `<svg width="${w}" height="${w}"`);
+
+const [d1, nights, room, guests] = a.stay.split(" · ");
+document.getElementById("dossier").innerHTML = `
+  <div class="crumbs"><a href="03-call-logs.html"><i data-lucide="arrow-left" style="width:14px;height:14px"></i>Call logs</a><span class="num">${a.id}</span></div>
+  <h1 class="h-serif">${a.guest}</h1>
+  <div class="chips">${status(a.status, true)}<span class="slant"><i data-lucide="phone-outgoing"></i>Outbound ${a.type}</span><span class="kbd-tag"><i data-lucide="timer"></i><span class="num">${a.duration}</span></span></div>
+  <dl class="facts">
+    <div><dt>Phone</dt><dd class="num">${a.phone}</dd></div>
+    <div><dt>Booking</dt><dd class="num">${a.booking}</dd></div>
+    <div class="wide"><dt>Stay</dt><dd>${d1}, ${nights}<br><span class="meta">${room}, ${guests}</span></dd></div>
+    <div class="wide"><dt>Purpose</dt><dd>${a.purpose}</dd></div>
+    <div><dt>Started</dt><dd>${a.started}</dd></div>
+    <div><dt>Specialist</dt><dd style="display:flex;gap:6px;align-items:center"><span class="avatar" style="width:20px;height:20px;font-size:9px">TN</span>${a.specialist}</dd></div>
+  </dl>
+  <div class="blk">
+    <h2>Karaoke summary</h2>
+    <div class="big"><b class="num">${a.karaokeSummary.asWritten} of ${a.karaokeSummary.lines}</b><span>lines said as Kiku wrote them. ${a.karaokeSummary.improvised} improvised.</span></div>
+    <div class="knots">${kturns.map((k, i) => `<div class="knot${k.asWritten ? " full" : ""}"><span class="c" style="background:conic-gradient(var(--kiku) ${k.match}%, var(--human-soft) 0)"><i>${i + 1}</i></span>${k.match}%</div>`).join("")}</div>
+    <div class="meta" style="margin-top:6px">Each ring shows how much of Kiku's line was kept</div>
+  </div>
+  <div class="blk">
+    <h2>Outcome</h2>
+    <ul class="outcome" style="margin-top:4px">${a.outcome.map(o => `<li class="${o.result}"><i data-lucide="${o.result === "added" ? "circle-plus" : "circle-minus"}" style="color:${o.result === "added" ? "var(--kiku)" : "var(--ink-3)"};margin-top:1px"></i><span>${o.item} <span class="meta">${o.result === "added" ? "Added" : "Declined"}</span></span><span class="amt">${o.amount}</span></li>`).join("")}</ul>
+    <div class="total"><span class="meta">Added to ${a.booking}</span><b class="num">${a.total}</b></div>
+    <div class="note"><i data-lucide="sticky-note"></i>${a.note}</div>
+  </div>`;
+
+document.getElementById("hbar").innerHTML = `
+  <button class="play" aria-label="Play recording"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+  <div class="ptime"><b>00:00</b> / ${a.duration}<br><span class="meta">Recording</span></div>
+  <div class="scrub">
+    <div class="rail"><i style="left:0;width:${pct(escT)};background:var(--kiku)"></i><i style="left:${pct(a.takeoverAt)};right:0;background:var(--human)"></i></div>
+    <span class="mk" style="left:${pct(escT)};background:var(--esc)"></span><span class="lb" style="right:calc(100% - ${pct(escT)} + 4px);color:var(--esc)">${escSvg(10)}Escalated ${escT}</span>
+    <span class="mk" style="left:${pct(a.takeoverAt)};background:var(--human)"></span><span class="lb" style="left:calc(${pct(a.takeoverAt)} + 4px);color:var(--human)"><i data-lucide="mic" style="width:11px;height:11px"></i>Took over ${a.takeoverAt}</span>
+    <div class="head"></div>
+  </div>
+  <span class="spacer"></span>
+  <button class="btn sm"><i data-lucide="download"></i>Recording</button>
+  <button class="btn sm"><i data-lucide="file-text"></i>Transcript</button>`;
+document.getElementById("key").innerHTML = laneKey(first);
+
+let human = false, ki = 0;
+document.getElementById("tx").innerHTML = a.transcript.map(m => {
+  if (m.kind === "takeover") human = true;
+  const c = m.kind === "escalation" ? "var(--esc)" : human ? "var(--human)" : "var(--kiku)";
+  const sp = `<div class="spine" style="--c:${c}"><span class="dot"></span></div>`;
+  if (m.speaker === "system") {
+    const ic = { escalation: escSvg(14), join: '<i data-lucide="headphones"></i>', takeover: '<i data-lucide="mic"></i>', end: '<i data-lucide="phone-off"></i>' }[m.kind];
+    return `<div class="row sys"><div class="t">${m.t}</div>${sp}<div class="body"><div class="sysline ${m.kind}">${ic}${esc(m.text)}</div></div></div>`;
+  }
+  if (m.karaoke) {
+    ki++;
+    return `<div class="row kara"><div class="t">${m.t}</div>${sp}<div class="body">
+      ${stitch(m.diff, first)}
+      <div class="kfoot">${m.asWritten ? `<span class="aswritten"><i data-lucide="check-check" style="width:14px;height:14px"></i>Said as written</span>` : `<span class="meta" style="display:inline-flex;gap:5px;align-items:center"><i data-lucide="pen-line" style="width:13px;height:13px"></i>Improvised</span>`}${matchMeter(m.match)}<span class="kidx">Karaoke line ${ki} of ${a.karaokeSummary.lines}</span></div>
+    </div></div>`;
+  }
+  return `<div class="row ${m.speaker}"><div class="t">${m.t}</div>${sp}<div class="body"><div class="who ${m.speaker}">${m.speaker === "agent" ? '<i data-lucide="audio-lines" style="width:13px;height:13px"></i>Kiku' : "Guest"}</div><div class="say ${m.speaker}">${esc(m.text)}</div></div></div>`;
+}).join("");
+TT.icons();
+const tx = document.getElementById("tx");
+const jump = () => { const rows = tx.querySelectorAll(".row"); tx.scrollTop = rows[4].offsetTop - tx.offsetTop; TT.drawThreads(tx); };
+jump(); document.fonts.ready.then(() => { jump(); setTimeout(jump, 300); });
+</script>
+</body>
+</html>

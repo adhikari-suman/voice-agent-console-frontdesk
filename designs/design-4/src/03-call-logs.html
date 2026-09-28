@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku, call logs</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+.content { display: flex; flex-direction: column; padding: 18px 28px 0; gap: 14px; }
+.filters { display: flex; flex-direction: column; gap: 10px; }
+.frow { display: flex; align-items: center; gap: 8px; }
+.frow .lbl { font-size: 12px; color: var(--muted); font-weight: 500; width: 64px; }
+.frow .sep { width: 1px; height: 20px; background: var(--line); margin: 0 8px; }
+.frow .sp { flex: 1; }
+.search { width: 340px; }
+.search svg.lucide { color: var(--muted); }
+.search span { color: var(--faint); }
+.chip .st { font-weight: 500; color: inherit; }
+.chip .st svg { width: 12px; height: 12px; }
+.chip.escalated .st { color: var(--human); } .chip.failed .st { color: var(--fail); } .chip.completed .st { color: var(--ok); } .chip.in_progress .st { color: var(--kiku); }
+.tablewrap { flex: 1; min-height: 0; background: var(--surface); border: 1px solid var(--line); border-bottom: 0; border-radius: var(--r) var(--r) 0 0; }
+table.grid td { height: 43px; padding: 4px 10px; font-size: 12.8px; line-height: 1.3; }
+table.grid th { padding: 9px 10px; }
+table.grid td.time { font: 600 15px/1 var(--f-count); letter-spacing: .04em; }
+table.grid td.guest { font-weight: 600; white-space: nowrap; }
+table.grid td.guest small { display: block; font-weight: 400; color: var(--faint); font-size: 11.5px; }
+table.grid td.phone { white-space: nowrap; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12.5px; }
+table.grid td.pur { max-width: 330px; line-height: 1.35; }
+table.grid td.dur { font: 600 15px/1 var(--f-count); letter-spacing: .04em; text-align: right; }
+table.grid td.spec { white-space: nowrap; font-size: 12.5px; }
+table.grid td.spec .doth { margin-right: 6px; }
+table.grid td.none { color: var(--faint); }
+.type { font-size: 12.5px; white-space: nowrap; }
+.type b { font: 700 13.5px/1 var(--f-count); letter-spacing: .06em; color: var(--muted); margin-left: 4px; }
+.openbtn { visibility: hidden; }
+tr.sel .openbtn { visibility: visible; }
+tr.sel td.guest::before { content: ""; }
+</style></head>
+<body>
+<div class="app">
+  <nav class="spine" id="spine"></nav>
+  <main class="main">
+    <header class="top" id="top"></header>
+    <div class="content">
+      <div class="filters" id="filters"></div>
+      <div class="tablewrap scroll"><table class="grid" id="tbl"></table></div>
+    </div>
+  </main>
+</div>
+<script>
+const { K, esc, icon, status, shell } = TT;
+shell({ role: 'specialist', active: 'logs', title: 'Call logs', after: `<span class="h3" style="font-weight:500">${K.calls.length} calls today</span>` });
+const n = k => K.calls.filter(c => c.status === k).length;
+document.getElementById('filters').innerHTML = `
+  <div class="frow">
+    <div class="input search">${icon('search')}<span>Search guest, phone, booking or purpose</span></div>
+    <button class="chip on">${icon('calendar')}Today, Sun 27 Sep${icon('chevron-down')}</button>
+    <span class="sep"></span>
+    <button class="chip on">All directions</button><button class="chip">${icon('phone-incoming')}Inbound <span class="n">${K.calls.filter(c => c.direction === 'inbound').length}</span></button><button class="chip">${icon('phone-outgoing')}Outbound <span class="n">${K.calls.filter(c => c.direction === 'outbound').length}</span></button>
+    <span class="sep"></span>
+    <button class="chip">Type: all${icon('chevron-down')}</button>
+    <span class="sp"></span><button class="btn sm ghost">${icon('download')}Export CSV</button>
+  </div>
+  <div class="frow">
+    <span class="lbl">Status</span>
+    <button class="chip on">All <span class="n">${K.calls.length}</span></button>
+    ${['completed', 'in_progress', 'escalated', 'failed'].map(k => `<button class="chip ${k}">${status(k)}<span class="n">${n(k)}</span></button>`).join('')}
+  </div>`;
+
+document.getElementById('tbl').innerHTML = `<thead><tr><th>Time</th><th>Guest</th><th>Phone</th><th>Direction</th><th>Type</th><th>What the call was for</th><th>Status</th><th style="text-align:right">Length</th><th>Specialist</th><th></th></tr></thead><tbody>` +
+  K.calls.map(c => `<tr class="${c.id === 'KK-24027' ? 'sel' : ''}">
+    <td class="time">${c.started}</td>
+    <td class="guest">${esc(c.guest)}<small>${c.id}${c.booking ? ', ' + c.booking : ''}</small></td>
+    <td class="phone">${esc(c.phone)}</td>
+    <td>${TT.dir(c)}</td>
+    <td class="type">${c.type}${c.promo ? `<b>${c.promo}</b>` : ''}</td>
+    <td class="pur">${esc(c.purpose)}</td>
+    <td>${status(c.status)}</td>
+    <td class="dur">${c.duration}</td>
+    <td class="spec ${c.specialist ? '' : 'none'}">${c.specialist ? `<span class="doth"></span>${esc(c.specialist)}` : 'Kiku only'}</td>
+    <td style="text-align:right;width:120px"><a class="btn sm ink openbtn" href="04-call-audit.html" style="text-decoration:none">Open audit${icon('chevron-right')}</a></td>
+  </tr>`).join('') + '</tbody>';
+TT.draw();
+</script>
+</body></html>

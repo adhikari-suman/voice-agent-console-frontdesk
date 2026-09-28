@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku, make a call</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Familjen+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .two { display: grid; grid-template-columns: 470px 1fr; gap: 14px; height: 100%; }
+  .path-h { display: flex; align-items: center; gap: 10px; }
+  .path-h .pn { width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+  .grow { flex: 1; min-height: 0; overflow: auto; }
+  .purpose { font-size: 15.5px; line-height: 1.5; min-height: 150px; display: block; padding: 10px 14px; }
+  .helper { font-size: 12.5px; color: var(--ink-3); margin-top: 5px; }
+  .brief { background: var(--tape); border-radius: var(--r); padding: 10px 14px; margin-top: 6px; }
+  .brief b { font-size: 12.5px; color: var(--kiku-ink); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .brief p { font-size: 13px; color: var(--ink-2); margin-top: 3px; }
+  .foot { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-top: 1px solid var(--rule); }
+  .foot .sum { font-size: 13px; color: var(--ink-2); margin-right: auto; }
+  .cols-chip { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; color: var(--ink-3); }
+  .cols-chip code { font-family: var(--sans); font-weight: 600; color: var(--ink); background: var(--sheet-2); border: 1px solid var(--rule); border-radius: 5px; padding: 0 6px; }
+  .tpl { display: flex; align-items: center; gap: 12px; margin-top: 10px; font-size: 13px; color: var(--ink-2); background: var(--sheet-2); border-radius: var(--r-md); padding: 9px 12px; }
+  .tpl a { white-space: nowrap; margin-left: auto; color: var(--ink); font-weight: 600; display: inline-flex; gap: 6px; align-items: center; }
+  td.rn { color: var(--ink-3); width: 50px; }
+  td.pp { white-space: normal; max-width: 380px; }
+  .empty { color: var(--ink-3); font-style: italic; }
+  .gap-row td { text-align: center; color: var(--ink-3); font-size: 12.5px; background: var(--sheet-2); padding: 5px; }
+</style>
+</head>
+<body>
+<script>
+const S1 = K.makeCallSingle, M = K.makeCallCsv;
+const rows = M.preview.map((r, i) => {
+  const gap = i > 0 && r.row - M.preview[i - 1].row > 1 ? `<tr class="gap-row"><td colspan="5">Row ${M.preview[i - 1].row + 1} ready</td></tr>` : "";
+  return gap + `<tr class="${r.ok ? "" : "err"}"><td class="rn">${r.row}</td>
+    <td class="num" style="white-space:nowrap">${r.phone ? esc(r.phone) : '<span class="empty">empty</span>'}</td>
+    <td style="white-space:nowrap">${r.name ? esc(r.name) : '<span class="muted">No name</span>'}</td>
+    <td class="pp">${esc(r.purpose)}</td>
+    <td style="white-space:nowrap">${r.ok ? `<span class="status completed">${STATUS.completed.svg}Ready</span>` : `<span class="errtxt">${ic("circle-x")}${esc(r.error)}</span>`}</td></tr>`;
+}).join("") + `<tr class="gap-row"><td colspan="5">Rows 7–${M.rows} ready</td></tr>`;
+
+shell({
+  role: "admin", active: "make", title: "Make a call",
+  crumb: "Tell Kiku what the call is for, and it rings the guest",
+  body: `<div class="two">
+  <div class="panel">
+    <div class="panel-h"><div class="path-h"><span class="pn">1</span><h2>One call</h2></div></div>
+    <div class="panel-b grow">
+      <div class="field"><label class="fl">What is the call for?</label>
+        <div class="input purpose focus">${esc(S1.purpose)}</div>
+        <p class="helper">Write it as you'd brief a colleague. Kiku explains it to the guest in its own words.</p></div>
+      <div class="field"><label class="fl">Guest name <span class="opt">(optional)</span></label><div class="input">${esc(S1.name)}</div></div>
+      <div class="field"><label class="fl">Phone</label><div class="input">${esc(S1.phone)}</div></div>
+      <div class="brief"><b>${ic("bot")}Kiku will</b><p>Greet ${esc(S1.name.split(" ")[0])} by name, give the message, and record the answer in the call log.</p></div>
+    </div>
+    <div class="foot"><span class="sum">Calls from ${esc(K.hotel.line)}</span><button class="btn primary">${ic("phone-outgoing")}Place call</button></div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><div class="path-h"><span class="pn">2</span><h2>Many calls from a file</h2></div><span class="aside cols-chip">Columns ${M.columns.map(c => `<code>${c}</code>`).join("")}</span></div>
+    <div class="panel-b" style="padding-bottom:12px">
+      <div class="file"><span class="ic">${ic("file-spreadsheet")}</span><div style="flex:1"><b>${M.file}</b><span>${M.size}, ${M.rows} rows</span></div>
+        <div class="tally"><span class="ok">${ic("circle-check")}${M.ready} ready</span><span class="bad">${ic("circle-x")}${M.errors} error</span></div>
+        <button class="btn sm ghost">${ic("upload")}Replace</button></div>
+      <div class="tpl">${ic("info")}<span>Not sure about the format? Start from the template: one row per call, name can be left blank.</span><a href="#">${ic("download")}Download template</a></div>
+    </div>
+    <div class="grow" style="border-top:1px solid var(--rule)">
+      <table><thead><tr><th>Row</th><th>Phone</th><th>Name</th><th>Purpose</th><th>Check</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>
+    <div class="foot"><span class="sum">Row 6 will be skipped until it has a phone number.</span><button class="btn primary">${ic("phone-outgoing")}Start ${M.ready} calls</button></div>
+  </div>
+</div>`
+});
+done();
+</script>
+</body>
+</html>

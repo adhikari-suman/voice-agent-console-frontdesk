@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Call logs · Kiku</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .content { display: flex; flex-direction: column; gap: 14px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; }
+  .search { width: 280px; height: 36px; border-radius: 30px; }
+  .search svg.lucide { color: var(--ink-3); }
+  .datechip { height: 36px; border-radius: 30px; }
+  .seg button .status svg { width: 12px; height: 12px; }
+  .seg button .status { font-weight: inherit; color: inherit; font-size: 13px; gap: 5px; }
+  .seg button .status svg { color: var(--ink-3); }
+  .seg button.st-completed .status svg { color: var(--ok); }
+  .seg button.st-in_progress .status svg { color: var(--kiku); }
+  .seg button.st-escalated .status svg { color: var(--human); }
+  .seg button.st-failed .status svg { color: var(--bad); }
+  .tablewrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .tablewrap .scroll { flex: 1; }
+  table.grid td { padding: 8px 10px; font-size: 13.5px; }
+  table.grid td:first-child, table.grid th:first-child { padding-left: 18px; }
+  table.grid td:last-child, table.grid th:last-child { padding-right: 18px; }
+  .t { font-family: var(--display); font-stretch: 78%; font-weight: 600; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+  .gname { font-weight: 700; white-space: nowrap; }
+  .gph { font-family: var(--display); font-stretch: 78%; font-weight: 500; color: var(--ink-3); font-size: 12.5px; }
+  .purp { max-width: 390px; }
+  .dur { font-family: var(--display); font-stretch: 78%; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .spec { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .spec .none { color: var(--ink-3); }
+  tr.sel td { background: var(--human-soft); }
+  .open { display: inline-flex; }
+  .foot { display: flex; justify-content: space-between; align-items: center; padding: 10px 18px; border-top: 1px solid var(--rule); font-size: 12.5px; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail" data-role="specialist" data-active="logs"></aside>
+  <main class="main">
+    <header class="topbar"><div><h1>Call logs</h1><div class="sub">Every call Kiku placed or answered. Open a call to hear it and see what was said.</div></div><div class="right" data-clock></div></header>
+    <section class="content">
+      <div class="filters" id="filters"></div>
+      <div class="panel tablewrap">
+        <div class="scroll"><table class="grid" id="tbl"></table></div>
+        <div class="foot"><span id="count"></span><span>Showing today only. Change the date to see earlier calls.</span></div>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+const { K, esc, ic, status, dir, LABEL, SHAPES } = UI;
+const calls = K.calls;
+const cnt = st => calls.filter(c => c.status === st).length;
+const stBtn = (st) => `<button class="st-${st}"><span class="status">${SHAPES[st]}${LABEL[st]}</span><span class="c">${cnt(st)}</span></button>`;
+document.getElementById("filters").innerHTML = `
+  <div class="input search">${ic("search")}<span style="color:var(--ink-3)">Search guest, phone or purpose</span></div>
+  <div class="input datechip">${ic("calendar")}<b>Today</b><span style="color:var(--ink-3)">27 Sep</span>${ic("chevron-down")}</div>
+  <div class="seg"><button class="on">All statuses <span class="c">${calls.length}</span></button>${["completed", "in_progress", "escalated", "failed"].map(stBtn).join("")}</div>
+  <div class="seg"><button class="on">Both directions</button><button>${ic("phone-incoming")}Inbound</button><button>${ic("phone-outgoing")}Outbound</button></div>
+  <div class="seg"><button class="on">All types</button><button>Campaign</button><button>Upsell</button><button>Make a call</button></div>`;
+
+document.getElementById("tbl").innerHTML = `
+  <thead><tr><th>Time</th><th>Guest</th><th>Direction, type</th><th>What the call was for</th><th>Status</th><th>Length</th><th>Specialist</th><th></th></tr></thead>
+  <tbody>${calls.map(c => {
+    const sp = c.specialist ? `<span class="egg sm human">${c.specialist.split(" ").map(w => w[0]).slice(0, 2).join("")}</span>${esc(c.specialist)}` : `<span class="none">Kiku only</span>`;
+    const typ = c.direction === "outbound" ? `<span class="tag">${c.type}</span>` : "";
+    const sel = c.id === "KK-24027";
+    return `<tr class="${sel ? "sel" : ""}">
+      <td class="t">${c.started}</td>
+      <td><div class="gname">${c.guest}</div><div class="gph">${c.phone}</div></td>
+      <td><div style="display:flex;gap:6px;align-items:center">${dir(c)}${typ}</div></td>
+      <td class="purp">${esc(c.purpose)}</td>
+      <td>${status(c.status)}</td>
+      <td class="dur">${c.duration}</td>
+      <td><span class="spec">${sp}</span></td>
+      <td style="text-align:right">${sel ? `<a class="btn sm kiku open" href="04-call-audit.html">Open audit</a>` : ""}</td></tr>`;
+  }).join("")}</tbody>`;
+document.getElementById("count").textContent = `${calls.length} calls, sorted newest first`;
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku, sign in</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+.app { grid-template-columns: var(--spine) 1fr; }
+.spine { align-items: center; }
+.stage { display: grid; place-items: center; position: relative; }
+.card { width: 420px; }
+.brand { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+.brand .tt i { height: 7px; border-radius: 4px; }
+.brand .tt i:first-child { width: 46px; background: var(--kiku); }
+.brand .tt i:last-child { width: 30px; margin-left: 16px; }
+.brand .tt { gap: 6px; }
+.brand h1 { font-size: 46px; font-weight: 800; letter-spacing: -.035em; line-height: 1; }
+.hotel { font-size: 15px; color: var(--muted); margin-bottom: 34px; padding-left: 2px; }
+form { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 26px 28px 24px; display: flex; flex-direction: column; gap: 16px; }
+form h2 { font-size: 18px; font-weight: 700; }
+.row { display: flex; justify-content: space-between; align-items: baseline; }
+.row a { font-size: 12.5px; color: var(--kiku); font-weight: 600; text-decoration: none; }
+.input { height: 42px; }
+.btn.lg { width: 100%; height: 44px; margin-top: 4px; }
+.demo { margin-top: 18px; font-size: 12px; color: var(--faint); display: flex; gap: 8px; align-items: center; }
+.demo svg.lucide { width: 14px; height: 14px; }
+.lines { position: absolute; left: 0; right: 0; bottom: 56px; display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; }
+.lines i { height: 3px; border-radius: 2px; display: block; }
+</style></head>
+<body>
+<div class="app">
+  <nav class="spine"><div class="mark"><span class="tt"><i></i><i></i></span></div><div class="grow"></div><div class="word">KIKU</div></nav>
+  <main class="stage">
+    <div class="card">
+      <div class="brand"><span class="tt"><i></i><i></i></span><h1>Kiku</h1></div>
+      <p class="hotel">The Brenlow, Edinburgh</p>
+      <form onsubmit="return false">
+        <h2>Sign in</h2>
+        <div class="field"><label for="e">Email</label><div class="input focus">${'' }<span id="e">priya.raman@brenlow.example</span></div></div>
+        <div class="field"><div class="row"><label for="p">Password</label><a href="#">Forgot password?</a></div><div class="input" id="p" style="letter-spacing:.3em;font-size:15px">••••••••••••</div></div>
+        <a class="btn ink lg" href="02-live-overview.html" style="text-decoration:none">Sign in</a>
+      </form>
+      <p class="demo"><i data-lucide="flask-conical"></i><span id="demo"></span></p>
+    </div>
+  </main>
+</div>
+<script>
+document.getElementById('demo').textContent = KIKU.synthetic;
+document.querySelector('.input.focus').innerHTML = '<span>' + KIKU.people.specialist.email + '</span>';
+TT.draw();
+</script>
+</body></html>

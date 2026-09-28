@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku, listening to Rashid Karimi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+.chip-l { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--mauve-d); background: var(--mauve-t); padding: 2px 9px 2px 7px; border-radius: 4px; }
+.chip-l svg { width: 13px; height: 13px; }
+.g5 { display: grid; grid-template-columns: 1fr 356px; gap: 16px; height: 100%; }
+.convo { display: flex; flex-direction: column; min-height: 0; }
+.convo .hist { flex: 1; padding: 0 22px 8px; }
+.gap { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-3); padding: 8px 0 8px 56px; }
+.gap::before, .gap::after { content: ""; flex: 1; border-top: 1px dashed var(--hair-2); }
+.latest { background: var(--panel-2); border-radius: 8px; padding: 12px 14px 14px 12px !important; margin: 4px 0; border: 1px solid var(--hair-2); }
+.latest .tx { font: 500 20px/1.35 var(--display) !important; letter-spacing: -0.01em; }
+.draft { margin: 10px 0 6px; display: grid; grid-template-columns: 44px 1fr; gap: 12px; }
+.draft .box { border: 1.5px dashed var(--mauve); border-radius: 8px; padding: 12px 14px; background: var(--mauve-tt); }
+.draft .st { font-size: 12px; font-weight: 700; color: var(--mauve-d); display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.draft .tx { font: 500 18px/1.4 var(--display); color: var(--mauve-d); }
+.dock { display: flex; align-items: center; gap: 18px; padding: 14px 22px; border-top: 1px solid var(--hair); background: var(--panel-2); border-radius: 0 0 10px 10px; }
+.ch { display: flex; align-items: center; gap: 10px; font-size: 12.5px; }
+.ch .meter { height: 24px; }
+.ch b { font-weight: 600; }
+.side5 { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.take { background: var(--aub); color: #fff; border-radius: 12px; padding: 18px 18px 16px; }
+.take h2 { font: 650 17px/1.25 var(--display); }
+.take p { font-size: 13px; color: #CDBDC6; margin: 6px 0 14px; }
+.take .btn { width: 100%; }
+.take .row { display: flex; gap: 8px; margin-top: 8px; }
+.take .row .btn { flex: 1; background: var(--aub-2); color: #E9E0E5; box-shadow: inset 0 0 0 1px var(--aub-3); }
+.done-list { list-style: none; padding: 0 16px 14px; }
+.done-list li { display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid var(--hair); font-size: 13px; }
+.done-list svg { width: 16px; height: 16px; color: var(--done); margin-top: 1px; }
+</style>
+</head><body>
+<script>
+const { K, esc, status, ic, transcript, meter, topbar, mount } = UI;
+const c = K.liveCall;
+const tr = c.transcript;
+const last = tr[tr.length - 1];
+const before = tr.slice(0, -1);
+const body = transcript(before) +
+  `<div class="gap">1 min 45 s later</div>` +
+  `<div class="turn guest latest"><div class="t num">${last.t}</div><div><div class="spk g">Guest</div><div class="tx">${esc(last.text)}</div></div></div>` +
+  `<div class="draft"><div class="t num muted" style="font-size:12px;padding-top:12px">now</div><div class="box"><div class="st">${ic("pen-line")}Kiku is drafting a reply<span class="dots"><i></i><i></i><i></i></span></div><div class="tx">${esc(c.agentDraft)}</div></div></div>`;
+
+mount("specialist", "live", `
+${topbar(`<div><div class="crumb"><a href="#">Live board</a>${ic("chevron-right")}<span class="num">${c.id}</span></div><h1 style="margin-top:3px;display:flex;align-items:center;gap:12px">${esc(c.guest)} ${status(c.status)}<span class="chip-l">${ic("headphones")}You're listening</span></h1></div>`)}
+<div class="body"><div class="g5">
+  <section class="panel convo">
+    <div class="panel-h"><h2>Live transcript</h2><span class="aside">Kiku and the guest are talking. They can't hear you.</span></div>
+    <div class="hist scroll"><div class="tl">${body}</div></div>
+    <div class="dock">
+      <div class="ch">${ic("user")}<b>Guest</b>${meter(18, false, 4)}</div>
+      <div class="ch"><span style="display:inline-flex">${UI.mark(18, false)}</span><b>Kiku</b>${meter(18, false, 1).replace('class="meter"', 'class="meter" style="opacity:.45"')}<span class="muted small">thinking</span></div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-line sm">${ic("volume-x")}Mute audio</button>
+        <button class="btn btn-line sm">${ic("log-out")}Leave</button>
+      </div>
+    </div>
+  </section>
+  <aside class="side5">
+    <section class="take">
+      <h2>Step in if Kiku needs you</h2>
+      <p>Take over and the guest hears you. Kiku goes quiet and writes each line for you to read or improvise.</p>
+      <button class="btn lg btn-human">${ic("hand")}Take over</button>
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Call</h2><span class="aside num">${c.duration} so far</span></div>
+      <dl class="kv" style="padding:0 16px 14px">
+        <dt>Guest</dt><dd>${esc(c.guest)}<br><span class="muted num">${c.phone}</span></dd>
+        <dt>Direction</dt><dd style="display:flex;gap:6px;align-items:center">${ic("phone-incoming")}Inbound to hotel line</dd>
+        <dt>Booking</dt><dd class="num" style="font-weight:600">${c.booking}</dd>
+        <dt>Stay</dt><dd>${esc(c.stay.replace(/ · /g, ", "))}</dd>
+        <dt>Purpose</dt><dd>${esc(c.purpose)}</dd>
+        <dt>Started</dt><dd class="num">${c.started}</dd>
+      </dl>
+    </section>
+    <section class="panel" style="flex:1;min-height:0">
+      <div class="panel-h"><h2>Kiku already did</h2></div>
+      <ul class="done-list">${c.actionsTaken.map(a => `<li>${ic("circle-check")}<span>${esc(a)}</span></li>`).join("")}</ul>
+    </section>
+  </aside>
+</div></div>`);
+const h = document.querySelector(".hist"); h.scrollTop = h.scrollHeight;
+</script>
+</body></html>

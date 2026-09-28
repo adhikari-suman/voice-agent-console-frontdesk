@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku, listening to a live call</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+.band { flex: none; height: 92px; display: flex; align-items: center; gap: 20px; padding: 0 28px; background: var(--ink); color: #fff; }
+.band .ear { width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid #5d8ea8; color: var(--mist); display: grid; place-items: center; }
+.band .ear svg.lucide { width: 22px; height: 22px; }
+.band h2 { font-size: 22px; font-weight: 700; letter-spacing: -.015em; }
+.band p { font-size: 13.5px; color: #a9c3cf; margin-top: 3px; }
+.band .sp { flex: 1; }
+.band .timer { text-align: right; line-height: 1; }
+.band .timer b { font: 700 44px/1 var(--f-count); display: block; letter-spacing: .02em; }
+.band .timer span { font-size: 12px; color: #a9c3cf; }
+.band .btn { height: 44px; background: transparent; color: #fff; border-color: #3f667d; font-size: 13.5px; }
+.band .btn.human { background: var(--human-hi); border-color: var(--human-hi); padding: 0 22px; font-size: 15px; }
+.band .muted-tag { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: #a9c3cf; }
+.stage { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 360px; }
+.tx { display: flex; flex-direction: column; min-height: 0; }
+.tx .hh { padding: 14px 32px 6px; display: flex; gap: 10px; align-items: baseline; }
+.tx .hh h3 { font-size: 14px; font-weight: 700; }
+.tx .list { flex: 1; padding: 0 32px; }
+.tx .turn .body { font-size: 14.5px; }
+.tx .turn.guest .body { font-size: 16px; }
+.latest { margin: 4px 32px 0; padding: 16px 20px; background: #fff; border: 1px solid var(--ink); border-radius: var(--r); }
+.latest .who { font-size: 12px; font-weight: 700; display: flex; gap: 8px; align-items: center; }
+.latest .who .t { font: 600 14px/1 var(--f-count); color: var(--faint); letter-spacing: .04em; }
+.latest .q { font: 400 26px/1.3 var(--f-voice); margin-top: 6px; }
+.draft { margin: 12px 32px 20px; padding: 14px 20px; background: var(--kiku-bg); border: 1.5px dashed var(--kiku-edge); border-radius: var(--r); display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; align-items: center; }
+.draft .who { font-size: 12px; font-weight: 700; color: var(--kiku); display: flex; gap: 8px; align-items: center; }
+.draft .d { font-size: 18px; color: var(--kiku); line-height: 1.4; grid-column: 1; }
+.draft .note { grid-row: 1 / span 2; grid-column: 2; font-size: 12px; color: var(--muted); text-align: right; max-width: 190px; }
+.dots { display: inline-flex; gap: 3px; } .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--kiku); opacity: .4; }
+.dots i:nth-child(2) { opacity: .7; } .dots i:nth-child(3) { opacity: 1; }
+.facts { background: var(--surface); border-left: 1px solid var(--line); min-height: 0; }
+.facts section { padding: 16px 22px; border-bottom: 1px solid var(--line); }
+.facts h3 { font-size: 13.5px; font-weight: 700; margin-bottom: 9px; display: flex; gap: 7px; align-items: center; }
+.facts dl { display: grid; grid-template-columns: 72px 1fr; gap: 7px 10px; font-size: 13px; }
+.facts dt { color: var(--muted); }
+.facts ol { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.facts ol li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; font-size: 13px; }
+.facts ol li svg.lucide { color: var(--ok); width: 16px; height: 16px; margin-top: 1px; }
+.lv { display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 10px; font-size: 12.5px; color: var(--muted); }
+.who-on { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.who-on span { display: flex; gap: 8px; align-items: center; }
+.who-on em { font-style: normal; color: var(--muted); margin-left: auto; font-size: 12px; }
+</style></head>
+<body>
+<div class="app">
+  <nav class="spine" id="spine"></nav>
+  <main class="main">
+    <header class="top" id="top"></header>
+    <div class="band" id="band"></div>
+    <div class="stage">
+      <div class="tx">
+        <div class="hh"><h3>Live transcript</h3><span class="h3" style="font-weight:500">Kiku and the guest, as they speak</span></div>
+        <div class="list scroll" id="hist"></div>
+        <div class="latest" id="latest"></div>
+        <div class="draft" id="draft"></div>
+      </div>
+      <aside class="facts scroll" id="facts"></aside>
+    </div>
+  </main>
+</div>
+<script>
+const { K, esc, icon, status, shell, turn, level } = TT; const L = K.liveCall;
+shell({ role: 'specialist', active: 'live', crumb: `<a href="02-live-overview.html">Live</a>${icon('chevron-right')}`, title: esc(L.guest), after: `${status('in_progress')}<span class="id">${L.id}</span>` });
+document.getElementById('band').innerHTML = `
+  <div class="ear">${icon('headphones')}</div>
+  <div><h2>You're listening. Kiku is handling Rashid Karimi.</h2><p>The guest can't hear you. Take over to speak, and Kiku will write your lines.</p></div>
+  <div class="sp"></div>
+  <span class="muted-tag">${icon('mic-off')}Your mic is off</span>
+  <div class="timer"><b class="tc">${L.duration}</b><span>Started ${L.started}</span></div>
+  <button class="btn">${icon('volume-x')}Mute call</button>
+  <button class="btn">${icon('log-out')}Leave</button>
+  <button class="btn human">${icon('mic')}Take over</button>`;
+const names = { guest: L.guest };
+const tr = L.transcript, last = tr[tr.length - 1];
+const h = document.getElementById('hist');
+h.innerHTML = tr.slice(0, -1).map(e => turn(e, names)).join('');
+document.getElementById('latest').innerHTML = `<div class="who"><span class="t">${last.t}</span><span class="dotg"></span>${esc(L.guest)} asked, just now</div><p class="q">${esc(last.text)}</p>`;
+document.getElementById('draft').innerHTML = `<div class="who"><span class="dotk"></span>Kiku, ${esc(L.agentState.toLowerCase())}<span class="dots"><i></i><i></i><i></i></span></div><p class="d">${esc(L.agentDraft)}</p><p class="note">Not spoken yet. Take over now and this becomes your first prompt.</p>`;
+document.getElementById('facts').innerHTML = `
+  <section><h3>${icon('audio-lines')}On the line</h3>
+    <div class="lv"><span>${esc(L.guest.split(' ')[0])}</span>${level(34, 21)}<span>Kiku</span>${level(34, 4).replace(/<i style="height:(\d+)px/g, (m, v) => `<i style="height:${Math.max(3, Math.round(v / 3))}px`)}</div>
+    <div class="who-on" style="margin-top:12px"><span><span class="dotk"></span>Kiku<em>Drafting a reply</em></span><span>${icon('headphones')}Priya Raman (you)<em>Listening</em></span></div></section>
+  <section><h3>${icon('book-open')}Booking ${L.booking}</h3>
+    <dl><dt>Phone</dt><dd class="num">${esc(L.phone)}</dd><dt>Stay</dt><dd>${esc(L.stay)}</dd><dt>Purpose</dt><dd>${esc(L.purpose)}</dd><dt>Direction</dt><dd>Inbound, hotel line</dd></dl></section>
+  <section style="border:0"><h3>${icon('list-checks')}Kiku already did</h3>
+    <ol>${L.actionsTaken.map(a => `<li>${icon('circle-check')}<span>${esc(a)}</span></li>`).join('')}</ol></section>`;
+TT.draw();
+h.scrollTop = h.scrollHeight;
+</script>
+</body></html>

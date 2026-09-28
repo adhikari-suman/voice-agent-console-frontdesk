@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Kiku · Upsell calls</title>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+  .main { flex-direction: column; gap: 16px; }
+  .top { display: flex; align-items: flex-end; gap: 28px; flex: none; }
+  .offers { display: flex; gap: 10px; margin-left: auto; }
+  .offer { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r-m); padding: 9px 14px; min-width: 210px; line-height: 18px; }
+  .offer b { font-weight: 650; display: flex; gap: 6px; align-items: center; }
+  .offer .d { font-size: 12px; color: var(--ink-3); }
+  .offer .pr { font-size: 12.5px; font-weight: 600; margin-top: 2px; }
+  .offer .pr span { color: var(--ink-3); font-weight: 450; }
+  .paths { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .path-b { padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .match { display: flex; gap: 12px; padding: 12px 14px; border-radius: var(--r-m); background: #EEF6F2; border: 1px solid #C6E2D5; align-items: flex-start; }
+  .match svg.lucide { color: var(--ok); margin-top: 2px; }
+  .match b { font-weight: 650; display: block; }
+  .match span { font-size: 13px; color: var(--ink-2); }
+  .toggles { border: 1px solid var(--rule); border-radius: var(--r-m); }
+  .trow { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--rule-2); }
+  .trow:last-child { border-bottom: 0; }
+  .trow .n { flex: 1; line-height: 18px; }
+  .trow .n b { font-weight: 600; }
+  .trow .n div { font-size: 12px; color: var(--ink-3); }
+  .trow .p { font-size: 12.5px; color: var(--ink-2); }
+  .recent { margin-top: auto; border-top: 1px solid var(--rule-2); padding-top: 12px; }
+  .recent h3 { font-size: 12.5px; font-weight: 650; color: var(--ink-2); margin-bottom: 4px; }
+  .rc { display: grid; grid-template-columns: 44px 130px minmax(0,1fr) 112px; gap: 10px; align-items: baseline; padding: 7px 0; font-size: 12.5px; line-height: 18px; border-bottom: 1px solid var(--rule-2); }
+  .rc:last-child { border-bottom: 0; }
+  .rc .o { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pfoot { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-top: 1px solid var(--rule); flex: none; }
+  .cols { display: inline-flex; gap: 4px; }
+  table.grid td { height: 38px; font-size: 12.5px; }
+  table.grid th { padding-top: 0; }
+  .rn { color: var(--ink-3); width: 36px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="shell"></div>
+  <main class="main" id="main"></main>
+</div>
+<script>
+const { K, esc } = D;
+D.mount(D.shell({ role: "admin", active: "upsell" }));
+const icons = { pickup: "car", breakfast: "coffee", dinner: "utensils" };
+const offers = K.offers.map(o => `<div class="offer"><b><i data-lucide="${icons[o.id]}"></i>${esc(o.name)}</b><div class="d">${esc(o.detail)}</div><div class="pr">${esc(o.price)}${o.alt ? ` <span>(${esc(o.alt)})</span>` : ""}</div></div>`).join("");
+const U = K.upsellSingle, C = K.upsellCsv;
+const [mName, ...mRest] = U.match.split(" · ");
+const toggles = K.offers.map(o => `<div class="trow"><i data-lucide="${icons[o.id]}" style="color:var(--ink-2)"></i><div class="n"><b>${esc(o.name)}</b><div>${esc(o.detail)}</div></div><span class="p">${esc(o.price)}</span><span class="tog ${U.offers.includes(o.id) ? "on" : ""}" role="switch" aria-checked="true"></span></div>`).join("");
+const failSq = `<svg width="13" height="13" viewBox="0 0 14 14" style="flex:none"><rect x=".8" y=".8" width="12.4" height="12.4" rx="2" fill="currentColor"/><path d="M4.6 4.6l4.8 4.8M9.4 4.6l-4.8 4.8" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+const rows = C.preview.map(r => `<tr class="${r.ok ? "" : "rowerr"}">
+  <td class="rn num">${r.row}</td>
+  <td class="num">${r.phone ? esc(r.phone) : '<span class="muted">empty</span>'}</td>
+  <td class="num">${r.confirmation ? esc(r.confirmation) : '<span class="muted">empty</span>'}</td>
+  <td>${r.ok ? esc(r.guest) : `<span class="why">${failSq}${esc(r.error)}</span>`}</td>
+  <td style="text-align:right">${r.ok ? `<span style="color:var(--ok);display:inline-flex;gap:5px;align-items:center;font-weight:600"><i data-lucide="circle-check" style="width:14px;height:14px"></i>Ready</span>` : `<button class="btn sm">Fix</button>`}</td>
+</tr>`).join("");
+
+const recent = (type) => K.calls.filter(c => c.type === type).map(c => `<div class="rc"><span class="num muted">${c.started}</span><b style="font-weight:600">${esc(c.guest)}</b><span class="o">${esc(c.outcome || c.purpose)}</span>${D.status(c.status)}</div>`).join("");
+document.getElementById("main").innerHTML = `
+<div class="top">
+  <div><h1 class="page">Upsell calls</h1><div class="page-sub">Kiku rings guests with a booking and offers extras for their stay.</div></div>
+  <div class="offers">${offers}</div>
+</div>
+<div class="paths">
+  <section class="panel">
+    <div class="panel-h"><i data-lucide="phone"></i><h2>Call one guest</h2><span class="sub">Match a booking, then call</span></div>
+    <div class="path-b">
+      <div class="two">
+        <div class="field"><label>Guest phone</label><div class="input filled num">${U.phone}</div></div>
+        <div class="field"><label>Confirmation number</label><div class="input filled num">${U.confirmation}</div></div>
+      </div>
+      <div class="match"><i data-lucide="circle-check"></i><div><b>Booking found: ${esc(mName)}</b><span>${esc(mRest.join(", "))}</span></div></div>
+      <div class="field"><label>Offers Kiku will make</label><div class="toggles">${toggles}</div></div>
+      <div class="recent"><h3>Upsell calls today</h3>${recent("Upsell")}</div>
+    </div>
+    <div class="pfoot"><span class="muted" style="font-size:12.5px">Kiku calls now and adds anything accepted to ${U.confirmation}.</span><button class="btn primary" style="margin-left:auto"><i data-lucide="phone-outgoing"></i>Call now</button></div>
+  </section>
+  <section class="panel">
+    <div class="panel-h"><i data-lucide="file-spreadsheet"></i><h2>Upload a list</h2><span class="sub">Columns: <span class="cols">${C.columns.map(c => `<span class="tok code" style="background:var(--paper);padding:1px 6px;border-radius:4px">${c}</span>`).join("")}</span></span></div>
+    <div class="path-b">
+      <div class="file">
+        <div class="ico"><i data-lucide="file-spreadsheet"></i></div>
+        <div style="flex:1"><b>${C.file}</b><div class="meta num">${C.size}, ${C.rows} rows</div></div>
+        <div class="tally num"><span class="ok"><i data-lucide="circle-check"></i>${C.ready} ready</span><span class="bad">${failSq}${C.errors} errors</span></div>
+        <button class="btn sm ghost">Replace</button>
+      </div>
+      <div class="scroll">
+        <table class="grid">
+          <thead><tr><th>Row</th><th>Phone</th><th>Confirmation</th><th>Guest</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="hint" style="padding:8px 10px 0">Showing 4 of ${C.ready} ready rows and both errors. Rows with errors are skipped unless fixed.</div>
+      </div>
+    </div>
+    <div class="pfoot"><span class="muted" style="font-size:12.5px">All three offers, same as a single call.</span><button class="btn primary" style="margin-left:auto"><i data-lucide="phone-outgoing"></i>Start ${C.ready} calls</button></div>
+  </section>
+</div>`;
+D.icons();
+</script>
+</body>
+</html>

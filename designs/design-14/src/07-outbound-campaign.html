@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku · Outbound campaigns</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="icons.js"></script>
+<script src="app.js"></script>
+<style>
+  .body { grid-template-columns: 500px 1fr; }
+  .camp { padding: 16px 18px; border-bottom: 1px solid var(--rule-2); display: flex; flex-direction: column; gap: 8px; }
+  .camp.sel { background: #fff; outline: 1.5px solid var(--ink); outline-offset: -1.5px; }
+  .camp .top-c { display: flex; align-items: center; gap: 10px; }
+  .code-b { font-family: var(--machine); font-size: 13px; font-weight: 600; padding: 3px 8px; border: 1.5px solid var(--ink); border-radius: 2px; letter-spacing: 0.02em; }
+  .camp h3 { font-size: 15px; font-weight: 600; }
+  .camp .offer { font-size: 13px; color: var(--ink-2); }
+  .cst { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+  .cst svg.lucide { width: 14px; height: 14px; }
+  .cst.paused { color: var(--amber); } .cst.sched { color: var(--kiku-deep); } .cst.draft { color: var(--ink-3); }
+  .funnel { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-top: 4px; }
+  .funnel div { font-size: 11.5px; color: var(--ink-3); }
+  .funnel b { display: block; font-size: 17px; color: var(--ink); font-weight: 700; letter-spacing: -0.01em; }
+  .prog { height: 6px; background: #E1E4DE; display: flex; border-radius: 1px; overflow: hidden; }
+  .prog i { display: block; height: 100%; }
+  .camp .meta { display: flex; gap: 16px; font-size: 12px; color: var(--ink-3); }
+  .camp .meta span { display: inline-flex; gap: 5px; align-items: center; }
+  .camp .meta svg.lucide { width: 13px; height: 13px; }
+
+  .form { padding: 18px 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 22px 22px; overflow: auto; align-content: start; }
+  .full { grid-column: 1 / -1; }
+  .opening { font-family: var(--machine); font-size: 14px; line-height: 1.65; background: #fff; border: 1px solid var(--rule); border-radius: 3px; padding: 12px 14px; }
+  .var { background: var(--human-wash); color: var(--human-deep); padding: 1px 4px; border-radius: 2px; border: 1px dashed var(--human); }
+  .preview { font-family: var(--machine); font-size: 13px; color: var(--kiku-deep); line-height: 1.6; padding: 10px 14px; border-left: 3px solid var(--kiku); background: var(--kiku-wash); }
+  .stepper { display: flex; align-items: center; border: 1px solid var(--rule); border-radius: 3px; background: #fff; height: 38px; width: 150px; }
+  .stepper button { width: 38px; height: 100%; border: 0; background: none; display: grid; place-items: center; color: var(--ink-2); }
+  .stepper span { flex: 1; text-align: center; font-weight: 700; font-size: 15px; border-left: 1px solid var(--rule-2); border-right: 1px solid var(--rule-2); line-height: 36px; }
+  .days { display: flex; gap: 4px; }
+  .days span { width: 34px; height: 30px; display: grid; place-items: center; border: 1px solid var(--rule); border-radius: 3px; font-size: 12px; font-weight: 600; background: #fff; color: var(--ink-3); }
+  .days span.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .errs { font-size: 12.5px; color: var(--red); display: flex; gap: 6px; align-items: center; }
+  .foot { border-top: 1px solid var(--rule); padding: 12px 22px; display: flex; align-items: center; gap: 10px; }
+  .foot .sum { font-size: 13px; color: var(--ink-2); }
+  .foot .sum b { color: var(--ink); }
+</style></head>
+<body>
+<main class="page">
+  <div class="head"><div><h1>Outbound calls</h1><div class="sub">Kiku calls guests for you. Pick how it should call.</div></div><div class="grow"></div><div id="tabs"></div></div>
+  <div class="body">
+    <section class="panel">
+      <div class="ph"><h2>Campaigns</h2><span class="note">3 campaigns</span><span class="grow"></span><button class="btn sm">${''}</button></div>
+      <div class="scroll" id="camps"></div>
+    </section>
+    <section class="panel" id="draft"></section>
+  </div>
+</main>
+<script>
+  shell('admin', 'out');
+  document.getElementById('tabs').innerHTML = outboundTabs('campaign');
+  document.querySelector('.ph .btn').innerHTML = ic('plus') + 'New campaign';
+  const st = c => c.status.startsWith('Paused') ? ['paused', 'circle-pause'] : c.status.startsWith('Scheduled') ? ['sched', 'calendar-clock'] : ['draft', 'pencil-line'];
+  document.getElementById('camps').innerHTML = K.campaigns.map(c => {
+    const [cls, icn] = st(c);
+    const n = c.contacts || 1;
+    const funnel = c.contacts ? `
+      <div class="prog" title="Called of contacts"><i style="width:${c.booked / n * 100}%;background:var(--ink)"></i><i style="width:${(c.answered - c.booked) / n * 100}%;background:var(--kiku)"></i><i style="width:${c.failed / n * 100}%;background:var(--red)"></i><i style="width:${(c.called - c.answered - c.failed) / n * 100}%;background:#B9C0B6"></i></div>
+      <div class="funnel"><div><b>${c.contacts}</b>contacts</div><div><b>${c.called}</b>called</div><div><b>${c.answered}</b>answered</div><div><b>${c.booked}</b>booked</div><div><b>${c.failed}</b>failed</div></div>` : '';
+    return `<div class="camp ${c.code === 'BURNS27' ? 'sel' : ''}">
+      <div class="top-c"><span class="code-b">${c.code}</span><h3>${c.name}</h3><span class="cst ${cls}">${ic(icn)}${c.status}</span></div>
+      <div class="offer">${c.offer}</div>
+      ${funnel}
+      <div class="meta"><span>${ic('file-spreadsheet')}${c.audience}</span><span>${ic('clock')}${c.window}</span></div>
+    </div>`;
+  }).join('');
+
+  const D = K.campaignDraft, B = K.campaigns.find(c => c.code === D.code);
+  const opening = D.opening.replace('{first_name}', '<span class="var">{first_name}</span>');
+  const preview = D.opening.replace('{first_name}', '<b style="color:var(--human-deep)">Hannah</b>');
+  const dd = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  document.getElementById('draft').innerHTML = `
+    <div class="ph"><h2>Set up ${D.code}</h2><span class="note">${B.name} · Draft</span><span class="grow"></span><span class="cst draft">${ic('pencil-line')}Draft, not scheduled</span></div>
+    <div class="form scroll">
+      <div class="field"><label>Promo code</label><div class="input"><span class="code" style="font-size:14px;font-weight:600">${D.code}</span></div></div>
+      <div class="field"><label>Offer</label><div class="input" style="font-size:13px">${B.offer}</div></div>
+      <div class="field full"><label>Audience <em>CSV with phone and first_name columns</em></label>
+        <div class="file"><span class="ico">CSV</span><div><div class="nm">${D.file}</div><div class="tally" style="margin-top:3px"><span>${D.rows} rows</span><span class="ok">${SHAPE.completed.replace('<svg', '<svg width="12" height="12"')}${D.ready} ready</span><span class="bad">${SHAPE.failed.replace('<svg', '<svg width="12" height="12"')}${D.errors} errors</span></div></div><span class="grow"></span><button class="btn sm">${ic('eye')}Review errors</button><button class="btn sm quiet">${ic('replace')}Replace</button></div>
+        <span class="errs">${ic('info')}The ${D.errors} rows with errors will be skipped. Kiku will call the ${D.ready} ready contacts.</span></div>
+      <div class="field"><label>Call window</label><div class="days">${dd.map((d, i) => `<span class="${i < 5 ? 'on' : ''}">${d}</span>`).join('')}</div><div class="input" style="margin-top:4px">${ic('clock')}10:00 to 18:00, hotel time</div></div>
+      <div class="field"><label>Max attempts per contact</label><div class="stepper"><button>${ic('minus')}</button><span>${D.maxAttempts}</span><button>${ic('plus')}</button></div><span class="hint">Kiku tries again on no answer, spaced across the call window.</span></div>
+      <div class="field full"><label>Opening line <em>Kiku says this first, then follows the conversation</em></label><div class="opening">${opening}</div><span class="hint">{first_name} is filled from each row of the audience file.</span></div>
+    </div>
+    <div class="foot"><span class="sum"><b>${D.ready}</b> calls, <b>${D.window}</b>, up to <b>${D.maxAttempts}</b> attempts each</span><span class="grow"></span><button class="btn">Save draft</button><button class="btn ink lg">${ic('calendar-check')}Schedule campaign</button></div>`;
+  icons();
+</script>
+</body></html>

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Kiku, call logs</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .content { display: flex; flex-direction: column; gap: 16px; }
+  .filters { display: flex; flex-direction: column; gap: 12px; }
+  .frow { display: flex; gap: 12px; align-items: center; }
+  .seg { display: flex; border: 1px solid var(--line); background: var(--sheet); }
+  .seg button { height: 34px; padding: 0 12px; display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; border-right: 1px solid var(--line); color: var(--ink-2); }
+  .seg button:last-child { border-right: 0; }
+  .seg button.on { background: var(--ink); color: #fff; }
+  .seg button .c { font-variant-numeric: tabular-nums; color: var(--ink-mute); font-weight: 700; }
+  .seg button.on .c { color: #B0C4BC; }
+  .seg button svg { width: 11px; height: 11px; }
+  .search { width: 300px; height: 36px; }
+  .search input { border: 0; outline: 0; flex: 1; background: none; }
+  .date { height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid var(--line); background: var(--sheet); font-weight: 700; font-size: 13px; }
+  .fl { font-size: 12.5px; color: var(--ink-soft); }
+  .table { flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--sheet); border: 1px solid var(--line); }
+  .tr { display: grid; grid-template-columns: 44px 136px 136px 128px 1fr 116px 48px 150px 16px; gap: 12px; align-items: center; padding: 0 16px; height: 44px; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+  .th { height: 38px; font-size: 12px; color: var(--ink-mute); font-weight: 700; border-bottom: 1px solid var(--line); flex: none; }
+  .tr .g { font-weight: 700; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tr .p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-2); }
+  .tr .ph { color: var(--ink-soft); white-space: nowrap; }
+  .tr .sp { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+  .tr .sp .avatar { width: 20px; height: 20px; font-size: 9px; }
+  .tr .go { color: var(--ink-mute); display: flex; justify-content: flex-end; }
+  .tr.sel { background: var(--kiku-tint); outline: 1.5px solid var(--kiku); outline-offset: -1.5px; }
+  .tr.sel .go { color: var(--kiku); }
+  .tip { position: absolute; }
+  .rows { overflow-y: auto; flex: 1; min-height: 0; position: relative; }
+  .rows::-webkit-scrollbar { width: 0; }
+  .tfoot { flex: none; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-soft); }
+  .open-hint { display: inline-flex; align-items: center; gap: 6px; background: var(--kiku); color: #fff; font-weight: 700; font-size: 12px; padding: 3px 8px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<script>
+  const { K, icon, status, dir, mount, SHAPE } = UI;
+  const calls = K.calls;
+  const count = (s) => calls.filter(c => c.status === s).length;
+  const seg = ["completed", "in_progress", "escalated", "failed"].map(s =>
+    `<button><span style="color:var(--${{completed:"ok",in_progress:"run",escalated:"esc",failed:"fail"}[s]})">${SHAPE[s]}</span>${UI.LABEL[s]} <span class="c">${count(s)}</span></button>`).join("");
+  const rows = calls.map(c => {
+    const sel = c.id === "KK-24027";
+    const nm = c.specialist ? c.specialist.replace(" (listening)","") : "";
+    const spec = c.specialist ? `<span class="sp"><span class="avatar">${nm.split(" ").map(x=>x[0]).join("")}</span>${nm}${c.specialist.includes("listening")?`<span class="faint" title="Listening">${icon("headphones")}</span>`:""}</span>` : `<span class="sp faint"><span class="kiku-chip" style="width:20px;height:20px;font-size:9px">K</span>Kiku only</span>`;
+    return `<div class="tr ${sel ? "sel" : ""}">
+      <span class="num">${c.started}</span>
+      <span class="g">${c.guest}</span>
+      <span class="ph num">${c.phone}</span>
+      <span style="display:flex;gap:6px;align-items:center">${c.direction==="inbound"?`<span class="dir">${icon("in")}Inbound</span>`:`<span class="dir">${icon("out")}</span><span class="tag">${c.type}</span>`}</span>
+      <span class="p" title="${c.purpose}">${c.purpose}</span>
+      <span>${status(c.status)}</span>
+      <span class="num">${c.duration}</span>
+      ${spec}
+      <span class="go">${icon("chevron")}</span>
+    </div>`;
+  }).join("");
+
+  mount({ role: "specialist", active: "logs", title: "Call logs" }, `
+    <div class="filters">
+      <div class="frow">
+        <div class="seg"><button class="on">All <span class="c">${calls.length}</span></button>${seg}</div>
+        <div style="flex:1"></div>
+        <div class="date">${icon("calendar")}Today<span class="faint" style="font-weight:400">Sun 27 Sep</span>${icon("chevdown")}</div>
+      </div>
+      <div class="frow">
+        <label class="input search">${icon("search")}<input placeholder="Search guest, phone, booking or purpose"></label>
+        <span class="fl">Direction</span>
+        <div class="seg"><button class="on">Both</button><button>${icon("in")}Inbound</button><button>${icon("out")}Outbound</button></div>
+        <span class="fl">Type</span>
+        <div class="seg"><button class="on">Any</button><button>Inbound</button><button>Campaign</button><button>Upsell</button><button>Make a call</button></div>
+      </div>
+    </div>
+    <div class="table">
+      <div class="tr th"><span>Time</span><span>Guest</span><span>Phone</span><span>Direction, type</span><span>What the call was for</span><span>Status</span><span>Length</span><span>Specialist</span><span></span></div>
+      <div class="rows">${rows}</div>
+      <div class="tfoot"><span>Showing all ${calls.length} calls from today, newest first</span><span style="display:flex;gap:10px;align-items:center">Selected: Eleanor Vance, KK-24027 <span class="open-hint">Open audit ${icon("chevron")}</span></span></div>
+    </div>`);
+  document.querySelector(".content").style.display = "flex";
+</script>
+</body>
+</html>

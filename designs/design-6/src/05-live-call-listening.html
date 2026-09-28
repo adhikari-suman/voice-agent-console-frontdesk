@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku, listening to Rashid Karimi</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+  .stage { height: 100%; display: grid; grid-template-columns: 1fr 360px; }
+  .convo { display: grid; grid-template-rows: auto auto 1fr; min-height: 0; background: #fff; }
+  .ch { padding: 20px 36px 12px; display: flex; align-items: flex-end; gap: 14px; }
+  .ch h1 { font: 600 26px/1.1 var(--sans); letter-spacing: -0.025em; }
+  .ch .end { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .meters { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 0 36px; border: 1px solid var(--line); border-radius: var(--r); }
+  .meter { display: grid; grid-template-columns: 120px 1fr; align-items: center; gap: 12px; padding: 10px 14px; }
+  .meter + .meter { border-left: 1px solid var(--line); }
+  .meter .lab { font-size: 12.5px; font-weight: 600; line-height: 1.25; }
+  .meter .lab small { display: block; font-weight: 400; color: var(--ink-3); }
+  .meter .bars { display: flex; align-items: center; gap: 2px; height: 30px; }
+  .meter .bars i { flex: 1; border-radius: 1px; background: var(--ink-2); }
+  .meter.k .bars i { background: var(--kiku); opacity: .35; }
+  .convo .scroll { padding: 8px 36px 20px; }
+  .turn { grid-template-columns: 52px 1fr; }
+  .turn + .turn { border-top: 1px solid var(--line-2); }
+  .turn.latest .say { font-size: 22px; line-height: 1.4; }
+  .turn.latest .who::after { content: "Latest question"; margin-left: 6px; font-size: 11.5px; font-weight: 500; color: var(--ink); background: #fde9b8; border-radius: 99px; padding: 0 8px; }
+  .draft { display: grid; grid-template-columns: 52px 1fr; gap: 14px; padding: 12px 0 0; border-top: 1px dashed var(--line); }
+  .draft .who { font-size: 12px; font-weight: 600; color: var(--kiku); display: flex; align-items: center; gap: 6px; }
+  .draft p { font-size: 20px; color: var(--kiku); opacity: .75; line-height: 1.4; }
+  .dots { display: inline-flex; gap: 3px; }
+  .dots i { width: 4px; height: 4px; border-radius: 50%; background: var(--kiku); }
+  .dots i:nth-child(2) { opacity: .6 } .dots i:nth-child(3) { opacity: .3 }
+
+  .side { background: var(--sheet-2); border-left: 1px solid var(--line); padding: 20px 22px; display: grid; gap: 20px; align-content: start; }
+  .gcard { display: flex; gap: 12px; align-items: center; }
+  .gcard .av { width: 40px; height: 40px; }
+  .gcard b { font-size: 17px; font-weight: 600; display: block; }
+  dl.f { display: grid; grid-template-columns: 90px 1fr; gap: 7px 10px; font-size: 13px; }
+  dl.f dt { color: var(--ink-3); }
+  dl.f dd { font-weight: 500; }
+  .done { list-style: none; display: grid; gap: 8px; }
+  .done li { display: flex; gap: 10px; font-size: 13px; background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; }
+  .done li svg.lucide { color: var(--ok); margin-top: 1px; }
+  .ppl { display: grid; gap: 10px; font-size: 13px; }
+  .ppl div { display: flex; gap: 10px; align-items: center; }
+</style>
+</head>
+<body>
+<script>
+const L = K.liveCall;
+const last = L.transcript.length - 1;
+const turns = L.transcript.map((x, i) => {
+  const who = x.speaker === "agent" ? `${ic("audio-lines")}Kiku` : `${ic("user")}${L.guest}`;
+  return `<div class="turn ${x.speaker} ${i === last ? "latest" : ""}"><span class="t">${x.t}</span><div><div class="who">${who}</div><div class="say">${esc(x.text)}</div></div></div>`;
+}).join("");
+const bars = (k, n, amp) => Array.from({ length: n }, (_, i) => `<i style="height:${Math.round(10 + Math.abs(Math.sin(i * k) * amp + Math.cos(i * 0.37) * amp * 0.6))}%"></i>`).join("");
+const [stayDates, ...stayRest] = L.stay.split(" · ");
+
+const dock = `
+<footer class="dock listening">
+  <span class="brand"><span class="glyph" aria-hidden="true">${MARK}</span></span>
+  <div class="callbar">
+    ${ic("headphones")}
+    <span class="state">Listening to ${L.guest}<small>Kiku is handling this call. The guest can't hear you.</small></span>
+    <span class="st" style="color:#fff">${GLYPH.in_progress}In progress, ${L.duration}</span>
+    <div class="ctl">
+      <button class="btn on-dark" aria-pressed="false">${ic("volume-2")}Mute audio</button>
+      <button class="btn on-dark">${ic("log-out")}Leave</button>
+      <button class="btn human lg" style="background:#fff;color:var(--human-deep);border-color:#fff">${ic("mic")}Take over</button>
+    </div>
+  </div>
+  <span class="me"><span class="av" style="background:#fff;color:var(--kiku-deep)">PR</span></span>
+</footer>`;
+
+shell("specialist", "live", `
+<div class="stage">
+  <section class="convo">
+    <div class="ch"><h1>${L.guest}</h1><span class="sub">${L.id}, rang the hotel line at ${L.started}</span><div class="end">${status("in_progress")}<span class="chip">${ic("phone-incoming")}Inbound</span></div></div>
+    <div class="meters">
+      <div class="meter"><span class="lab">${L.guest.split(" ")[0]}, guest<small>Speaking now</small></span><span class="bars">${bars(1.3, 80, 60)}</span></div>
+      <div class="meter k"><span class="lab" style="color:var(--kiku)">Kiku<small>Quiet, drafting</small></span><span class="bars">${bars(0.7, 80, 8)}</span></div>
+    </div>
+    <div class="scroll" id="tx">
+      ${turns}
+      <div class="draft"><span></span><div><div class="who">${ic("pen-line")}Kiku is drafting a reply <span class="dots"><i></i><i></i><i></i></span></div><p>${esc(L.agentDraft)}</p></div></div>
+    </div>
+  </section>
+  <aside class="side">
+    <div class="gcard"><span class="av">RK</span><div><b>${L.guest}</b><span class="cap">${L.phone}</span></div></div>
+    <dl class="f">
+      <dt>Booking</dt><dd>${L.booking}</dd>
+      <dt>Stay</dt><dd>${stayDates}<br><span class="muted" style="font-weight:400">${stayRest.join(", ")}</span></dd>
+      <dt>Calling for</dt><dd style="font-weight:400">${L.purpose}</dd>
+    </dl>
+    <div><h3 style="margin-bottom:8px">Kiku has already</h3><ul class="done">${L.actionsTaken.map(a => `<li>${ic("circle-check")}<span>${a}</span></li>`).join("")}</ul></div>
+    <div><h3 style="margin-bottom:8px">On this call</h3><div class="ppl">
+      <div><span class="av" style="background:var(--kiku-soft);color:var(--kiku)">${ic("audio-lines")}</span><span><b style="font-weight:500">Kiku</b> <span class="muted">handling the call</span></span></div>
+      ${L.listening.map(p => `<div><span class="av">PR</span><span><b style="font-weight:500">${p}</b> <span class="muted">(you), listening</span></span></div>`).join("")}
+    </div></div>
+  </aside>
+</div>`, dock);
+finish();
+const tx = document.getElementById("tx"); tx.scrollTop = tx.scrollHeight;
+</script>
+</body>
+</html>

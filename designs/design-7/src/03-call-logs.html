@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku, call logs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+.filters { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.search { width: 260px; background: #fff; }
+.search svg { color: var(--ink-3); }
+.date { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 12px; border: 1px solid var(--hair-2); border-radius: 7px; background: #fff; font-size: 13px; font-weight: 600; }
+.stf { display: flex; gap: 6px; }
+.stf > span { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 7px; border: 1px solid var(--hair); background: var(--panel); font-size: 13px; }
+.stf > span.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); font-weight: 600; }
+.stf svg { width: 13px; height: 13px; }
+.stf b { font-weight: 600; color: var(--ink-3); font-size: 12px; }
+.body { display: flex; flex-direction: column; }
+.tablep { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.tablep .scroll { flex: 1; }
+td .g { font-weight: 600; white-space: nowrap; }
+td .ph { white-space: nowrap; }
+.open { text-decoration: none; }
+.stf .status { font-size: 13px; }
+td .ph { font-size: 12px; color: var(--ink-3); }
+td.pur { color: var(--ink-2); font-size: 13px; max-width: 290px; }
+td.pur div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+td .dir { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); }
+td .dir svg { width: 14px; height: 14px; }
+td.t { color: var(--ink-2); }
+td.sp { font-size: 13px; }
+tr.sel td { background: var(--mauve-tt); }
+tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--mauve); }
+tr.sel .open { display: inline-flex; }
+.open { display: none; }
+.foot { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-top: 1px solid var(--hair); font-size: 12.5px; color: var(--ink-3); }
+</style>
+</head><body>
+<script>
+const { K, esc, status, ic, topbar, mount, STATUS } = UI;
+const calls = [...K.calls].sort((a, b) => b.started.localeCompare(a.started));
+const count = k => calls.filter(c => c.status === k).length;
+const stf = Object.keys(STATUS).map(k => `<span>${status(k, true)}<b>${count(k)}</b></span>`).join("");
+const typeCell = c => c.direction === "inbound" ? "Inbound" : c.type;
+const who = c => c.specialist ? `<span class="who-h" style="font-weight:600">${esc(c.specialist.replace(" (listening)", ""))}</span>${/listening/.test(c.specialist) ? ' <span class="muted small">listening</span>' : ""}` : `<span class="muted">Kiku only</span>`;
+const rows = calls.map(c => `<tr class="${c.id === "KK-24027" ? "sel" : ""}">
+  <td class="t num">${c.started}</td>
+  <td><div class="g">${esc(c.guest)}</div><div class="ph num">${c.phone}</div></td>
+  <td><span class="dir">${ic(c.direction === "inbound" ? "phone-incoming" : "phone-outgoing")}${c.direction === "inbound" ? "Inbound" : "Outbound"}</span></td>
+  <td>${c.direction === "inbound" ? '<span class="muted">—</span>' : `<span class="tag">${c.type}</span>`}</td>
+  <td class="pur"><div>${esc(c.purpose)}</div></td>
+  <td>${status(c.status)}</td>
+  <td class="num">${c.duration}</td>
+  <td class="sp">${who(c)}</td>
+  <td style="text-align:right;width:118px"><a class="btn sm btn-ink open" href="#">Open audit</a></td>
+</tr>`).join("");
+
+mount("specialist", "logs", `
+${topbar(`<h1>Call logs</h1>`)}
+<div class="body">
+  <div class="filters">
+    <div class="input search">${ic("search")}<span class="muted">Search guest, phone or purpose</span></div>
+    <span class="date">${ic("calendar")}Today</span>
+    <div class="seg-ctl" style="margin-left:auto"><span class="on">Both directions</span><span>${ic("phone-incoming")}Inbound</span><span>${ic("phone-outgoing")}Outbound</span></div>
+    <div class="seg-ctl"><span class="on">All types</span><span>Campaign</span><span>Upsell</span><span>Make a call</span></div>
+  </div>
+  <div class="filters"><span class="lbl" style="margin-right:2px">Status</span><div class="stf"><span class="on">All <b>${calls.length}</b></span>${stf}</div></div>
+  <section class="panel tablep">
+    <div class="scroll"><table>
+      <thead><tr><th>Time</th><th>Guest</th><th>Direction</th><th>Type</th><th>What the call was for</th><th>Status</th><th>Length</th><th>Specialist</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <div class="foot"><span>${calls.length} calls today, newest first</span><span>Select a call to open its audit and recording</span></div>
+  </section>
+</div>`);
+</script>
+</body></html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Upsell calls</title>
+<meta name="viewport" content="width=1440">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<link rel="stylesheet" href="outbound.css">
+</head>
+<body>
+<script>
+const { K, icon, mount } = Kiku;
+const U = K.upsellSingle, C = K.upsellCsv;
+const oIcon = { pickup: 'car', breakfast: 'cup', dinner: 'dinner' };
+
+const offers = K.offers.map(o => `<div class="offer">
+  <span class="oic">${icon(oIcon[o.id])}</span>
+  <div><b>${o.name}</b><span>${o.detail}${o.alt ? `. ${o.alt}` : ''}</span></div>
+  <span class="price">${o.price}</span>
+  <span class="sw ${U.offers.includes(o.id) ? 'on' : ''}" role="switch" aria-checked="true"></span>
+</div>`).join('');
+
+const prev = C.preview.map(r => `<tr class="${r.ok ? '' : 'err'}">
+  <td class="rn">${r.row}</td><td class="ph">${r.phone || '<span class="miss">empty</span>'}</td><td>${r.confirmation || '<span class="miss">empty</span>'}</td>
+  <td>${r.ok ? r.guest : `<span class="bad">${icon('alert')}${r.error}</span>`}</td>
+  <td class="stc">${r.ok ? `<span class="ok">${icon('check')}Ready</span>` : `<span class="bad">${icon('x')}Skipped</span>`}</td>
+</tr>`).join('');
+
+mount({ role: 'admin', active: 'upsell', crumb: 'Outbound calls', title: 'Upsell', sub: 'Kiku calls guests with a booking and offers extras for their stay' }, `
+<div class="two">
+  <section class="panel path">
+    <div class="path-h"><span class="pn">One guest</span><h2>Call a guest about their booking</h2></div>
+    <div class="path-b">
+      <div class="pair">
+        <div class="field"><label>Phone number</label><div class="input">${icon('phone')}${U.phone}</div></div>
+        <div class="field"><label>Confirmation number</label><div class="input is-focus">${U.confirmation}</div></div>
+      </div>
+      <div class="match">${icon('check')}<div><b>Booking found</b><span>${U.match}</span></div></div>
+      <div class="lbl" style="margin-top:4px">Offers Kiku will make</div>
+      <div class="offers">${offers}</div>
+    </div>
+    <div class="path-f"><span class="muted">Kiku calls ${U.phone} straight away.</span><button class="btn btn-primary">${icon('phone')}Call now</button></div>
+  </section>
+
+  <section class="panel path">
+    <div class="path-h"><span class="pn">A list</span><h2>Call everyone in a file</h2></div>
+    <div class="path-b">
+      <div class="file"><span class="fi">${icon('file')}</span><div><b>${C.file}</b><div class="n"><span>${C.size}</span><span>${C.rows} rows</span><span>Columns: ${C.columns.join(', ')}</span></div></div><button class="btn btn-sm">${icon('upload')}Replace</button></div>
+      <div class="tally"><span class="ok big">${icon('check')}<b>${C.ready}</b> ready to call</span><span class="bad big">${icon('alert')}<b>${C.errors}</b> rows need fixing</span></div>
+      <div class="prev">
+        <table>
+          <thead><tr><th>Row</th><th>Phone</th><th>Confirmation</th><th>Guest</th><th></th></tr></thead>
+          <tbody>${prev}</tbody>
+        </table>
+      </div>
+      <p class="help">Showing the first rows and every row with a problem. Rows with problems are skipped; fix them in the file and upload it again to include them.</p>
+    </div>
+    <div class="path-f"><span class="muted">Only the ${C.ready} ready rows are called.</span><button class="btn btn-primary">${icon('phone')}Start ${C.ready} calls</button></div>
+  </section>
+</div>
+`);
+</script>
+</body>
+</html>

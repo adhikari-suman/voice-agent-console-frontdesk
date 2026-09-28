@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Listening · Kiku</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .callbar { display: flex; align-items: center; gap: 16px; margin: 0 32px; padding: 14px 18px; background: var(--surface); border-radius: 14px; box-shadow: 0 0 0 1px var(--rule); }
+  .callbar .hp { width: 44px; height: 44px; border-radius: 50%; background: var(--kiku-soft); color: var(--kiku-ink); display: grid; place-items: center; flex: none; }
+  .callbar .hp svg.lucide { width: 20px; height: 20px; }
+  .callbar h2 { font-family: var(--display); font-stretch: 112%; font-weight: 780; font-size: 20px; letter-spacing: -0.01em; }
+  .callbar .s { font-size: 13px; color: var(--ink-2); display: flex; gap: 14px; align-items: center; margin-top: 2px; }
+  .callbar .dur { margin-left: auto; text-align: right; font-size: 12px; color: var(--ink-3); }
+  .callbar .dur .num { font-size: 26px; font-weight: 700; color: var(--ink); display: block; line-height: 1.05; }
+  .callbar .ctl { display: flex; gap: 8px; }
+  .content { padding-top: 16px; display: grid; grid-template-columns: 1fr 350px; gap: 16px; }
+  .tx { display: flex; flex-direction: column; min-height: 0; }
+  .tx .scroll { flex: 1; padding: 0 20px 18px; position: relative; -webkit-mask-image: linear-gradient(transparent, #000 24px); mask-image: linear-gradient(transparent, #000 24px); }
+  .say.guest.latest { box-shadow: 0 0 0 2px var(--ink); font-size: 15px; }
+  .say.draftcard { border: 1.5px dashed var(--ink-3); background: var(--surface); box-shadow: none; font-style: italic; color: var(--ink-2); }
+  .say.draftcard .who { font-style: normal; color: var(--ink); }
+  .msg.latest .txt { background: var(--paper); box-shadow: 0 0 0 1px var(--rule-2); padding: 8px 12px; border-radius: 10px; font-size: 15.5px; }
+  .draft { display: grid; grid-template-columns: 44px 34px 1fr; gap: 0 10px; padding: 10px 0 4px; }
+  .draft .card { border: 1.5px dashed var(--kiku); border-radius: 10px; padding: 10px 14px; background: var(--kiku-soft); }
+  .draft .who { font-size: 12px; font-weight: 700; color: var(--kiku-ink); display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+  .dots { display: inline-flex; gap: 3px; }
+  .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--kiku); animation: blink 1.2s steps(2) infinite; }
+  .dots i:nth-child(2) { animation-delay: .2s; } .dots i:nth-child(3) { animation-delay: .4s; }
+  .draft .txt { color: var(--kiku-ink); font-style: italic; }
+  .draft .hint { margin-top: 6px; }
+  .audio { padding: 14px 20px; border-top: 1px solid var(--rule); display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 12px 14px; align-items: center; }
+  .audio .l { font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .audio .level { height: 26px; gap: 3px; }
+  .audio .level i { width: 3px; }
+  .side { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+  .side .panel { padding: 16px 18px; }
+  .side h2 { font-family: var(--display); font-stretch: 108%; font-weight: 720; font-size: 15px; margin-bottom: 10px; }
+  .kv { display: grid; grid-template-columns: 76px 1fr; gap: 9px 12px; font-size: 13.5px; }
+  .kv dt { color: var(--ink-3); font-size: 12.5px; }
+  .acts li { list-style: none; display: flex; gap: 9px; padding: 9px 0; border-top: 1px solid var(--sunk); font-size: 13.5px; }
+  .acts li:first-child { border-top: 0; padding-top: 0; }
+  .acts li svg { width: 16px; height: 16px; color: var(--ok); margin-top: 1px; }
+  .when { background: var(--human-soft); box-shadow: 0 0 0 1px var(--human); font-size: 13.5px; color: var(--human-ink); }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail" data-role="specialist" data-active="live"></aside>
+  <main class="main">
+    <header class="topbar"><div><div class="sub" style="margin:0 0 4px"><a href="02-live-overview.html" style="color:var(--ink-2);font-weight:700;text-decoration:none">Live board</a> / <span class="mono-id">KK-24031</span></div><h1>Live call</h1></div><div class="right" data-clock></div></header>
+    <div class="callbar" id="callbar"></div>
+    <section class="content">
+      <div class="panel tx">
+        <div class="panel-h"><h2>Live transcript</h2><span class="meta">Kiku on the left, the guest on the right</span></div>
+        <div class="scroll" id="tx"></div>
+        <div class="audio" id="audio"></div>
+      </div>
+      <div class="side" id="side"></div>
+    </section>
+  </main>
+</div>
+<script>
+const { K, esc, ic, status, dir, level } = UI;
+const c = K.liveCall;
+document.getElementById("callbar").innerHTML = `
+  <div class="hp">${ic("headphones")}</div>
+  <div><h2>Listening to ${c.guest}</h2>
+    <div class="s">${status(c.status, true)}${dir(c)}<span><span class="num">${c.phone}</span></span><span>Only you can hear yourself. The guest hears Kiku.</span></div></div>
+  <div class="dur"><span class="num">${c.duration}</span>since ${c.started}</div>
+  <div class="ctl">
+    <button class="btn lg">${ic("volume-x")}Mute</button>
+    <button class="btn lg">${ic("log-out")}Leave</button>
+    <a class="btn lg take" href="06-takeover-karaoke.html">${ic("mic")}Take over</a>
+  </div>`;
+
+document.getElementById("tx").innerHTML = `<div class="duet">${UI.duetRows(c.transcript, { guest: c.guest })}
+  <div class="c left"><div class="say draftcard"><div class="who">${ic("pencil")}${c.agentState}<span class="dots"><i></i><i></i><i></i></span></div>${esc(c.agentDraft)}</div></div>
+  <div class="sp"><span class="tm">now</span><span class="node"></span></div><div class="c"></div></div>`;
+const gs = document.querySelectorAll("#tx .say.guest"); gs[gs.length - 1].classList.add("latest");
+const t = document.getElementById("tx");
+requestAnimationFrame(() => { t.scrollTop = t.scrollHeight; });
+
+document.getElementById("audio").innerHTML = `
+  <span class="l">${ic("user")}Guest</span><span style="color:var(--ink-2)">${level(44, 4, 26, true)}</span>
+  <span class="l" style="color:var(--kiku-ink)">${ic("bot")}Kiku</span><span style="color:var(--kiku);opacity:.55">${level(44, 9, 10)}</span>`;
+
+document.getElementById("side").innerHTML = `
+  <div class="panel"><h2>Call facts</h2><dl class="kv">
+    <dt>Booking</dt><dd class="num" style="font-weight:600">${c.booking}</dd>
+    <dt>Stay</dt><dd>${c.stay}</dd>
+    <dt>Purpose</dt><dd>${c.purpose}</dd>
+    <dt>Listening</dt><dd>${c.listening.join(", ")} (you)</dd></dl></div>
+  <div class="panel"><h2>What Kiku has done</h2><ul class="acts">${c.actionsTaken.map(a => `<li>${ic("circle-check")}<span>${a}</span></li>`).join("")}</ul></div>
+  <div class="panel when"><b>When to take over.</b> Kiku handles this call alone. Step in if the guest asks for a person or the answer needs a specialist.</div>`;
+</script>
+</body>
+</html>

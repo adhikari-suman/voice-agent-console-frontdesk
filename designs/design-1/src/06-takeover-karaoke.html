@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · You're on the line with Margaret Doyle</title>
+<meta name="viewport" content="width=1440">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  body { background: #120838; }
+  .dark .main { background: #120838; color: #EDE9FF; }
+  .dark .top { background: #120838; border-bottom-color: #2A1D66; }
+  .dark .top h1 { color: #fff; }
+  .dark .crumb, .dark .top-sub, .dark .clock { color: #A49BD0; }
+  .dark .clock b { color: #fff; }
+  .dark .st-escalated { color: var(--amber); }
+  .dark .st-escalated .mark { color: var(--amber); }
+  .dark .st-escalated .mark path + path, .dark .st-escalated .mark circle { }
+  .dark .dir { color: #CFC8EE; }
+  .dark .dir .i { color: #A49BD0; }
+  .content { gap: 16px; padding-top: 18px; }
+
+  .live { display: grid; grid-template-columns: auto 1fr auto auto; gap: 24px; align-items: center; padding: 12px 14px 12px 16px; border-radius: 18px; background: var(--amber); color: var(--night); }
+  .live .mic { width: 48px; height: 48px; border-radius: 50%; background: var(--night); color: var(--amber); display: flex; align-items: center; justify-content: center; position: relative; }
+  .live .mic .i { width: 22px; height: 22px; }
+  .live .mic::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--night); opacity: .35; animation: ring 1.6s ease-out infinite; }
+  @keyframes ring { from { transform: scale(.9); opacity: .5; } to { transform: scale(1.25); opacity: 0; } }
+  .live .say b { display: block; font: 600 20px/1.2 var(--ui); letter-spacing: -.01em; }
+  .live .say span { font-size: 13px; font-weight: 500; }
+  .live .lvl { display: flex; align-items: center; gap: 12px; }
+  .live .bars { display: flex; align-items: center; gap: 2px; height: 30px; }
+  .live .bars i { width: 3px; border-radius: 2px; background: var(--night); animation: lv 1s ease-in-out infinite alternate; }
+  @keyframes lv { from { transform: scaleY(.4); } to { transform: scaleY(1); } }
+  .live .time { text-align: right; }
+  .live .time b { display: block; font: 500 28px/1 var(--voice); }
+  .live .time span { font-size: 12px; font-weight: 500; }
+  .live .acts { display: flex; gap: 8px; }
+  .live .btn { background: rgba(21,10,61,.08); border-color: rgba(21,10,61,.25); color: var(--night); }
+  .live .btn.handback { background: var(--night); color: #fff; border-color: var(--night); }
+  .live .btn.end { background: #fff; border-color: #fff; color: var(--rose); }
+
+  .grid { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) 316px; gap: 20px; }
+  .left { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+  .dpanel { background: #1B0F4D; border: 1px solid #2E2170; border-radius: var(--r-l); }
+  .prompter { padding: 18px 28px 22px 20px; position: relative; }
+  .ph { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .ph h2 { font-size: 14px; font-weight: 700; color: #fff; display: flex; gap: 10px; align-items: center; }
+  .ph .chip { display: inline-flex; gap: 6px; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: #2A1D66; color: #CFC8EE; font-size: 12px; font-weight: 600; }
+  .ph .chip.hot { background: rgba(255,107,61,.14); color: var(--amber); }
+  .ph .chip .dotlive { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); animation: dt 1s infinite alternate; }
+  @keyframes dt { from { opacity: .3; } to { opacity: 1; } }
+  .ph .hint { font-size: 12.5px; color: #A49BD0; }
+  .next { display: grid; grid-template-columns: 104px 1fr; column-gap: 14px; margin-top: 22px; padding-top: 16px; border-top: 1px dashed #3A2C80; align-items: baseline; }
+  .next .k { text-align: right; font-size: 13px; font-weight: 700; color: #8C82B8; }
+  .next p { font: 400 19px/1.45 var(--voice); color: #A9A0D6; }
+
+  .earlier { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .earlier .ph { padding: 14px 20px 0; margin-bottom: 6px; }
+  .earlier .scroll { -webkit-mask-image: linear-gradient(transparent 0, #000 28px); mask-image: linear-gradient(transparent 0, #000 28px); flex: 1; padding: 0 20px 12px 4px; position: relative; scrollbar-color: #3A2C80 transparent; }
+  .dark .tl-row::before { background: #2E2170; }
+  .dark .tl-t { color: #8C82B8; }
+  .dark .tl-who { color: #CFC8EE; }
+  .dark .tl-who .aside { color: #8C82B8; }
+  .dark .tl-text { color: #EDE9FF; font-size: 15px; }
+  .dark .tl-dot span { background: #1B0F4D; border-color: #A49BD0; }
+  .dark .tl-kiku .tl-who { color: #B7A9FF; }
+  .dark .tl-kiku .tl-dot span { background: #9C86FF; border-color: #9C86FF; }
+  .dark .tl-spec .tl-dot span { background: var(--amber); border-color: var(--amber); }
+  .dark .tl-spec .tl-who { color: var(--amber); }
+  .dark .tl-sys .tl-body { background: #2A1D66; color: #CFC8EE; }
+  .dark .tl-sys.sys-escalation .tl-body { background: rgba(255,107,61,.12); color: var(--amber); }
+  .dark .tl-sys.sys-takeover .tl-body { background: var(--amber); color: var(--night); }
+  .dark .tl-sys .tl-dot span { background: #1B0F4D; border-color: #A49BD0; }
+  .dark .tl-sys.sys-escalation .tl-dot span, .dark .tl-sys.sys-takeover .tl-dot span { background: var(--amber); border-color: var(--amber); }
+  .tl-spec .tl-who { margin-bottom: 8px; }
+  .earlier .kz .u del { font-size: 13.5px; }
+  .earlier .kz .u ins { font-size: 14.5px; }
+  .earlier .kz .bead { font-size: 14px; }
+
+  .side { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+  .card { padding: 16px 18px; }
+  .card h3 { font-size: 13.5px; font-weight: 700; color: #fff; margin-bottom: 10px; display: flex; gap: 8px; align-items: center; }
+  .reason { background: rgba(255,107,61,.1); border-color: rgba(255,107,61,.35); }
+  .reason h3 { color: var(--amber); }
+  .reason p { font: 400 16px/1.45 var(--voice); color: #FBE3DA; }
+  .reason .at { margin-top: 10px; font-size: 12.5px; color: #D9AFA0; }
+  .card dl { display: grid; grid-template-columns: 64px 1fr; row-gap: 8px; column-gap: 10px; font-size: 13px; }
+  .card dt { color: #8C82B8; }
+  .card dd { color: #EDE9FF; font-weight: 500; }
+  .card ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .card li { display: grid; grid-template-columns: 20px 1fr; gap: 6px; font-size: 13.5px; color: #EDE9FF; line-height: 1.4; }
+  .card li .i { width: 15px; height: 15px; color: #B7A9FF; margin-top: 2px; }
+  .card.facts { flex: 1; min-height: 0; overflow: auto; }
+  .card .sep { height: 1px; background: #2E2170; margin: 14px 0; }
+</style>
+</head>
+<body>
+<script>
+const { K, icon, status, mount, dir, zipper, wave } = Kiku;
+const T = K.takeover;
+const first = T.specialist.split(' ')[0];
+const guestFirst = 'Mrs Doyle';
+const tr = T.transcript;
+const liveTurn = tr.find(t => t.live);
+const sysIcon = { escalation: 'alert', join: 'headphones', takeover: 'mic', end: 'phoneoff' };
+
+const rows = tr.filter(t => !t.live).map(t => {
+  if (t.speaker === 'system') return `<div class="tl-row tl-sys sys-${t.kind}"><div class="tl-t">${t.t}</div><div class="tl-dot"><span></span></div><div class="tl-body">${icon(sysIcon[t.kind])}${t.text}</div></div>`;
+  if (t.karaoke) return `<div class="tl-row tl-spec"><div class="tl-t">${t.t}</div><div class="tl-dot"><span></span></div><div><div class="tl-who">You<span class="aside">${t.match}% of the script kept</span></div>${zipper(t, { who: 'You' })}</div></div>`;
+  const who = t.speaker === 'agent' ? 'Kiku' : T.guest;
+  return `<div class="tl-row ${t.speaker === 'agent' ? 'tl-kiku' : 'tl-guest'}"><div class="tl-t">${t.t}</div><div class="tl-dot"><span></span></div><div><div class="tl-who">${who}</div><div class="tl-text">${t.text}</div></div></div>`;
+}).join('');
+
+const lvl = wave(26, 5).map((v, i) => `<i style="height:${Math.round(v * 28)}px;animation-delay:${(i % 6) * .11}s"></i>`).join('');
+
+mount({ role: 'specialist', active: 'live', cls: 'dark', crumb: 'Live board', title: T.guest, sub: `${T.id}, started ${T.started}`,
+  topRight: status(T.status) + dir(T.direction) }, `
+<section class="live" aria-live="polite">
+  <span class="mic">${icon('mic')}</span>
+  <div class="say"><b>You're on the line with ${T.guest}</b><span>Your microphone is live. Kiku is writing lines for you and not speaking.</span></div>
+  <div class="lvl"><span class="bars">${lvl}</span><div class="time"><b>${T.duration}</b><span>you took over at ${T.takeoverAt}</span></div></div>
+  <div class="acts">
+    <button class="btn">${icon('mic')}Mute</button>
+    <button class="btn handback">${icon('handback')}Hand back to Kiku</button>
+    <button class="btn end">${icon('phoneoff')}End call</button>
+  </div>
+</section>
+
+<div class="grid">
+  <div class="left">
+    <section class="dpanel prompter">
+      <div class="ph"><h2>Karaoke prompter<span class="chip">Kiku wrote this at ${liveTurn.t}</span><span class="chip hot"><span class="dotlive"></span>You're speaking</span></h2><span class="hint">Read it as written or say it your way</span></div>
+      ${zipper(liveTurn, { big: true, live: true, who: 'You' })}
+      <div class="next"><span class="k">Up next</span><p>${T.nextLine}</p></div>
+    </section>
+    <section class="dpanel earlier">
+      <div class="ph"><h2>Earlier in this call</h2><span class="hint">Your lines show what Kiku wrote above the line and what you said below it</span></div>
+      <div class="scroll" id="es"><div class="tl">${rows}</div></div>
+    </section>
+  </div>
+  <aside class="side">
+    <section class="dpanel card reason">
+      <h3>${Kiku.mark('escalated')}Why Kiku escalated</h3>
+      <p>${T.escalationReason}</p>
+      <div class="at">Escalated at 00:44, you joined at 01:02</div>
+    </section>
+    <section class="dpanel card facts">
+      <h3>${icon('bed')}Booking</h3>
+      <dl>
+        <dt>Guest</dt><dd>${T.guest}</dd>
+        <dt>Phone</dt><dd>${T.phone}</dd>
+        <dt>Booking</dt><dd>${T.booking}</dd>
+        <dt>Stay</dt><dd>${T.stay}</dd>
+      </dl>
+      <div class="sep"></div>
+      <h3>${icon('card')}Payment facts</h3>
+      <ul>${T.facts.map(f => `<li>${icon('chevright')}<span>${f}</span></li>`).join('')}</ul>
+    </section>
+  </aside>
+</div>
+`);
+const es = document.getElementById('es');
+const end = () => es.scrollTop = es.scrollHeight; end(); document.fonts.ready.then(() => requestAnimationFrame(end));
+</script>
+</body>
+</html>

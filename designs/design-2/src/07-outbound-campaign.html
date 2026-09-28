@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Kiku, campaign calls</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .grid { display: grid; grid-template-columns: 430px minmax(0,1fr); gap: 20px; height: 100%; }
+  .list { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  .list-head { display: flex; justify-content: space-between; align-items: center; }
+  .camp { background: var(--sheet); border: 1px solid var(--line); padding: 16px 18px; position: relative; }
+  .camp.sel { border-color: var(--kiku); box-shadow: inset 0 0 0 1px var(--kiku); }
+  .camp .top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .camp .top .nm { order: 3; width: 100%; margin-top: -4px; }
+  .camp .code { font-size: 17px; font-weight: 900; letter-spacing: .02em; }
+  .camp .nm { font-size: 13px; color: var(--ink-soft); }
+  .camp .offer { font-size: 13.5px; margin-top: 6px; color: var(--ink-2); }
+  .cst { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; padding: 2px 8px; white-space: nowrap; }
+  .cst svg { width: 13px; height: 13px; }
+  .cst.paused { background: var(--esc-tint); color: var(--esc); }
+  .cst.sched { background: var(--kiku-tint); color: var(--kiku); }
+  .cst.draft { background: var(--paper); color: var(--ink-soft); border: 1px dashed var(--ink-mute); }
+  .stack { display: flex; height: 12px; margin-top: 14px; background: var(--line-soft); }
+  .stack span { display: block; height: 100%; }
+  .nums { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 10px; }
+  .nums div { font-size: 11.5px; color: var(--ink-soft); display: flex; flex-direction: column; }
+  .nums b { font-size: 17px; color: var(--ink); font-weight: 900; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 5px; }
+  .nums i { width: 8px; height: 8px; display: inline-block; }
+  .camp .foot { display: flex; gap: 16px; font-size: 12.5px; color: var(--ink-soft); margin-top: 10px; }
+  .camp .foot span { display: flex; align-items: center; gap: 5px; }
+  .camp .foot svg { width: 14px; height: 14px; }
+
+  .setup { background: var(--sheet); border: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  .setup-head { padding: 16px 24px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
+  .setup-head .t { font-size: 18px; font-weight: 700; }
+  .setup-body { flex: 1; min-height: 0; padding: 20px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px; align-content: start; }
+  .full { grid-column: 1 / -1; }
+  .filecard { border: 1px solid var(--line); display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; }
+  .fic { width: 40px; height: 40px; background: var(--kiku-tint); color: var(--kiku); display: grid; place-items: center; }
+  .fic svg { width: 20px; height: 20px; }
+  .fname { font-weight: 700; }
+  .qbar { display: flex; height: 6px; margin-top: 8px; }
+  .qbar span { display: block; height: 100%; }
+  .qlegend { display: flex; gap: 16px; font-size: 12.5px; margin-top: 6px; }
+  .qlegend span { display: flex; gap: 6px; align-items: center; }
+  .days { display: flex; gap: 4px; }
+  .days span { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--line); font-size: 12.5px; font-weight: 700; color: var(--ink-mute); }
+  .days span.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .time { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .time .input { width: 96px; justify-content: center; font-variant-numeric: tabular-nums; }
+  .stepper { display: flex; align-items: center; border: 1px solid var(--line); width: max-content; }
+  .stepper button { width: 38px; height: 38px; display: grid; place-items: center; color: var(--ink-soft); }
+  .stepper b { width: 48px; text-align: center; font-size: 16px; border-left: 1px solid var(--line); border-right: 1px solid var(--line); line-height: 38px; }
+  .opening { border: 1px solid var(--line); padding: 14px 16px; font-size: 16px; line-height: 1.6; display: grid; grid-template-columns: 26px 1fr; gap: 12px; }
+  .token { background: var(--kiku); color: #fff; padding: 1px 6px; font-weight: 700; font-size: 14px; }
+  .setup-foot { border-top: 1px solid var(--line); padding: 14px 24px; display: flex; gap: 12px; align-items: center; }
+  .errs { font-size: 12.5px; color: var(--fail); display: flex; gap: 6px; align-items: center; }
+</style>
+</head>
+<body>
+<script>
+  const { K, icon, mount } = UI;
+  const d = K.campaignDraft;
+  const stIcon = { paused: "pause", sched: "calendar", draft: "note" };
+  const cls = (s) => s.startsWith("Paused") ? "paused" : s.startsWith("Scheduled") ? "sched" : "draft";
+  const cards = K.campaigns.map(c => {
+    const k = cls(c.status);
+    let body = "";
+    if (c.contacts) {
+      const notAns = c.called - c.answered - c.failed;
+      const segs = [[c.booked, "var(--ink)", "Booked"], [c.answered - c.booked, "var(--kiku)", "Answered"], [notAns, "var(--kiku-tint-2)", "No answer"], [c.failed, "var(--fail)", "Failed"]];
+      body = `<div class="stack" title="${c.called} of ${c.contacts} called">${segs.map(s => `<span style="width:${s[0] / c.contacts * 100}%;background:${s[1]}"></span>`).join("")}</div>
+        <div class="nums">
+          <div><b>${c.contacts}</b>contacts</div>
+          <div><b>${c.called}</b>called</div>
+          <div><b><i style="background:var(--kiku)"></i>${c.answered}</b>answered</div>
+          <div><b><i style="background:var(--ink)"></i>${c.booked}</b>booked</div>
+          <div><b><i style="background:var(--fail);transform:rotate(45deg)"></i>${c.failed}</b>failed</div>
+        </div>`;
+    }
+    return `<article class="camp ${k === "draft" ? "sel" : ""}">
+      <div class="top"><span class="code">${c.code}</span><span class="nm">${c.name}</span><span class="cst ${k}">${icon(stIcon[k])}${c.status}</span></div>
+      <p class="offer">${c.offer}</p>
+      ${body}
+      <div class="foot"><span>${icon("file")}${c.audience}${c.code === "HOGMANAY26" ? `, ${c.contacts} contacts` : ""}</span><span>${icon("clock")}${c.window}</span></div>
+    </article>`;
+  }).join("");
+  const burns = K.campaigns.find(c => c.code === d.code);
+  const opening = d.opening.replace("{first_name}", '<span class="token">{first_name}</span>');
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((x, i) => `<span class="${i < 5 ? "on" : ""}">${x.slice(0, 2)}</span>`).join("");
+
+  mount({ role: "admin", active: "campaign", title: "Campaign calls", crumb: "Outbound" }, `
+  <div class="grid">
+    <div class="list">
+      <div class="list-head"><span class="h2">Campaigns <span class="aside">${K.campaigns.length}</span></span><button class="btn sm">${icon("plus")}New campaign</button></div>
+      ${cards}
+    </div>
+    <section class="setup">
+      <div class="setup-head"><span class="t">Set up ${d.code}</span><span class="cst draft" style="margin-left:0">${icon("note")}Draft</span><span class="faint small">${burns.name}: ${burns.offer}</span></div>
+      <div class="setup-body">
+        <div class="field"><label>Promo code</label><div class="input code">${d.code}</div><span class="hint">The code Kiku gives guests for this offer.</span></div>
+        <div class="field"><label>Max attempts per contact</label><div class="stepper"><button aria-label="Fewer">&minus;</button><b class="num">${d.maxAttempts}</b><button aria-label="More">+</button></div><span class="hint">How many times Kiku tries each number.</span></div>
+        <div class="field full"><label>Audience</label>
+          <div class="filecard"><span class="fic">${icon("file")}</span>
+            <div><div class="fname">${d.file}</div>
+              <div class="qbar"><span style="width:${d.ready / d.rows * 100}%;background:var(--ok)"></span><span style="width:${d.errors / d.rows * 100}%;background:var(--fail)"></span></div>
+              <div class="qlegend"><span><b class="num">${d.rows}</b> rows</span><span style="color:var(--ok)">${UI.SHAPE.completed.replace("<svg", '<svg width="11" height="11"')}<b class="num">${d.ready}</b> ready to call</span><span style="color:var(--fail)">${UI.SHAPE.failed.replace("<svg", '<svg width="11" height="11"')}<b class="num">${d.errors}</b> rows with errors, skipped</span></div>
+            </div>
+            <button class="btn sm">${icon("upload")}Replace file</button>
+          </div>
+        </div>
+        <div class="field"><label>Call window</label><div class="days">${days}</div>
+          <div class="time"><span class="input">10:00</span><span class="faint">to</span><span class="input">18:00</span><span class="faint small">${K.hotel.tz}</span></div></div>
+        <div class="field"><label>Summary</label><p class="small muted" style="line-height:1.6">Kiku will call <b style="color:var(--ink)">${d.ready}</b> contacts ${d.window.replace(",", "")}, up to ${d.maxAttempts} attempts each. Nobody is called outside the window.</p></div>
+        <div class="field full"><label>Opening line <em>Kiku says this first, then follows the offer</em></label>
+          <div class="opening"><span class="kiku-chip">K</span><span>${opening}</span></div>
+          <span class="hint">Kiku replaces {first_name} with each contact's first name from the audience file.</span></div>
+      </div>
+      <div class="setup-foot"><span class="errs">${icon("alert")}${d.errors} rows will be skipped</span><span style="flex:1"></span><button class="btn">Save draft</button><button class="btn ink">${icon("calendar")}Schedule campaign</button></div>
+    </section>
+  </div>`);
+</script>
+</body>
+</html>

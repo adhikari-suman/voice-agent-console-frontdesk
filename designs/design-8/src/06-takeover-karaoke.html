@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>On the line · Kiku</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .page { display: grid; grid-template-columns: minmax(0,1fr) 318px; height: 100vh; }
+  .stagecol { display: flex; flex-direction: column; min-height: 0; padding: 18px 24px 16px; gap: 10px; }
+  .heads { display: grid; grid-template-columns: minmax(0,1fr) 64px minmax(0,1fr); align-items: stretch; }
+  .hk { background: var(--kiku-soft); border-radius: 18px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; justify-content: flex-end; text-align: right; color: var(--ink-2); }
+  .hk h2 { font-family: var(--display); font-stretch: 110%; font-weight: 750; font-size: 17px; color: var(--kiku-ink); }
+  .hk .s { font-size: 12.5px; }
+  .hh { background: var(--human); border-radius: 18px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; color: var(--ink); box-shadow: inset 0 0 0 1.5px rgba(107,72,0,.35); }
+  .hh h1 { font-family: var(--display); font-stretch: 112%; font-weight: 820; font-size: 21px; letter-spacing: -0.01em; line-height: 1.1; }
+  .hh .s { font-size: 12.5px; margin-top: 2px; }
+  .hh .level { color: var(--ink); margin-left: auto; }
+  .micspine { display: flex; align-items: center; justify-content: center; position: relative; }
+  .micspine .mic { width: 46px; height: 54px; border-radius: 50% 50% 46% 46% / 58% 58% 42% 42%; background: var(--ink); color: var(--human); display: grid; place-items: center; position: relative; z-index: 1; }
+  .micspine .mic::after { content: ""; position: absolute; inset: -6px; border-radius: inherit; border: 2px solid var(--human); animation: ring 1.6s ease-out infinite; }
+  @keyframes ring { from { opacity: .9; transform: scale(.92); } to { opacity: 0; transform: scale(1.18); } }
+  .micspine .mic svg.lucide { width: 21px; height: 21px; }
+
+  .earlier { flex: 1; min-height: 0; position: relative; -webkit-mask-image: linear-gradient(transparent, #000 48px); mask-image: linear-gradient(transparent, #000 48px); }
+  .earlier .say { font-size: 13.5px; }
+
+  .now { display: grid; grid-template-columns: minmax(0,1fr) 64px minmax(0,1fr); }
+  .now .sp { position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px; padding-top: 14px; }
+  .now .sp::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; margin-left: -1.5px; background: var(--human); }
+  .now .left { display: flex; flex-direction: column; gap: 8px; }
+  .prompt { border: 1.5px dashed var(--ink-3); border-radius: 18px; padding: 14px 18px 16px; background: var(--surface); }
+  .prompt .who, .live .who { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 7px; margin-bottom: 6px; color: var(--ink-2); }
+  .prompt .who .num, .live .who .num { color: var(--ink); }
+  .prompt .txt { font-size: 19px; line-height: 1.45; color: var(--ink); }
+  .prompt del { color: var(--ink-3); text-decoration-thickness: 2px; }
+  .prompt .ins-at { color: var(--human-ink); font-weight: 700; }
+  .next { border-radius: 14px; padding: 10px 16px; background: var(--kiku-soft); font-size: 14px; color: var(--ink-2); display: flex; gap: 10px; }
+  .next b { color: var(--ink); white-space: nowrap; font-size: 12px; padding-top: 2px; }
+  .live { border-radius: 18px; padding: 14px 18px 16px; background: var(--surface); box-shadow: 0 0 0 3px var(--human); height: 100%; }
+  .live .who { color: var(--human-ink); }
+  .live .txt { font-size: 21px; line-height: 1.5; color: var(--ink); }
+  .live mark { background: linear-gradient(100deg, transparent 0 2px, var(--human-mark) 2px calc(100% - 2px), transparent calc(100% - 2px)); padding: 0 2px; border-radius: 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .live .caret { background: var(--ink); height: 22px; width: 3px; vertical-align: -4px; }
+  .live .foot { margin-top: 10px; display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--ink-3); }
+  .livepill { display: inline-flex; align-items: center; gap: 6px; background: var(--ink); color: var(--human); font-weight: 700; font-size: 11.5px; padding: 2px 9px 2px 7px; border-radius: 30px; margin-left: auto; }
+  .livepill i { width: 6px; height: 6px; border-radius: 50%; background: var(--human); }
+  .tmx { position: relative; font-family: var(--display); font-stretch: 76%; font-weight: 700; font-size: 12px; background: var(--paper); padding: 1px 3px; }
+
+  .dock { align-self: center; display: flex; align-items: center; gap: 8px; padding: 7px 7px 7px 20px; background: var(--ink); border-radius: 50px; color: #fff; }
+  .dock .tm { font-size: 12px; color: #B9BBC0; margin-right: 10px; white-space: nowrap; }
+  .dock .tm .num { font-size: 20px; color: #fff; margin-right: 6px; }
+  .dock .btn { background: #2F3136; color: #fff; box-shadow: none; }
+  .dock .btn.hand { background: #fff; color: var(--ink); }
+  .dock .btn.danger { background: var(--bad); }
+
+  .side { background: var(--surface); box-shadow: -1px 0 0 var(--rule); padding: 20px 20px; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+  .side h2 { font-family: var(--display); font-stretch: 108%; font-weight: 750; font-size: 15px; margin-bottom: 8px; }
+  .side .sec + .sec { border-top: 1px solid var(--sunk); padding-top: 14px; }
+  .reason { font-size: 14px; display: flex; gap: 8px; }
+  .reason svg { width: 16px; height: 16px; color: var(--human-ink); margin-top: 2px; flex: none; }
+  .kv { display: grid; grid-template-columns: 70px 1fr; gap: 7px 10px; font-size: 13.5px; }
+  .kv dt { color: var(--ink-3); font-size: 12.5px; }
+  .facts li { list-style: none; display: flex; gap: 9px; padding: 7px 0; border-top: 1px solid var(--sunk); font-size: 13.5px; }
+  .facts li:first-child { border-top: 0; padding-top: 0; }
+  .facts li svg { width: 15px; height: 15px; margin-top: 2px; color: var(--ink-3); flex: none; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail" data-role="specialist" data-active="live"></aside>
+  <div class="page">
+    <section class="stagecol">
+      <div class="heads" id="heads"></div>
+      <div class="scroll earlier"><div class="duet" id="duet"></div></div>
+      <div class="now" id="now"></div>
+      <div class="dock" id="dock"></div>
+    </section>
+    <aside class="side scroll" id="side"></aside>
+  </div>
+</div>
+<script>
+const { K, esc, ic, status, dir, duetRows, scriptHtml, spokenHtml, megg, level } = UI;
+const t = K.takeover;
+const live = t.transcript.find(x => x.live);
+const earlier = t.transcript.filter(x => !x.live);
+
+document.getElementById("heads").innerHTML = `
+  <div class="hk"><div><h2>Kiku is muted</h2><div class="s">It keeps writing the next line for you</div></div><span class="egg kiku">Ki</span></div>
+  <div class="micspine"><span class="mic">${ic("mic")}</span></div>
+  <div class="hh"><div><h1>You're on the line with ${t.guest}</h1><div class="s">She hears you, not Kiku</div></div>${level(16, 7, 24, true)}</div>`;
+
+const duet = document.getElementById("duet");
+duet.innerHTML = duetRows(earlier, { guest: t.guest, specFirst: "Priya", specInitials: "PR", specLabel: "You" });
+const sc = duet.parentElement;
+requestAnimationFrame(() => { sc.scrollTop = sc.scrollHeight; });
+
+document.getElementById("now").innerHTML = `
+  <div class="left">
+    <div class="prompt"><div class="who">${ic("pencil")}Kiku wrote <span class="num">${live.t}</span></div><div class="txt">${scriptHtml(live.diff)}</div></div>
+    <div class="next"><b>Up next</b><span>${esc(t.nextLine)}</span></div>
+  </div>
+  <div class="sp"><span class="tmx">${live.t}</span>${megg(live.match)}</div>
+  <div><div class="live"><div class="who"><span class="egg sm human" style="width:18px;height:21px;font-size:8.5px">PR</span>You're saying<span class="livepill"><i></i>Live</span></div>
+    <div class="txt">${spokenHtml(live.diff, true)}</div>
+    <div class="foot">Highlighted words are your own. Plain words match Kiku's line.</div></div></div>`;
+
+document.getElementById("dock").innerHTML = `
+  <span class="tm"><span class="num">${t.duration}</span>on call, yours since ${t.takeoverAt}</span>
+  <button class="btn lg">${ic("mic-off")}Mute</button>
+  <button class="btn lg hand">${ic("bot")}Hand back to Kiku</button>
+  <button class="btn lg danger">${ic("phone-off")}End call</button>`;
+
+document.getElementById("side").innerHTML = `
+  <div class="sec"><h2>Why you're on this call</h2><p class="reason">${ic("triangle-alert")}${t.escalationReason}</p>
+    <div style="margin-top:10px;display:flex;gap:8px;align-items:center">${status(t.status, true)}<span class="mono-id">${t.id}</span></div></div>
+  <div class="sec"><h2>Booking</h2>
+    <dl class="kv">
+      <dt>Guest</dt><dd>${t.guest}</dd>
+      <dt>Phone</dt><dd class="num" style="font-size:15px">${t.phone}</dd>
+      <dt>Booking</dt><dd class="num" style="font-size:15px">${t.booking}</dd>
+      <dt>Stay</dt><dd>${t.stay}</dd>
+      <dt>Call</dt><dd>${dir(t)} from ${t.started}</dd>
+    </dl></div>
+  <div class="sec"><h2>The charges</h2>
+    <ul class="facts">${t.facts.map((f, i) => `<li>${ic(["receipt", "clock-3", "credit-card"][i])}<span>${f}</span></li>`).join("")}</ul></div>
+  <div class="sec"><h2>What she rang about</h2><p style="font-size:13.5px">${t.purpose}</p></div>`;
+</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Make a call · Kiku</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .content { display: grid; grid-template-columns: 1fr 1.3fr; gap: 16px; }
+  .path { display: flex; flex-direction: column; min-height: 0; }
+  .path .panel-h { padding: 18px 22px 6px; }
+  .path .body { padding: 8px 22px 16px; display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0; }
+  .path .foot { padding: 12px 22px; border-top: 1px solid var(--rule); display: flex; align-items: center; gap: 10px; }
+  .path .foot .hint { margin-right: auto; }
+  .purpose { min-height: 190px; font-size: 15.5px; line-height: 1.55; display: block; padding: 12px 14px; height: auto; }
+  .count { font-size: 12px; color: var(--ink-3); text-align: right; margin-top: -2px; }
+  .brief { border-radius: 10px; background: var(--kiku-soft); padding: 12px 14px; display: flex; gap: 10px; font-size: 13.5px; color: var(--kiku-ink); }
+  .brief .egg { margin-top: 1px; }
+  .cols { display: flex; gap: 6px; align-items: center; font-size: 12.5px; color: var(--ink-2); flex-wrap: wrap; }
+  .cols code { font-family: var(--display); font-stretch: 84%; font-weight: 700; background: var(--sunk); padding: 1px 7px; border-radius: 5px; font-size: 12.5px; }
+  .tpl { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; border: 1.5px dashed var(--rule-2); font-size: 13px; color: var(--ink-2); }
+  .tpl a { margin-left: auto; color: var(--kiku-ink); font-weight: 700; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
+  .tpl svg.lucide { width: 15px; height: 15px; }
+  .prev { flex: 1; min-height: 0; border-radius: 10px; box-shadow: 0 0 0 1px var(--rule); }
+  table.grid td { font-size: 13px; padding: 8px 10px; vertical-align: top; }
+  .gph { font-family: var(--display); font-stretch: 82%; font-weight: 550; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ok-mark { color: var(--ok); display: inline-flex; align-items: center; gap: 5px; font-weight: 700; font-size: 12.5px; white-space: nowrap; }
+  .ok-mark svg { width: 14px; height: 14px; }
+  .none { color: var(--ink-3); font-style: italic; }
+  .gap-row td { text-align: center; color: var(--ink-3); font-size: 12px; padding: 4px; background: var(--paper); }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail" data-role="admin" data-active="make"></aside>
+  <main class="main">
+    <header class="topbar"><div><h1>Make a call</h1><div class="sub">Tell Kiku why to call, in plain words. It places the call and reports back in the call logs.</div></div><div class="right" data-clock></div></header>
+    <section class="content">
+      <div class="panel path" id="single"></div>
+      <div class="panel path" id="csv"></div>
+    </section>
+  </main>
+</div>
+<script>
+const { K, esc, ic, SHAPES } = UI;
+const s = K.makeCallSingle;
+document.getElementById("single").innerHTML = `
+  <div class="panel-h"><h2>One call</h2><span class="meta">Kiku rings straight away</span></div>
+  <div class="body">
+    <label class="field"><span>What the call is for</span><div class="input purpose focus">${esc(s.purpose)}</div>
+      <div class="count">Write it as you'd brief a colleague</div></label>
+    <label class="field"><span>Name <em>optional</em></span><div class="input">${s.name}</div></label>
+    <label class="field"><span>Phone</span><div class="input num" style="font-size:15px">${s.phone}</div></label>
+    <div class="brief"><span class="egg sm kiku">Ki</span><span>Kiku opens with the guest's name, explains the reason, and asks for their answer. If they want a person, the call escalates to a specialist.</span></div>
+  </div>
+  <div class="foot"><span class="hint">Calls from ${K.hotel.line}</span><button class="btn lg kiku">${ic("phone-outgoing")}Place call</button></div>`;
+
+const c = K.makeCallCsv;
+const rows = c.preview.map((r, i) => {
+  const prev = c.preview[i - 1];
+  const gap = prev && r.row - prev.row > 1 ? `<tr class="gap-row"><td colspan="5">${r.row - prev.row - 1} more ready row</td></tr>` : "";
+  return gap + `<tr class="${r.ok ? "" : "err"}"><td class="rowno">${r.row}</td><td class="gph">${esc(r.phone) || "<span style='color:var(--bad)'>empty</span>"}</td><td style="white-space:nowrap">${esc(r.name) || "<span class='none'>No name</span>"}</td><td>${esc(r.purpose)}</td>
+    <td>${r.ok ? `<span class="ok-mark">${SHAPES.completed}Ready</span>` : `<span class="err-note">${SHAPES.failed}${r.error}</span>`}</td></tr>`;
+}).join("");
+document.getElementById("csv").innerHTML = `
+  <div class="panel-h"><h2>Many calls from a file</h2><span class="cols">Columns ${c.columns.map(x => `<code>${x}</code>`).join("")}</span></div>
+  <div class="body">
+    <div class="tpl">${ic("file-down")}Start from the template so the columns match.<a href="#">${ic("download")}Download template CSV</a></div>
+    <div class="file"><div class="fi">CSV</div><div><div class="nm">${c.file}</div><div class="sz">${c.size}, ${c.rows} rows</div></div>
+      <div class="tally"><span class="ok">${SHAPES.completed}${c.ready} ready</span><span class="er">${SHAPES.failed}${c.errors} error</span><button class="btn sm">Replace</button></div></div>
+    <div class="prev scroll"><table class="grid"><thead><tr><th>Row</th><th>Phone</th><th>Name</th><th>What the call is for</th><th>Check</th></tr></thead><tbody>${rows}</tbody></table></div>
+  </div>
+  <div class="foot"><span class="hint">Row 6 is skipped: add a phone number and upload again to include it.</span><button class="btn lg kiku">${ic("phone-outgoing")}Place ${c.ready} calls</button></div>`;
+</script>
+</body>
+</html>

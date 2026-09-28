@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku, call audit KK-24027</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+  .audit { height: 100%; display: grid; grid-template-columns: 360px 1fr; }
+  .dossier { background: var(--sheet); border-right: 1px solid var(--line); display: grid; grid-template-rows: auto 1fr; min-height: 0; }
+  .d-top { padding: 18px 24px 16px; border-bottom: 1px solid var(--line-2); }
+  .back { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; color: var(--ink-2); text-decoration: none; margin-bottom: 10px; }
+  .back svg.lucide { width: 14px; height: 14px; }
+  .d-top h1 { font: 600 26px/1.1 var(--sans); letter-spacing: -0.025em; }
+  .d-top .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+  .d-body { padding: 4px 24px 16px; }
+  .sec { padding: 14px 0; border-bottom: 1px solid var(--line-2); }
+  .sec:last-child { border-bottom: 0; }
+  .sec > h3 { margin-bottom: 8px; }
+  dl.facts { display: grid; grid-template-columns: 92px 1fr; gap: 6px 10px; font-size: 13px; }
+  dl.facts dt { color: var(--ink-3); }
+  dl.facts dd { font-weight: 500; }
+  .rec { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; }
+  .play { width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: #fff; border: 0; display: grid; place-items: center; }
+  .play svg.lucide { width: 14px; height: 14px; fill: #fff; }
+  .tl { position: relative; height: 40px; }
+  .tl .bar { position: absolute; left: 0; right: 0; top: 17px; height: 6px; border-radius: 3px; background: var(--kiku); }
+  .tl .bar .h { position: absolute; top: 0; bottom: 0; right: 0; background: var(--human); border-radius: 0 3px 3px 0; }
+  .tl .bar .q { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(90deg, #c9cdd4 0 2px, transparent 2px 4px); }
+  .tl .m { position: absolute; top: 12px; width: 0; height: 16px; }
+  .tl .m::before { content: ""; position: absolute; left: -1px; top: 0; width: 2px; height: 16px; background: var(--ink); }
+  .tl .lbl { position: absolute; top: 30px; font-size: 11px; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; }
+  .tl .lbl svg { width: 10px; height: 10px; }
+  .tl .ends { position: absolute; top: -2px; left: 0; right: 0; display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-3); }
+  .out li { list-style: none; display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; padding: 6px 0; font-size: 13px; }
+  .out li svg.lucide { width: 15px; height: 15px; margin-top: 2px; }
+  .out li.added svg { color: var(--ok); }
+  .out li.declined { color: var(--ink-3); }
+  .out li b { font-weight: 600; }
+  .total { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
+  .total b { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+  .note { font-size: 12.5px; color: var(--ink-2); display: flex; gap: 6px; margin-top: 8px; }
+  .note svg.lucide { width: 14px; height: 14px; margin-top: 2px; }
+
+  .doc { display: grid; grid-template-rows: auto 1fr; min-height: 0; padding: 0 28px; }
+  .doc-head { display: grid; grid-template-columns: 1fr auto; gap: 10px 20px; align-items: end; padding: 20px 0 14px; border-bottom: 1px solid var(--line); }
+  .doc-head h2 { font-size: 20px; letter-spacing: -0.02em; }
+  .tally { font-size: 13.5px; color: var(--ink-2); margin-top: 3px; }
+  .tally b { color: var(--ink); font-weight: 600; }
+  .views { display: inline-flex; background: #e6e8ec; border-radius: 8px; padding: 3px; }
+  .views button { border: 0; background: transparent; height: 28px; padding: 0 12px; border-radius: 6px; font-size: 12.5px; font-weight: 500; color: var(--ink-2); }
+  .views button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(20,24,30,.12); }
+  .doc .key { grid-column: 1 / -1; }
+  .doc .scroll { padding: 6px 0 20px; }
+  .turn { grid-template-columns: 48px minmax(0, 1fr) 190px; }
+  .turn .say, .turn .redline { max-width: 68ch; }
+  .turn + .turn { border-top: 1px solid var(--line-2); }
+  .turn.k { background: linear-gradient(90deg, transparent 62px, #fff 62px); }
+  .turn.k .who { color: var(--human); }
+  .margin { border-left: 1px dashed var(--line); padding-left: 14px; font-size: 12px; color: var(--ink-3); display: grid; gap: 6px; align-content: start; }
+  .margin .pct { font-size: 20px; font-weight: 600; color: var(--ink); letter-spacing: -0.02em; line-height: 1; }
+  .margin .pct small { font-size: 12px; font-weight: 400; color: var(--ink-3); letter-spacing: 0; }
+  .exact { display: inline-flex; align-items: center; gap: 5px; color: var(--ok); font-weight: 600; font-size: 12.5px; }
+  .exact svg.lucide { width: 14px; height: 14px; }
+  .turn.k.asw .redline span { background: var(--ok-soft); border-radius: 3px; box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 1px 2px; }
+  .turn.sys-row { grid-template-columns: 48px 1fr; padding: 6px 0; }
+</style>
+</head>
+<body>
+<script>
+const A = K.audit;
+const sec = t => { const [m, s] = t.split(":").map(Number); return m * 60 + s; };
+const total = sec(A.duration);
+const escT = A.transcript.find(x => x.kind === "escalation").t;
+const pc = t => (sec(t) / total * 100).toFixed(2) + "%";
+
+let n = 0;
+const rows = A.transcript.map(x => {
+  if (x.speaker === "system") {
+    const g = x.kind === "escalation" ? GLYPH.escalated : ic({ join: "headphones", takeover: "mic", end: "phone-off" }[x.kind]);
+    return `<div class="turn sys-row"><span class="t">${x.t}</span><span class="sys ${x.kind}">${g}${esc(x.text)}</span></div>`;
+  }
+  if (x.karaoke) {
+    n++;
+    return `<div class="turn k ${x.asWritten ? "asw" : ""}"><span class="t">${x.t}</span>
+      <div><div class="who">${ic("mic")}${A.specialist}, karaoke line ${n}</div><p class="redline">${redline(x.diff)}</p></div>
+      <aside class="margin">${x.asWritten ? `<span class="exact">${ic("check-check")}Spoken as written</span>` : `<span class="pct">${x.match}%<small> kept</small></span>`}${heat(x.diff)}<span>${x.asWritten ? "Every word as Kiku wrote it" : `${x.diff.filter(d => d.op === "ins").length} changes improvised`}</span></aside>
+    </div>`;
+  }
+  const who = x.speaker === "agent" ? `${ic("audio-lines")}Kiku` : `${ic("user")}${A.guest}`;
+  return `<div class="turn ${x.speaker}"><span class="t">${x.t}</span><div><div class="who">${who}</div><div class="say">${esc(x.text)}</div></div><span></span></div>`;
+}).join("");
+
+const [stayDates, ...stayRest] = A.stay.split(" · ");
+const S = A.karaokeSummary;
+
+shell("specialist", "logs", `
+<div class="audit">
+  <aside class="dossier">
+    <div class="d-top">
+      <a class="back" href="03-call-logs.html">${ic("arrow-left")}Call logs</a>
+      <h1>${A.guest}</h1>
+      <div class="chips">${status(A.status)}${dirChip(A)}${typeChip(A)}</div>
+    </div>
+    <div class="d-body scroll">
+      <div class="sec">
+        <dl class="facts">
+          <dt>Call</dt><dd>${A.id}, ${A.started}</dd>
+          <dt>Length</dt><dd>${A.duration}</dd>
+          <dt>Phone</dt><dd>${A.phone}</dd>
+          <dt>Booking</dt><dd>${A.booking}</dd>
+          <dt>Stay</dt><dd>${stayDates}<br><span class="muted" style="font-weight:400">${stayRest.join(", ")}</span></dd>
+          <dt>For</dt><dd style="font-weight:400">${A.purpose}</dd>
+          <dt>Handled by</dt><dd><span class="who-k">${ic("audio-lines")}${A.agent}</span>, then <span class="who-h">${ic("mic")}${A.specialist}</span></dd>
+        </dl>
+      </div>
+      <div class="sec">
+        <h3>Recording</h3>
+        <div class="rec">
+          <button class="play" aria-label="Play recording">${ic("play")}</button>
+          <div class="tl">
+            <div class="ends"><span>00:00</span><span>${A.duration}</span></div>
+            <div class="bar"><span class="q" style="left:${pc(escT)};width:calc(${pc(A.takeoverAt)} - ${pc(escT)})"></span><span class="h" style="left:${pc(A.takeoverAt)}"></span></div>
+            <span class="m" style="left:${pc(escT)}"></span><span class="m" style="left:${pc(A.takeoverAt)}"></span>
+            <span class="lbl st escalated" style="right:calc(100% - ${pc(escT)} + 4px);font-weight:500">${GLYPH.escalated}${escT}</span>
+            <span class="lbl who-h" style="left:calc(${pc(A.takeoverAt)} + 4px)">${ic("mic")}took over ${A.takeoverAt}</span>
+          </div>
+        </div>
+      </div>
+      <div class="sec out">
+        <h3>Outcome</h3>
+        <ul>${A.outcome.map(o => `<li class="${o.result}">${ic(o.result === "added" ? "circle-check" : "circle-minus")}<span>${o.item}${o.result === "declined" ? " <span class='cap'>(declined)</span>" : ""}</span><b>${o.amount}</b></li>`).join("")}</ul>
+        <div class="total"><span class="sub">Added to ${A.booking}</span><b>${A.total}</b></div>
+        <p class="note">${ic("sticky-note")}${A.note}</p>
+      </div>
+      <div class="sec">
+        <h3>Why it escalated</h3>
+        <p style="font-size:13px" class="muted">${A.escalationReason}</p>
+      </div>
+    </div>
+  </aside>
+
+  <section class="doc">
+    <div class="doc-head">
+      <div>
+        <h2>Message history</h2>
+        <p class="tally">Karaoke from ${A.takeoverAt}: <b>${S.lines} lines</b>, <b style="color:var(--ok)">${S.asWritten} spoken as written</b>, <b style="color:var(--human)">${S.improvised} improvised</b></p>
+      </div>
+      <div class="views" role="tablist" aria-label="Karaoke view"><button class="on">Redline</button><button>Kiku wrote</button><button>Tomasz said</button></div>
+      <div class="key"><span><span class="kd">struck</span> Kiku wrote, Tomasz didn't say</span><span><span class="hi">underlined</span> Tomasz said, not in Kiku's line</span><span>Plain: both</span><span style="display:inline-flex;gap:6px;align-items:center">${heat([{op:"same",text:"a b"},{op:"del",text:"a"},{op:"ins",text:"a"}])} one cell per word</span></div>
+    </div>
+    <div class="scroll" id="tx">${rows}</div>
+  </section>
+</div>`);
+finish();
+const tx = document.getElementById("tx"); const e = tx.querySelectorAll(".turn")[4]; tx.scrollTop = e.offsetTop - tx.offsetTop;
+</script>
+</body>
+</html>

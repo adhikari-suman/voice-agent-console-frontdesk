@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Shippori+Mincho+B1:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { position: relative; }
+  .rails { position: absolute; left: 0; right: 0; top: 350px; height: 0; border-top: 2px dashed var(--ink-2); opacity: .7; }
+  .knot { position: absolute; top: 344px; width: 14px; height: 14px; border-radius: 50%; background: var(--paper); border: 3px solid var(--kiku); }
+  .wrap { position: relative; height: 100%; display: grid; grid-template-columns: 560px 420px; column-gap: 120px; align-items: center; justify-content: center; }
+  .brand { align-self: start; margin-top: 220px; }
+  .brand .wm { font-family: var(--serif); font-weight: 800; font-size: 120px; line-height: .9; letter-spacing: -.01em; color: var(--ink); }
+  .brand .hotel { margin-top: 58px; font-family: var(--serif); font-weight: 600; font-size: 24px; }
+  .brand p { margin-top: 8px; color: var(--ink-2); font-size: 14.5px; max-width: 420px; }
+  .brand .line { margin-top: 22px; display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--ink-2); }
+  .card { background: var(--sheet); border: 1px solid var(--line); border-radius: 4px; padding: 32px 34px 28px; box-shadow: 0 1px 0 var(--line), 0 18px 40px -24px rgba(28,39,33,.35); }
+  .card h1 { font-size: 22px; font-family: var(--serif); font-weight: 700; }
+  .card .sub { color: var(--ink-3); font-size: 13px; margin-top: 4px; }
+  form { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; }
+  .row a { color: var(--human); font-size: 12.5px; font-weight: 700; text-decoration: none; }
+  .btn.full { width: 100%; height: 44px; font-size: 15px; margin-top: 4px; }
+  .dots { letter-spacing: 3px; font-size: 18px; line-height: 1; }
+  .foot { position: absolute; left: 0; right: 0; bottom: 24px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="rails" aria-hidden="true"></div><span class="knot" style="left:calc(50% - 280px)" aria-hidden="true"></span><span class="knot" style="left:calc(50% + 124px);border-color:var(--human)" aria-hidden="true"></span>
+<main class="wrap">
+  <section class="brand">
+    <div class="wm">kiku</div>
+    <div class="hotel" id="hotel"></div>
+    <p>The console where the front desk hears what Kiku hears, and steps in when a guest needs a person.</p>
+    <div class="line"><i data-lucide="phone"></i><span id="line"></span></div>
+  </section>
+  <section class="card">
+    <h1>Sign in</h1>
+    <div class="sub">Use your Brenlow staff email.</div>
+    <form onsubmit="return false">
+      <div class="field"><label for="e">Email</label><div class="input focus"><span id="email"></span></div></div>
+      <div class="field">
+        <div class="row"><label for="p" style="font-size:12.5px;font-weight:700;color:var(--ink-2)">Password</label><a href="#">Forgot password?</a></div>
+        <div class="input"><span class="dots">••••••••••</span></div>
+      </div>
+      <button class="btn human full" type="submit">Sign in</button>
+    </form>
+  </section>
+</main>
+<div class="foot footnote" id="demo"></div>
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<script>
+const { K } = TT;
+document.getElementById("hotel").textContent = `${K.hotel.name}, ${K.hotel.city}`;
+document.getElementById("line").textContent = `Kiku answers ${K.hotel.line}`;
+document.getElementById("email").textContent = K.people.specialist.email;
+document.getElementById("demo").textContent = `Demo data. ${K.synthetic.replace(/^Demo data\.\s*/, "")}`;
+TT.icons();
+</script>
+</body>
+</html>

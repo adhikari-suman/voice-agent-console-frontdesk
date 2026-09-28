@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku, sign in</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+  body { display: grid; grid-template-columns: 560px 1fr; background: #fff; }
+  .side { background: var(--dock); color: #fff; padding: 48px; display: grid; grid-template-rows: 1fr auto; }
+  .big { display: grid; grid-template-columns: repeat(4, 64px); gap: 8px; align-self: center; }
+  .big i { height: 64px; border-radius: 6px; background: rgba(255,255,255,.1); }
+  .big i.k { background: #a79cf0; } .big i.h { background: #5cc3d3; } .big i.s { background: #fff; }
+  .name { margin-top: 36px; }
+  .name b { display: block; font: 600 64px/1 var(--sans); letter-spacing: -0.04em; }
+  .name span { display: block; margin-top: 10px; color: #aab0bb; font-size: 16px; }
+  .side .fn { display: flex; gap: 8px; align-items: center; font-size: 12px; color: #858b96; }
+  .side .fn svg.lucide { width: 13px; height: 13px; }
+  .main { display: grid; place-items: center; }
+  .form { width: 400px; display: grid; gap: 18px; }
+  .form h1 { font: 600 30px/1.1 var(--sans); letter-spacing: -0.03em; }
+  .row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .row a { color: var(--kiku); font-weight: 500; text-decoration: none; }
+  .row label { display: inline-flex; gap: 8px; align-items: center; color: var(--ink-2); }
+  .form .btn { width: 100%; }
+  .help { font-size: 13px; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<script>
+document.body.innerHTML = `
+<aside class="side">
+  <div style="align-self:center">
+    <div class="big" aria-hidden="true">${MARK}</div>
+    <div class="name"><b>Kiku</b><span>${K.hotel.name}, ${K.hotel.city}</span></div>
+  </div>
+  <p class="fn">${ic("database")}${K.synthetic}</p>
+</aside>
+<main class="main">
+  <form class="form" onsubmit="return false">
+    <div><h1>Sign in</h1><p class="sub" style="margin-top:6px">Use your Brenlow staff email.</p></div>
+    <div class="field"><label for="em">Email</label><span class="input">${ic("mail")}<input id="em" type="email" value="${K.people.specialist.email}"></span></div>
+    <div class="field"><label for="pw">Password</label><span class="input">${ic("lock")}<input id="pw" type="password" value="password12"></span></div>
+    <div class="row"><label><input type="checkbox" checked> Keep me signed in on this desk</label><a href="#">Forgot password?</a></div>
+    <button class="btn primary lg" onclick="location.href='02-live-overview.html'">Sign in</button>
+    <p class="help">No account yet? Ask your Kiku admin for an invite.</p>
+  </form>
+</main>`;
+finish();
+</script>
+</body>
+</html>

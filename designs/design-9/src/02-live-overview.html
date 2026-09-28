@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Live board</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .totals { font-size: 15px; color: var(--ink-2); max-width: 900px; line-height: 1.5; }
+  .totals b { color: var(--ink); font-weight: 600; }
+  .grid { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 400px; gap: 16px; }
+  .col { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+
+  .need { background: var(--white); border: 1px solid #D9A8B6; border-left: 6px solid var(--esc); border-radius: var(--r); padding: 18px 22px; display: grid; grid-template-columns: 1fr auto; gap: 8px 32px; flex: none; }
+  .need .lbl { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--esc); }
+  .need h2 { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; display: flex; align-items: baseline; gap: 14px; }
+  .need h2 small { font-size: 13px; font-weight: 400; color: var(--ink-2); letter-spacing: 0; }
+  .need .purpose { font-family: var(--voice); font-size: 17px; line-height: 1.4; max-width: 640px; }
+  .need .reason { font-size: 13px; color: var(--ink-2); display: flex; gap: 8px; align-items: center; }
+  .need .right { grid-row: 1 / span 4; grid-column: 2; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 12px; }
+  .wait { text-align: right; font-size: 12px; color: var(--ink-2); }
+  .wait b { display: block; font-size: 40px; font-weight: 600; color: var(--esc); letter-spacing: -0.03em; line-height: 1; }
+  .need .btn.human { height: 46px; padding: 0 22px; font-size: 15px; }
+
+  .lines { flex: 1; display: flex; flex-direction: column; }
+  .row { display: grid; grid-template-columns: 200px 132px 1fr 190px 170px; gap: 20px; align-items: center; padding: 20px 16px; border-bottom: 1px solid var(--line-2); }
+  .row:last-child { border-bottom: 0; }
+  .row .g b { display: block; font-weight: 600; font-size: 14px; }
+  .row .g span { font-size: 12px; color: var(--ink-3); }
+  .row .p { font-size: 13px; color: var(--ink-2); line-height: 1.4; }
+  .row .p .dir { margin-bottom: 3px; }
+  .mini { display: grid; gap: 2px; }
+  .mini .ln { height: 6px; background: var(--line-2); position: relative; border-radius: 1px; }
+  .mini .ln i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 1px; }
+  .mini .k i { background: var(--kiku); }
+  .mini .h i { background: var(--human); }
+  .mini .h i.wait { background: repeating-linear-gradient(90deg, var(--esc) 0 3px, transparent 3px 6px); }
+  .mini small { font-size: 11px; color: var(--ink-3); margin-top: 3px; }
+  .who2 { font-size: 12.5px; display: flex; align-items: center; gap: 8px; }
+  .who2 .av { width: 24px; height: 24px; font-size: 10px; }
+  .acts { display: flex; gap: 6px; justify-content: flex-end; }
+  .dur { font-size: 12px; color: var(--ink-3); }
+  .dur b { color: var(--ink); font-size: 14px; font-weight: 600; margin-right: 4px; }
+
+  .recent li { list-style: none; padding: 11px 16px; border-bottom: 1px solid var(--line-2); display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; }
+  .recent li b { font-weight: 600; font-size: 13.5px; }
+  .recent li .o { grid-column: 1 / -1; font-size: 12.5px; color: var(--ink-2); }
+  .recent li .m { font-size: 12px; color: var(--ink-3); display: flex; gap: 10px; align-items: center; }
+  .recent a.all { display: block; padding: 12px 16px; font-size: 13px; font-weight: 500; color: var(--kiku-deep); text-decoration: none; }
+</style>
+</head>
+<body>
+<header class="top" id="top"></header>
+<main class="main" id="main"></main>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<script>
+shell("specialist", "live");
+const S = K.stats;
+const sec = t => { const [m, s] = t.split(":").map(Number); return m * 60 + s; };
+const live = K.calls.filter(c => c.status === "in_progress" || c.status === "escalated");
+const owen = live.find(c => c.status === "escalated" && !c.specialist);
+const others = live.filter(c => c !== owen);
+const maxS = 240;
+
+function mini(c) {
+  const d = sec(c.duration) / maxS * 100;
+  let h = "", note = "Kiku alone";
+  if (c.guest === "Margaret Doyle") { const t = sec(K.takeover.takeoverAt) / maxS * 100; h = `<i style="left:${t}%;width:${d - t}%"></i>`; note = `You took over at ${K.takeover.takeoverAt}`; }
+  if (c.guest === "Rashid Karimi") { note = "You are listening"; }
+  return `<div class="mini"><div class="ln k"><i style="width:${d}%"></i></div><div class="ln h">${h}</div><small>${note}</small></div>`;
+}
+function acts(c) {
+  if (c.guest === "Margaret Doyle") return `<a class="btn human sm" href="06-takeover-karaoke.html">${icon("mic")}Back to call</a>`;
+  if (c.guest === "Rashid Karimi") return `<a class="btn sm" href="05-live-call-listening.html">${icon("headphones")}Listening</a><button class="btn sm">${icon("user-plus")}Join</button>`;
+  return `<button class="btn sm">${icon("headphones")}Listen</button><button class="btn sm">${icon("user-plus")}Join</button>`;
+}
+function who(c) {
+  if (!c.specialist) return `<span class="who2 faint">${icon("bot")}Kiku only</span>`;
+  return `<span class="who2"><span class="av" style="background:var(--human);color:var(--ink)">PR</span>${c.specialist.includes("listening") ? "Priya, listening" : "Priya, speaking"}</span>`;
+}
+
+const rows = others.map(c => `
+  <div class="row">
+    <div class="g"><b>${esc(c.guest)}</b><span>${c.phone}</span></div>
+    ${mini(c)}
+    <div class="p">${dir(c.direction)}${c.type !== "Inbound" ? ` <span class="tag">${c.type}</span>` : ""}<div>${esc(c.purpose)}</div></div>
+    <div>${status(c.status, true)}<div class="dur" style="margin-top:6px"><b>${c.duration}</b>since ${c.started}</div>${who(c)}</div>
+    <div class="acts">${acts(c)}</div>
+  </div>`).join("");
+
+const recent = K.calls.filter(c => c.status === "completed" || c.status === "failed").slice(0, 7).map(c => `
+  <li><b>${esc(c.guest)}</b>${status(c.status)}
+  <span class="m"><span>${c.started}</span>${c.direction === "inbound" ? "Inbound" : c.type}<span>${c.duration}</span>${c.specialist ? `<span>${icon("mic")} ${c.specialist.split(" ")[0]}</span>` : ""}</span><span></span>
+  <span class="o">${esc(c.outcome)}</span></li>`).join("");
+
+document.getElementById("main").innerHTML = `
+<div class="head">
+  <div><h1>Live board</h1></div>
+  <p class="totals">Today so far: <b>${S.callsToday} calls</b>, ${S.inbound} inbound and ${S.outbound} outbound. <b>${S.completed}</b> completed, <b>${S.inProgress}</b> in progress, <b>${S.escalated}</b> escalated, <b>${S.failed}</b> failed. Specialists took over <b>${S.takeoversToday}</b> times, average handle <b>${S.avgHandle}</b>, <b>${S.upsellValueToday}</b> added through upsells.</p>
+</div>
+<div class="grid">
+  <div class="col">
+    <section class="need">
+      <div class="lbl">${STATUS.escalated.svg}Needs a specialist · nobody has joined</div>
+      <h2>${esc(owen.guest)}<small>${owen.phone} · ${dir(owen.direction)} · started ${owen.started}</small></h2>
+      <p class="purpose">${esc(owen.purpose)}</p>
+      <p class="reason">${icon("shield-alert")}${esc(owen.escalationReason)} Kiku is keeping the guest on the line.</p>
+      <div class="right"><div class="wait">Waiting for you<b>${owen.waiting}</b></div>
+        <div style="display:flex;gap:8px"><button class="btn lg">${icon("headphones")}Listen first</button><button class="btn human">${icon("mic")}Take over</button></div></div>
+    </section>
+    <section class="panel lines">
+      <div class="ph">On the line now<span class="sp">${others.length} more calls · upper lane Kiku, lower lane a specialist</span></div>
+      <div class="scroll" style="flex:1">${rows}</div>
+    </section>
+  </div>
+  <section class="panel recent" style="display:flex;flex-direction:column">
+    <div class="ph">Recently finished<span class="sp">Today</span></div>
+    <ul class="scroll" style="flex:1">${recent}</ul>
+    <a class="all" href="03-call-logs.html">All ${K.calls.length} calls in call logs</a>
+  </section>
+</div>`;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>

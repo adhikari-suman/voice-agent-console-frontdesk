@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku, call audit KK-24027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+.audit { display: grid; grid-template-columns: 372px 104px 1fr; height: 100vh; }
+/* Dossier */
+.dossier { background: var(--panel); border-right: 1px solid var(--hair); display: flex; flex-direction: column; min-height: 0; }
+.dos-h { padding: 22px 26px 16px; border-bottom: 1px solid var(--hair); }
+.dos-h h1 { font: 700 30px/1.05 var(--display); letter-spacing: -0.02em; margin: 8px 0 10px; }
+.dos-h .line2 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.dos-b { flex: 1; min-height: 0; padding: 14px 26px 18px; display: flex; flex-direction: column; gap: 16px; }
+.kv2 { display: grid; grid-template-columns: 84px 1fr; gap: 6px 12px; font-size: 13px; }
+.kv2 dt { color: var(--ink-3); }
+.kv2 dd b { font-weight: 600; }
+.sec-t { font: 650 15px/1.2 var(--display); margin-bottom: 8px; display: flex; align-items: baseline; }
+.sec-t span { margin-left: auto; font: 400 12.5px var(--ui); color: var(--ink-3); }
+.ks { display: grid; grid-template-columns: 92px 1fr; gap: 14px; align-items: center; padding: 14px 0; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); }
+.ks .big { font: 700 30px/1 var(--display); letter-spacing: -0.02em; }
+.ks .sub { font-size: 12.5px; color: var(--ink-2); margin-top: 4px; }
+.ks .leg { display: flex; gap: 12px; margin-top: 8px; font-size: 12px; }
+.oi { display: grid; grid-template-columns: 18px 1fr auto; gap: 10px; padding: 7px 0; font-size: 13px; }
+.oi svg { width: 16px; height: 16px; margin-top: 1px; }
+.oi .add { color: var(--done); }
+.oi .dec { color: var(--ink-3); }
+.oi.declined .nm { color: var(--ink-3); text-decoration: line-through; }
+.tot { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0 8px; border-top: 1px solid var(--hair); margin-top: 4px; }
+.tot b { font: 700 26px/1 var(--display); letter-spacing: -0.02em; }
+.note { display: flex; gap: 8px; font-size: 12.5px; color: var(--mauve-d); }
+.note svg { width: 14px; height: 14px; margin-top: 2px; flex: none; }
+/* Spine: the recording, drawn top to bottom */
+.spine { background: var(--aub); color: #D9CDD4; display: flex; flex-direction: column; align-items: center; padding: 18px 0 14px; min-height: 0; border-left: 1px solid var(--aub-3); }
+.play { width: 44px; height: 44px; background: var(--apricot); color: var(--aub); display: grid; place-items: center; clip-path: polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); flex: none; }
+.play svg { width: 18px; height: 18px; fill: var(--aub); }
+.sp-t { font-size: 11.5px; margin: 8px 0 16px; text-align: center; line-height: 1.3; }
+.sp-t b { display: block; font: 600 15px var(--display); color: #fff; }
+.track { position: relative; flex: 1; width: 100%; }
+.wave { position: absolute; top: 0; bottom: 0; left: 34px; width: 44px; display: flex; flex-direction: column; gap: 1.5px; align-items: center; }
+.wave i { flex: 1; background: var(--mauve); border-radius: 1px; }
+.wave i.h { background: var(--apricot); }
+.view { position: absolute; left: 28px; right: 20px; border: 1.5px solid #fff; border-radius: 3px; }
+.mk { position: absolute; left: 0; right: 0; height: 0; border-top: 1.5px dashed currentColor; }
+.mk span { position: absolute; left: 4px; top: -17px; font-size: 10.5px; font-weight: 700; background: var(--aub); padding: 0 3px 0 0; display: flex; align-items: center; gap: 3px; }
+.mk span svg { width: 11px; height: 11px; }
+.mk.e { color: #F5A06F; }
+.mk.t { color: var(--apricot); }
+.kt { position: absolute; right: 6px; width: 8px; height: 8px; transform: translateY(-4px) rotate(45deg); background: var(--apricot); }
+.kt.ok { background: #6BC59A; }
+.ticks { position: absolute; left: 6px; top: 0; bottom: 0; font-size: 10px; color: #9B8894; }
+.ticks span { position: absolute; left: 0; transform: translateY(-50%); }
+/* History */
+.history { display: flex; flex-direction: column; min-height: 0; background: var(--paper); }
+.hist-h { display: flex; align-items: center; gap: 14px; padding: 22px 32px 14px; border-bottom: 1px solid var(--hair); }
+.hist-h h2 { font: 700 20px/1.1 var(--display); letter-spacing: -0.01em; }
+.key { margin-left: auto; display: flex; align-items: center; gap: 16px; font-size: 12px; color: var(--ink-2); }
+.key .kx { display: inline-flex; align-items: center; gap: 6px; }
+.key .sw1 { color: var(--apricot-d); font-weight: 600; background: var(--apricot-tt); padding: 0 4px; border-radius: 3px; }
+.key .sw2 { color: var(--mauve-d); text-decoration: line-through; font-size: 11.5px; }
+.hist { flex: 1; padding: 8px 32px 20px; }
+.hist .tl { max-width: 840px; }
+</style>
+</head><body>
+<script>
+const { K, esc, status, ic, transcript, mount } = UI;
+const a = K.audit;
+const sec = s => { const [m, x] = s.split(":").map(Number); return m * 60 + x; };
+const total = sec(a.duration);
+const pct = s => (sec(s) / total * 100).toFixed(2) + "%";
+const escT = a.transcript.find(r => r.kind === "escalation").t;
+const N = 110;
+let wave = "";
+for (let i = 0; i < N; i++) {
+  const t = i / N * total;
+  const v = 10 + Math.abs(Math.sin(i * 0.61) * 18 + Math.sin(i * 0.23) * 12);
+  const quiet = (t > 33 && t < 52) ? 0.3 : 1;
+  wave += `<i class="${t >= sec(a.takeoverAt) ? "h" : ""}" style="width:${Math.min(44, v * quiet).toFixed(1)}px"></i>`;
+}
+const karaoke = a.transcript.filter(r => r.karaoke);
+const kts = karaoke.map(r => `<span class="kt${r.asWritten ? " ok" : ""}" style="top:${pct(r.t)}"></span>`).join("");
+// Donut: seven arcs, one per karaoke line
+const arcs = (() => {
+  const r = 34, c = 2 * Math.PI * r, seg = c / karaoke.length, gap = 3;
+  return karaoke.map((k, i) => `<circle cx="42" cy="42" r="${r}" fill="none" stroke="${k.asWritten ? "var(--done)" : "var(--apricot)"}" stroke-width="10" stroke-dasharray="${(seg - gap).toFixed(2)} ${(c - seg + gap).toFixed(2)}" stroke-dashoffset="${(-i * seg).toFixed(2)}" transform="rotate(-90 42 42)"/>`).join("");
+})();
+const outs = a.outcome.map(o => `<div class="oi ${o.result}">${o.result === "added" ? `<span class="add">${ic("circle-check")}</span>` : `<span class="dec">${ic("circle-minus")}</span>`}<div class="nm">${esc(o.item)}</div><div class="num" style="font-weight:600">${o.amount}</div></div>`).join("");
+
+mount("specialist", "logs", `<div class="audit">
+  <aside class="dossier">
+    <div class="dos-h">
+      <div class="crumb" style="font-size:13px;color:var(--ink-3);display:flex;gap:6px;align-items:center"><a href="#" style="color:var(--ink-2);text-decoration:none">Call logs</a>${ic("chevron-right")}<span class="num">${a.id}</span></div>
+      <h1>${esc(a.guest)}</h1>
+      <div class="line2">${status(a.status)}<span class="tag">${ic("phone-outgoing")}Outbound</span><span class="tag">${a.type}</span></div>
+    </div>
+    <div class="dos-b scroll">
+      <dl class="kv2">
+        <dt>Phone</dt><dd class="num">${a.phone}</dd>
+        <dt>Booking</dt><dd><b class="num">${a.booking}</b></dd>
+        <dt>Stay</dt><dd>${esc(a.stay.replace(/ · /g, ", "))}</dd>
+        <dt>Purpose</dt><dd>${esc(a.purpose)}</dd>
+        <dt>Started</dt><dd>${a.started}, <span class="num">${a.duration}</span> long</dd>
+        <dt>Handled by</dt><dd><span class="who-k" style="font-weight:600">Kiku</span>, then <span class="who-h" style="font-weight:600">${esc(a.specialist)}</span> from ${a.takeoverAt}</dd>
+      </dl>
+      <div class="ks">
+        <svg width="92" height="84" viewBox="0 0 84 84" aria-hidden="true">${arcs}</svg>
+        <div><div class="big">${a.karaokeSummary.improvised} of ${a.karaokeSummary.lines}</div><div class="sub">karaoke lines improvised by ${a.specialist.split(" ")[0]}</div>
+        <div class="leg"><span class="seal">${ic("badge-check")}${a.karaokeSummary.asWritten} as written</span><span class="impro">${ic("pen-line")}${a.karaokeSummary.improvised} improvised</span></div></div>
+      </div>
+      <div>
+        <div class="sec-t">Outcome<span>added to ${a.booking}</span></div>
+        ${outs}
+        <div class="tot"><span class="soft small">Total added</span><b class="num">${a.total}</b></div>
+        <div class="note">${ic("notebook-pen")}<span>${esc(a.note)}</span></div>
+      </div>
+    </div>
+  </aside>
+  <div class="spine" aria-label="Recording">
+    <button class="play" aria-label="Play recording"><svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg></button>
+    <div class="sp-t"><b class="num">${a.duration}</b>recording</div>
+    <div class="track">
+      <div class="ticks"><span style="top:0%">0:00</span><span style="top:${pct("01:00")}">1:00</span><span style="top:${pct("02:00")}">2:00</span></div>
+      <div class="wave">${wave}</div>
+      <div class="view" style="top:calc(${pct(escT)} - 4px);height:24%"></div>
+      <div class="mk e" style="top:${pct(escT)}"><span>${ic("triangle-alert")}${escT}</span></div>
+      <div class="mk t" style="top:${pct(a.takeoverAt)}"><span>${ic("hand")}${a.takeoverAt}</span></div>
+      ${kts}
+    </div>
+  </div>
+  <section class="history">
+    <div class="hist-h"><h2>Message history</h2><span class="muted small">${a.transcript.length} events</span>
+      <div class="key"><span class="kx"><span class="sw1">apricot</span>${a.specialist.split(" ")[0]}'s own words</span><span class="kx"><span class="sw2">struck above</span>what Kiku wrote there</span></div></div>
+    <div class="hist scroll"><div class="tl">${transcript(a.transcript, a.specialist)}</div></div>
+  </section>
+</div>`);
+const h = document.querySelector(".hist"); const e = h.querySelector(".sysline.escalation");
+if (e) h.scrollTop = e.closest(".turn").offsetTop - h.offsetTop - 8;
+</script>
+</body></html>

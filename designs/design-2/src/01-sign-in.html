@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Kiku, sign in</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .signin { display: grid; grid-template-columns: 1fr 560px; height: 100vh; }
+  .stage { background: var(--ink); color: #fff; position: relative; overflow: hidden; display: flex; flex-direction: column; padding: 56px 64px; }
+  .stage .mark { display: flex; align-items: center; gap: 14px; }
+  .stage .mark svg { width: 44px; height: 44px; }
+  .word { font-size: 148px; font-weight: 900; letter-spacing: -0.05em; line-height: .9; margin-top: auto; }
+  .hotel { font-size: 22px; color: #C7D6D0; margin-top: 18px; font-weight: 500; }
+  .rails { position: absolute; left: 0; right: 0; top: 188px; height: 220px; }
+  .stage .foot { margin-top: 48px; font-size: 13px; color: #8EA79F; max-width: 460px; line-height: 1.6; }
+  .form-side { background: var(--sheet); display: flex; flex-direction: column; justify-content: center; padding: 0 80px; position: relative; }
+  .form-side h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
+  .form-side .lede { color: var(--ink-soft); margin-top: 6px; margin-bottom: 32px; }
+  .form-side form { display: flex; flex-direction: column; gap: 18px; }
+  .row-between { display: flex; justify-content: space-between; align-items: baseline; }
+  .link { color: var(--kiku); font-weight: 700; font-size: 13px; text-decoration: none; }
+  .form-side .btn.ink { height: 44px; font-size: 15px; margin-top: 6px; }
+  .input.has-icon { padding-left: 12px; }
+  .input input { border: 0; outline: 0; flex: 1; background: none; height: 100%; }
+  .footnote { position: absolute; bottom: 28px; left: 80px; right: 80px; font-size: 11.5px; color: var(--ink-mute); display: flex; gap: 8px; align-items: center; }
+</style>
+</head>
+<body>
+<div class="signin">
+  <section class="stage">
+    <div class="mark" id="mark"></div>
+    <svg class="rails" viewBox="0 0 880 220" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 70 H250 C340 70 360 150 450 150 H560 C650 150 670 70 760 70 H880" stroke="#5B47C4" stroke-width="18" fill="none"/>
+      <path d="M0 150 H250 C340 150 360 70 450 70 H560 C650 70 670 150 760 150 H880" stroke="#CC3066" stroke-width="18" fill="none"/>
+    </svg>
+    <div class="word">Kiku</div>
+    <div class="hotel" id="hotel"></div>
+    <p class="foot">The voice agent console for the front desk team. Kiku answers the line; you step in when a guest needs a person.</p>
+  </section>
+  <section class="form-side">
+    <h1>Sign in</h1>
+    <p class="lede">Use your Brenlow staff account.</p>
+    <form onsubmit="return false">
+      <div class="field">
+        <label for="em">Email</label>
+        <div class="input"><span id="i1"></span><input id="em" type="email" value="priya.raman@brenlow.example"></div>
+      </div>
+      <div class="field">
+        <div class="row-between"><label for="pw" style="font-size:12.5px;font-weight:700;color:var(--ink-2)">Password</label><a class="link" href="#">Forgot password?</a></div>
+        <div class="input"><span id="i2"></span><input id="pw" type="password" value="correcthorse"></div>
+      </div>
+      <button class="btn ink" type="submit">Sign in</button>
+    </form>
+    <div class="footnote" id="fn"></div>
+  </section>
+</div>
+<script>
+  const { K, icon, brandMark } = UI;
+  document.getElementById("mark").innerHTML = brandMark(44);
+  document.getElementById("hotel").textContent = `${K.hotel.name}, ${K.hotel.city}`;
+  document.getElementById("i1").outerHTML = icon("mail");
+  document.getElementById("i2").outerHTML = icon("lock");
+  document.getElementById("fn").innerHTML = `<span class="demo">Demo data</span>${K.synthetic.replace("Demo data. ", "")}`;
+  document.querySelectorAll(".input svg").forEach(s => s.style.color = "var(--ink-mute)");
+</script>
+</body>
+</html>

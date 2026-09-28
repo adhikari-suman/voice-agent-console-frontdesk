@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Kiku, live board</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .board { display: grid; grid-template-columns: 1fr 392px; gap: 24px; height: 100%; }
+  .col { display: flex; flex-direction: column; gap: 20px; min-height: 0; }
+  .needs { background: var(--sheet); border: 2px solid var(--human); position: relative; }
+  .needs-head { display: flex; align-items: center; gap: 10px; padding: 14px 22px; border-bottom: 1px solid var(--human-tint-2); background: var(--human-tint); }
+  .needs-head .h2 { font-size: 15px; }
+  .needs-body { display: grid; grid-template-columns: 1fr auto; gap: 28px; padding: 22px 22px 22px; align-items: start; }
+  .guest-big { font-size: 30px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; }
+  .meta-line { display: flex; gap: 14px; align-items: center; margin-top: 8px; color: var(--ink-soft); font-size: 13px; flex-wrap: wrap; }
+  .purpose { font-size: 16px; margin-top: 16px; max-width: 60ch; }
+  .reason { margin-top: 12px; display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--esc); }
+  .reason svg { margin-top: 2px; }
+  .wait { text-align: right; }
+  .wait .lbl { font-size: 12.5px; color: var(--ink-soft); }
+  .wait .t { font-size: 52px; font-weight: 900; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .wait .btn { margin-top: 16px; }
+  .wait .sub { font-size: 12px; color: var(--ink-mute); margin-top: 8px; }
+
+  .live { background: var(--sheet); border: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; flex: 1; }
+  .sec-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+  .lrow { display: grid; grid-template-columns: 52px 1.1fr 1.6fr 116px 190px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); }
+  .lrow:last-child { border-bottom: 0; }
+  .who-on { display: flex; align-items: center; }
+  .who-on .avatar { margin-left: -4px; border: 2px solid var(--sheet); }
+  .lrow .name { font-weight: 700; font-size: 15px; }
+  .lrow .ph { font-size: 12.5px; color: var(--ink-mute); }
+  .lrow .pp { font-size: 13px; color: var(--ink-2); line-height: 1.4; }
+  .lrow .dur { font-size: 13px; }
+  .lrow .dur b { font-size: 15px; }
+  .lrow .act { display: flex; gap: 8px; justify-content: flex-end; align-items: center; }
+  .you { font-size: 12px; font-family: var(--round); font-weight: 700; color: var(--human-deep); background: var(--human-tint); padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+
+  .today { padding: 20px 22px; }
+  .today p { font-size: 17px; line-height: 1.75; color: var(--ink-2); margin-top: 10px; }
+  .today b { font-weight: 900; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .today .st { display: inline-flex; vertical-align: -1px; }
+  .today .st svg { width: 12px; height: 12px; }
+  .recent { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .rrow { display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--line-soft); align-items: start; }
+  .rrow .tm { font-size: 13px; color: var(--ink-mute); font-variant-numeric: tabular-nums; }
+  .rrow .n { font-weight: 700; font-size: 14px; }
+  .rrow .o { font-size: 12.5px; color: var(--ink-soft); line-height: 1.4; margin-top: 2px; }
+</style>
+</head>
+<body>
+<script>
+  const { K, icon, status, dir, mount } = UI;
+  const calls = K.calls;
+  const owen = calls.find(c => c.id === "KK-24032");
+  const onLine = ["KK-24030", "KK-24031", "KK-24029", "KK-24028"].map(id => calls.find(c => c.id === id));
+  const s = K.stats;
+  const who = (c) => {
+    const kiku = `<span class="kiku-chip" title="Kiku">K</span>`;
+    if (c.id === "KK-24030") return `<span class="who-on"><span class="avatar sm" title="Priya Raman">PR</span></span>`;
+    if (c.id === "KK-24031") return `<span class="who-on">${kiku}<span class="avatar sm" title="Priya Raman listening">PR</span></span>`;
+    return `<span class="who-on">${kiku}</span>`;
+  };
+  const act = (c) => {
+    if (c.id === "KK-24030") return `<span class="you">You took over</span><button class="btn human sm">${icon("back")}Back to call</button>`;
+    if (c.id === "KK-24031") return `<span class="you">Listening</span><button class="btn sm">Open</button>`;
+    return `<button class="btn sm">${icon("headphones")}Listen</button><button class="btn sm pill">Join</button>`;
+  };
+  const rows = onLine.map(c => `
+    <div class="lrow">
+      ${who(c)}
+      <div><div class="name">${c.guest}</div><div class="ph num">${c.phone}</div></div>
+      <div><div class="pp">${c.purpose}</div><div style="margin-top:4px;display:flex;gap:10px;align-items:center">${dir(c.direction)}${c.type !== "Inbound" ? `<span class="tag">${c.type}</span>` : ""}</div></div>
+      <div>${status(c.status)}<div class="dur faint" style="margin-top:4px">on call <b class="num" style="color:var(--ink)">${c.duration}</b></div></div>
+      <div class="act">${act(c)}</div>
+    </div>`).join("");
+
+  const finished = calls.filter(c => c.status === "completed" || c.status === "failed").slice(0, 6);
+  const recent = finished.map(c => `
+    <div class="rrow">
+      <span class="tm">${c.started}</span>
+      <div><div class="n">${c.guest}</div><div class="o">${c.outcome || c.purpose}</div></div>
+      ${status(c.status, "plain")}
+    </div>`).join("");
+
+  const sh = UI.SHAPE;
+  mount({ role: "specialist", active: "live", title: "Live board" }, `
+  <div class="board">
+    <div class="col">
+      <section class="needs" aria-label="Needs a specialist">
+        <div class="needs-head"><span class="h2">Needs a specialist</span><span class="faint small">1 caller waiting for a person</span></div>
+        <div class="needs-body">
+          <div>
+            <div class="guest-big">${owen.guest}</div>
+            <div class="meta-line"><span class="num">${owen.phone}</span>${dir(owen.direction)}${status(owen.status)}<span>on call <b class="num" style="color:var(--ink)">${owen.duration}</b></span></div>
+            <p class="purpose">${owen.purpose}.</p>
+            <div class="reason">${icon("alert")}<span>${owen.escalationReason} Kiku is holding the caller.</span></div>
+          </div>
+          <div class="wait">
+            <div class="lbl">Waiting for a person</div>
+            <div class="t">${owen.waiting}</div>
+            <button class="btn human lg">${icon("hand")}Take over</button>
+            <div class="sub">Karaoke mode starts when you take over</div>
+          </div>
+        </div>
+      </section>
+      <section class="live">
+        <div class="sec-head"><span class="h2">On the line now <span class="aside">${onLine.length} calls</span></span>
+          <span class="faint small" style="display:flex;gap:14px;align-items:center"><span style="display:flex;gap:6px;align-items:center"><span class="kiku-chip" style="width:14px;height:14px;font-size:8px">K</span>Kiku</span><span style="display:flex;gap:6px;align-items:center"><span class="avatar" style="width:14px;height:14px;font-size:0"></span>Specialist</span></span>
+        </div>
+        <div class="scroll">${rows}</div>
+      </section>
+    </div>
+    <div class="col">
+      <section class="sheet today">
+        <div class="h2">Today so far</div>
+        <p><b>${s.callsToday}</b> calls: <b>${s.inbound}</b> rang in and Kiku placed <b>${s.outbound}</b>.
+          <b>${s.completed}</b> <span class="st" style="color:var(--ok)">${sh.completed}</span> completed,
+          <b>${s.inProgress}</b> <span class="st" style="color:var(--run)">${sh.in_progress}</span> in progress,
+          <b>${s.escalated}</b> <span class="st" style="color:var(--esc)">${sh.escalated}</span> escalated and
+          <b>${s.failed}</b> <span class="st" style="color:var(--fail)">${sh.failed}</span> failed.
+          Specialists took over <b>${s.takeoversToday}</b> times. Average handle time <b>${s.avgHandle}</b>, with <b>${s.upsellValueToday}</b> in upsells added.</p>
+      </section>
+      <section class="sheet recent">
+        <div class="sec-head"><span class="h2">Recently finished</span><a class="small" style="color:var(--kiku);font-weight:700;text-decoration:none" href="#">All call logs</a></div>
+        <div class="scroll">${recent}</div>
+      </section>
+    </div>
+  </div>`);
+</script>
+</body>
+</html>

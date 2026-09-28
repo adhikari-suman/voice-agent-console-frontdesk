@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku: Call logs</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .content { display: flex; flex-direction: column; gap: 16px; padding-top: 18px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 12px 14px; align-items: center; }
+  .filters .seg .st { font-size: 13px; color: inherit; }
+  .filters .seg button.on .st { color: #fff; }
+  .filters .seg button.on svg * { stroke: var(--ink); }
+  .filters .seg button:not(.on) .st.completed svg { color: var(--ok); }
+  .filters .seg button:not(.on) .st.in_progress svg { color: var(--kiku); }
+  .filters .seg button:not(.on) .st.escalated svg { color: var(--human); }
+  .filters .seg button:not(.on) .st.failed svg { color: var(--fail); }
+  .filters .st { gap: 6px; }
+  .filters .seg button.on .st svg circle, .filters .seg button.on .st svg rect { fill: #fff; }
+  .select { height: 34px; border: 1px solid var(--rule-2); background: #fff; display: inline-flex; align-items: center; gap: 8px; padding: 0 10px 0 12px; font-size: 13px; font-weight: 600; }
+  .select .v { color: var(--text-2); font-weight: 500; }
+  .search { width: 260px; height: 34px; }
+  .search svg { color: var(--text-3); }
+  .spacer { flex: 1; }
+  .datechip { height: 34px; display: inline-flex; gap: 8px; align-items: center; padding: 0 12px; background: var(--ink); color: #fff; font-weight: 600; font-size: 13px; }
+  .tablewrap { flex: 1; min-height: 0; background: var(--paper); border: 1px solid var(--rule); }
+  .t td { font-size: 13.5px; }
+  .t td.time { font-family: var(--f-display); font-weight: 600; font-size: 16px; color: var(--text-2); width: 64px; }
+  .t td.guest b { display: block; font-weight: 700; font-size: 14px; }
+  .t td.guest span { font-size: 12.5px; color: var(--text-2); }
+  .t td.kind { white-space: nowrap; }
+  .t td.kind .d { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; }
+  .t td.kind .d svg { width: 14px; height: 14px; }
+  .t td.kind .ty { display: block; font-size: 12.5px; color: var(--text-2); padding-left: 20px; }
+  .t td.purpose { color: var(--text); max-width: 380px; }
+  .t td.dur { font-family: var(--f-display); font-weight: 600; font-size: 16px; }
+  .t td.spec { font-size: 13px; color: var(--text-2); white-space: nowrap; }
+  .t td.go { width: 132px; text-align: right; }
+  .t tr.sel td { background: #fff; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+  .t tr.sel .btn { height: 30px; }
+  .t .id { font-size: 13px; }
+  .foot { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-2); }
+</style>
+</head>
+<body>
+<script>
+const { K, status, icon, shell, esc } = V;
+const c = shell({ role: "specialist", active: "logs", title: "Call logs", ctx: "Every call Kiku answered or placed" });
+const count = s => K.calls.filter(x => x.status === s).length;
+const sb = s => `<button><span class="st ${s}">${V.STATUS[s].svg}${V.STATUS[s].label}</span><span class="n">${count(s)}</span></button>`;
+c.innerHTML = `
+<div class="filters">
+  <div class="seg"><button class="on">All <span class="n">${K.calls.length}</span></button>${sb("completed")}${sb("in_progress")}${sb("escalated")}${sb("failed")}</div>
+  <div class="seg"><button class="on">Both directions</button><button>${icon("phone-incoming")}Inbound</button><button>${icon("phone-outgoing")}Outbound</button></div>
+  <span class="select">Type <span class="v">Any</span>${icon("chevron-down")}</span>
+  <span class="spacer"></span>
+  <div class="input search">${icon("search")}<span class="faint">Guest, phone, booking or purpose</span></div>
+  <span class="datechip">${icon("calendar")}Today</span>
+</div>
+<div class="tablewrap scroll">
+  <table class="t">
+    <thead><tr><th>Time</th><th>Guest and phone</th><th>Direction</th><th>What the call was for</th><th>Status</th><th>Length</th><th>Specialist</th><th></th></tr></thead>
+    <tbody>
+    ${K.calls.map(x => `
+      <tr class="${x.id === "KK-24027" ? "sel" : ""}">
+        <td class="time">${x.started}</td>
+        <td class="guest"><b>${x.guest}</b><span>${x.phone}</span></td>
+        <td class="kind"><span class="d">${x.direction === "inbound" ? icon("phone-incoming") + "Inbound" : icon("phone-outgoing") + "Outbound"}</span>${x.direction === "outbound" ? `<span class="ty">${x.type}</span>` : `<span class="ty">Hotel line</span>`}</td>
+        <td class="purpose">${esc(x.purpose)}</td>
+        <td>${status(x.status)}</td>
+        <td class="dur">${x.duration}</td>
+        <td class="spec">${x.specialist ? x.specialist : `<span class="faint">Kiku only</span>`}</td>
+        <td class="go">${x.id === "KK-24027" ? `<button class="btn sm go">Open audit</button>` : `<span class="id">${x.id}</span>`}</td>
+      </tr>`).join("")}
+    </tbody>
+  </table>
+</div>
+<div class="foot"><span>Showing all ${K.calls.length} calls from today, newest first</span><span>Times in ${K.hotel.tz}</span></div>`;
+</script>
+</body>
+</html>

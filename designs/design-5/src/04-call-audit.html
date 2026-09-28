@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Kiku · Call audit KK-24027</title>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..1000,0..1,0..1,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+  .main { display: grid; grid-template-columns: 356px minmax(0,1fr); gap: 20px; }
+
+  /* the call card */
+  .card { overflow: auto; padding: 0; }
+  .card::-webkit-scrollbar { width: 0; }
+  .c-top { padding: 14px 20px 12px; border-bottom: 1px solid var(--rule-2); }
+  .crumb { font-size: 12px; color: var(--ink-3); display: flex; align-items: center; gap: 5px; }
+  .crumb a { color: var(--ink-2); text-decoration: none; }
+  .crumb svg.lucide { width: 12px; height: 12px; }
+  .c-top h1 { margin: 6px 0 6px; }
+  .c-tags { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .c-top .pur { font-size: 13px; line-height: 19px; color: var(--ink-2); margin-top: 8px; }
+  .kv { display: grid; grid-template-columns: 78px 1fr; gap: 5px 12px; padding: 12px 20px; border-bottom: 1px solid var(--rule-2); font-size: 13px; line-height: 19px; }
+  .kv dt { color: var(--ink-3); font-size: 12px; }
+  .kv dd { font-weight: 550; }
+  .sec { padding: 12px 20px 14px; border-bottom: 1px solid var(--rule-2); }
+  .sec:last-child { border-bottom: 0; }
+  .sec h2 { font-size: 13px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: baseline; gap: 8px; }
+  .sec h2 span { font-weight: 450; color: var(--ink-3); font-size: 12px; }
+  .pies { display: flex; justify-content: space-between; }
+  .pie { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .pie i { width: 28px; height: 28px; border-radius: 50%; display: block; position: relative; }
+  .pie i::after { content: ""; position: absolute; inset: 8px; border-radius: 50%; background: var(--surface); }
+  .pie.exact i { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--ink); }
+  .pie.exact i::after { content: none; }
+  .pie span { font-size: 10.5px; color: var(--ink-3); }
+  .ksum { font-size: 12.5px; color: var(--ink-2); margin-top: 8px; line-height: 18px; }
+  .ksum b { color: var(--ink); }
+  .why { font-size: 12.5px; line-height: 18px; color: #5E3200; background: var(--esc-soft); border-radius: var(--r-m); padding: 8px 10px; display: flex; gap: 8px; margin-top: 10px; }
+  .oc { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; padding: 6px 0; font-size: 12.5px; line-height: 18px; }
+  .oc svg.lucide { width: 15px; height: 15px; margin-top: 1px; }
+  .oc.declined { color: var(--ink-3); }
+  .oc.declined .it { text-decoration: line-through; text-decoration-color: var(--slate); }
+  .oc .amt { font-weight: 650; }
+  .tot { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--rule); margin-top: 6px; padding-top: 8px; }
+  .tot b { font-size: 20px; font-weight: 750; letter-spacing: -0.02em; }
+  .note { font-size: 12.5px; color: var(--ink-2); display: flex; gap: 8px; margin-top: 8px; line-height: 18px; }
+
+  /* history with a vertical waveform spine */
+  .transport { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--rule-2); flex: none; }
+  .playbtn { width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; border: 0; flex: none; }
+  .playbtn svg.lucide { width: 15px; height: 15px; }
+  .transport .tm { line-height: 17px; }
+  .transport .tm b { font-weight: 650; font-size: 14px; }
+  .transport .tm div { font-size: 11.5px; color: var(--ink-3); }
+  .jump { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 14px; border: 1px solid var(--rule); font-size: 12px; font-weight: 600; background: var(--surface); }
+  .jump.esc { color: #7A3C00; }
+  .jump.tk { color: var(--human-deep); }
+  .transport .end { margin-left: auto; }
+
+  .hist { padding: 0 18px 0 0; position: relative; }
+  .row { display: grid; grid-template-columns: 58px 48px minmax(0,1fr); }
+  .row .t { font-size: 11.5px; color: var(--ink-3); text-align: right; padding: 12px 10px 0 0; }
+  .row .body { padding: 10px 0 10px 14px; min-width: 0; }
+  .sp { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px; padding: 3px 0; overflow: hidden; }
+  .sp i { display: block; height: 2px; border-radius: 1px; flex: none; }
+  .sp.agent i { background: var(--kiku); }
+  .sp.guest i { background: var(--slate); }
+  .sp.specialist i { background: var(--human); }
+  .sp.hold { background: repeating-linear-gradient(135deg, rgba(169,83,0,.16) 0 3px, transparent 3px 7px); }
+  .sp.hold i { background: #D8A866; }
+  .sp.sys i { background: var(--rule); }
+  .row.future .sp { opacity: .35; }
+  .row .who { font-size: 12px; font-weight: 700; margin-bottom: 1px; }
+  .row.agent .who { color: var(--kiku); }
+  .row.guest .who { color: var(--ink-2); }
+  .row.guest .txt { font-variation-settings: var(--casual); }
+  .row .txt { max-width: 70ch; }
+  .row.sys .body { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 650; padding: 8px 0 8px 14px; }
+  .row.sys .body::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  .row.sys .t { padding-top: 9px; }
+  .row.escalation .body { color: var(--esc); }
+  .row.takeover .body { color: var(--human-deep); }
+  .row.join .body, .row.end .body { color: var(--ink-2); }
+  .row { position: relative; }
+  .playhead { position: absolute; top: 0; left: 50px; right: 0; height: 0; border-top: 1.5px solid var(--ink); z-index: 2; pointer-events: none; }
+  .playhead span { position: absolute; left: 0; top: -10px; background: var(--ink); color: #fff; font-size: 10.5px; font-weight: 700; padding: 0 6px; height: 18px; line-height: 18px; border-radius: 9px; }
+  .kturn-h .who { margin: 0; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="shell"></div>
+  <main class="main" id="main"></main>
+</div>
+<script>
+const { K, esc, status, stave, matchMeter, staveKey } = D;
+D.mount(D.shell({ role: "specialist", active: "logs" }));
+const A = K.audit, S = A.karaokeSummary;
+const sec = t => { const [m, s] = t.split(":").map(Number); return m * 60 + s; };
+const HEAD = "00:54";
+const kturns = A.transcript.filter(t => t.karaoke);
+
+const pies = kturns.map(t => `<div class="pie ${t.asWritten ? "exact" : ""}" title="${t.match}% as written"><i style="background:${t.asWritten ? "var(--ink)" : `conic-gradient(var(--slate) 0 ${t.match}%, var(--human-soft) ${t.match}% 100%)`}"></i><span class="num">${t.t}</span></div>`).join("");
+const ocIcon = r => r === "added" ? `<i data-lucide="circle-check" style="color:var(--ok)"></i>` : `<i data-lucide="circle-minus" style="color:var(--ink-3)"></i>`;
+const outcome = A.outcome.map(o => `<div class="oc ${o.result}">${ocIcon(o.result)}<span class="it">${esc(o.item)}</span><span class="amt num">${o.amount}</span></div>`).join("");
+
+const card = `
+<aside class="panel card">
+  <div class="c-top">
+    <div class="crumb"><a href="03-call-logs.html">Call logs</a><i data-lucide="chevron-right"></i><span class="num">${A.id}</span></div>
+    <h1 class="page">${esc(A.guest)}</h1>
+    <div class="c-tags">${status(A.status)}<span class="chip"><i data-lucide="phone-outgoing"></i>Outbound</span><span class="chip">Upsell</span></div>
+    <div class="pur">${esc(A.purpose)}</div>
+  </div>
+  <dl class="kv">
+    <dt>Phone</dt><dd class="num">${A.phone}</dd>
+    <dt>Booking</dt><dd class="num">${A.booking}</dd>
+    <dt>Stay</dt><dd>${esc(A.stay.replace(/ · /g, ", "))}</dd>
+    <dt>Started</dt><dd>${A.started}, <span class="num">${A.duration}</span> long</dd>
+    <dt>Handled by</dt><dd>Kiku, then <span style="color:var(--human-deep)">${A.specialist}</span> from <span class="num">${A.takeoverAt}</span></dd>
+  </dl>
+  <div class="sec">
+    <h2>Karaoke <span>${S.lines} lines Kiku wrote for ${A.specialist.split(" ")[0]}</span></h2>
+    <div class="pies">${pies}</div>
+    <div class="ksum"><b class="num">${S.asWritten}</b> spoken as written, <b class="num">${S.improvised}</b> improvised.</div>
+    <div class="why"><svg width="13" height="13" viewBox="0 0 14 14" style="flex:none;margin-top:2px;color:var(--esc)"><path d="M7 .8L13.4 12.6H.6Z" fill="currentColor"/></svg><span><b>Why it escalated.</b> ${esc(A.escalationReason)}</span></div>
+  </div>
+  <div class="sec">
+    <h2>Outcome <span>on ${A.booking}</span></h2>
+    ${outcome}
+    <div class="tot"><span style="font-weight:600;font-size:13px">Added to booking</span><b class="num">${A.total}</b></div>
+    <div class="note"><i data-lucide="notebook-pen" style="margin-top:1px"></i>${esc(A.note)}</div>
+  </div>
+</aside>`;
+
+// rows; the spine column is the recording, time running down the page
+let inHold = false;
+const rows = A.transcript.map(t => {
+  if (t.kind === "escalation") inHold = true;
+  if (t.kind === "takeover") inHold = false;
+  const future = sec(t.t) > sec(HEAD);
+  const spCls = (t.speaker === "system" ? "sys" : t.speaker) + (inHold || t.kind === "escalation" ? " hold" : "");
+  const base = `<span class="t num">${t.t}</span><span class="sp ${spCls}"></span>`;
+  if (t.speaker === "system") {
+    const ic = { escalation: "triangle-alert", join: "headphones", takeover: "user-round", end: "phone-off" }[t.kind];
+    return `<div class="row sys ${t.kind} ${future ? "future" : ""}" data-t="${t.t}">${base}<div class="body"><i data-lucide="${ic}"></i>${esc(t.text)}</div></div>`;
+  }
+  if (t.karaoke) {
+    return `<div class="row specialist ${future ? "future" : ""}" data-t="${t.t}">${base}<div class="body"><div class="kturn ${t.asWritten ? "exact" : ""}">
+      <div class="kturn-h"><span class="who" style="color:var(--human-deep);display:flex;gap:6px;align-items:center"><i data-lucide="mic" style="width:13px;height:13px"></i>${A.specialist}, prompted by Kiku</span>
+      <span class="end">${t.asWritten ? `<span class="asw"><i data-lucide="check"></i>Spoken as written</span>` : matchMeter(t.match)}</span></div>
+      ${stave(t.diff)}</div></div></div>`;
+  }
+  return `<div class="row ${t.speaker} ${future ? "future" : ""}" data-t="${t.t}">${base}<div class="body"><div class="who">${t.speaker === "agent" ? "Kiku" : esc(A.guest)}</div><div class="txt">${esc(t.text)}</div></div></div>`;
+}).join("");
+
+document.getElementById("main").innerHTML = card + `
+<section class="panel">
+  <div class="transport">
+    <button class="playbtn" aria-label="Play recording"><i data-lucide="play"></i></button>
+    <div class="tm"><b class="num">${HEAD}</b> <span class="muted num" style="font-size:12.5px">/ ${A.duration}</span><div>Recording</div></div>
+    <span class="jump esc"><svg width="11" height="11" viewBox="0 0 14 14"><path d="M7 .8L13.4 12.6H.6Z" fill="currentColor"/></svg>Escalated <span class="num">00:36</span></span>
+    <span class="jump tk"><i data-lucide="user-round" style="width:13px;height:13px"></i>Took over <span class="num">${A.takeoverAt}</span></span>
+    <span class="end muted" style="font-size:12px;display:flex;gap:6px;align-items:center"><i data-lucide="audio-lines" style="width:14px;height:14px"></i>Bars show who was speaking</span>
+  </div>
+  <div class="scroll hist" id="hist">${rows}</div>
+  <div style="padding:10px 18px;border-top:1px solid var(--rule-2);flex:none">${staveKey(A.specialist.split(" ")[0])}</div>
+</section>`;
+D.icons();
+
+// fill the spine with level bars proportional to each row's height
+let x = 17;
+document.querySelectorAll(".sp").forEach(sp => {
+  const n = Math.floor((sp.offsetHeight - 6) / 4);
+  const quiet = sp.classList.contains("sys") || sp.classList.contains("hold");
+  let h = "";
+  for (let i = 0; i < n; i++) { x = (x * 9301 + 49297) % 233280; const w = quiet ? 4 + (x % 5) : 6 + Math.round((x / 233280) * 34); h += `<i style="width:${w}px"></i>`; }
+  sp.innerHTML = h;
+});
+const hist = document.getElementById("hist");
+const headRow = hist.querySelector(`.row.specialist[data-t="${HEAD}"]`);
+headRow.insertAdjacentHTML("afterbegin", `<div class="playhead"><span class="num">${HEAD}</span></div>`);
+hist.scrollTop = hist.querySelector('[data-t="00:31"]').offsetTop - 4;
+</script>
+</body>
+</html>

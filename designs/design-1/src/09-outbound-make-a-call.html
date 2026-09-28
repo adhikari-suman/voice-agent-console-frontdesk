@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Make a call</title>
+<meta name="viewport" content="width=1440">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<link rel="stylesheet" href="outbound.css">
+<style>
+  .purpose { font: 400 18px/1.5 var(--voice); min-height: 132px; }
+  .brief { display: grid; grid-template-columns: 22px 1fr; gap: 8px; padding: 12px 14px; border-radius: 12px; background: var(--violet-wash); font-size: 13px; color: var(--ink-2); }
+  .brief .i { color: var(--violet); margin-top: 1px; }
+  .tmpl { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; border: 1.5px dashed var(--rule-2); border-radius: 12px; font-size: 13px; color: var(--ink-2); }
+  .tmpl code { font: 600 12.5px var(--ui); background: var(--sunk); padding: 2px 6px; border-radius: 5px; }
+  .noname { color: var(--faint); font-style: italic; }
+</style>
+</head>
+<body>
+<script>
+const { K, icon, mount } = Kiku;
+const S = K.makeCallSingle, C = K.makeCallCsv;
+
+const prev = C.preview.map(r => `<tr class="${r.ok ? '' : 'err'}">
+  <td class="rn">${r.row}</td>
+  <td class="ph">${r.phone || '<span class="miss">empty</span>'}</td>
+  <td class="ph">${r.name || '<span class="noname">No name</span>'}</td>
+  <td class="pur">${r.purpose}${r.ok ? '' : `<div class="bad" style="font:600 12.5px var(--ui);margin-top:4px">${icon('alert')}${r.error}</div>`}</td>
+  <td class="stc">${r.ok ? `<span class="ok">${icon('check')}Ready</span>` : `<span class="bad">${icon('x')}Skipped</span>`}</td>
+</tr>`).join('');
+
+mount({ role: 'admin', active: 'makecall', crumb: 'Outbound calls', title: 'Make a call', sub: 'Tell Kiku why to call, and it handles the conversation' }, `
+<div class="two">
+  <section class="panel path">
+    <div class="path-h"><span class="pn">One call</span><h2>Place a single call</h2></div>
+    <div class="path-b">
+      <div class="field"><label>What is the call for?</label><textarea class="input purpose is-focus" rows="4">${S.purpose}</textarea><span class="help">Write it the way you'd brief a colleague. Kiku uses this to open the call and to know when it's done.</span></div>
+      <div class="pair">
+        <div class="field"><label>Name <span class="opt">(optional)</span></label><div class="input">${S.name}</div></div>
+        <div class="field"><label>Phone number</label><div class="input">${icon('phone')}${S.phone}</div></div>
+      </div>
+      <div class="brief">${icon('headphones')}<span>If the call needs a person, Kiku escalates it to the live board like any other call.</span></div>
+    </div>
+    <div class="path-f"><span class="muted">Kiku calls ${S.name} now.</span><button class="btn btn-primary">${icon('makecall')}Place call</button></div>
+  </section>
+
+  <section class="panel path">
+    <div class="path-h"><span class="pn">A list</span><h2>Place calls from a file</h2></div>
+    <div class="path-b">
+      <div class="file"><span class="fi">${icon('file')}</span><div><b>${C.file}</b><div class="n"><span>${C.size}</span><span>${C.rows} rows</span><span>Columns: ${C.columns.join(', ')}</span></div></div><button class="btn btn-sm">${icon('upload')}Replace</button></div>
+      <div class="tally"><span class="ok big">${icon('check')}<b>${C.ready}</b> ready to call</span><span class="bad big">${icon('alert')}<b>${C.errors}</b> row needs fixing</span></div>
+      <div class="prev">
+        <table>
+          <thead><tr><th>Row</th><th>Phone</th><th>Name</th><th>Purpose</th><th></th></tr></thead>
+          <tbody>${prev}</tbody>
+        </table>
+      </div>
+      <div class="tmpl"><span>Start from the template: one row per call, with columns <code>phone</code>, <code>name</code> (optional) and <code>purpose</code>.</span><button class="btn btn-sm">${icon('download')}Download template</button></div>
+    </div>
+    <div class="path-f"><span class="muted">Only the ${C.ready} ready rows are called.</span><button class="btn btn-primary">${icon('makecall')}Place ${C.ready} calls</button></div>
+  </section>
+</div>
+`);
+</script>
+</body>
+</html>

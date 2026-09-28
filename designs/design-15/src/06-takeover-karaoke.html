@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · On the line, KK-24030</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .page { display: grid; grid-template-columns: minmax(0,1fr) 316px; gap: 14px; }
+  .left { min-width: 0; display: grid; grid-template-rows: auto auto 1fr; gap: 14px; min-height: 0; }
+  .onair {
+    background: var(--lime); border: 1px solid #9cc400; border-radius: 12px; padding: 14px 16px 14px 18px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .onair .mic { width: 46px; height: 46px; border-radius: 12px; background: var(--ink); color: var(--lime); display: grid; place-items: center; transform: skewX(var(--skew)); }
+  .onair .mic svg { transform: skewX(8deg); width: 22px; height: 22px; }
+  .onair h2, .onair p { white-space: nowrap; }
+  .onair h2 { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+  .onair p { font-size: 12.5px; color: #33420a; font-weight: 500; }
+  .onair .ctl { margin-left: auto; display: flex; gap: 8px; }
+  .onair .btn { padding: 0 12px; font-size: 13px; border-color: rgba(19,33,30,.25); background: rgba(255,255,255,.55); }
+  .onair .btn.end { background: var(--fail); border-color: var(--fail); color: #fff; }
+  .lvl { display: flex; gap: 2px; align-items: center; height: 26px; }
+  .lvl i { width: 3px; background: var(--ink); border-radius: 2px; animation: lv 0.9s ease-in-out infinite alternate; }
+  @keyframes lv { from { transform: scaleY(.45); } to { transform: scaleY(1); } }
+  @media (prefers-reduced-motion: reduce) { .lvl i { animation: none; } }
+
+  .stage { background: var(--rail); border-radius: 12px; color: #e6f0ec; padding: 20px 26px 18px; display: grid; gap: 16px; }
+  .stage .hd { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #9dbcb3; }
+  .stage .hd b { color: #fff; font-weight: 600; }
+  .stage .hd .live { display: inline-flex; gap: 6px; align-items: center; color: var(--lime); font-weight: 700; }
+  .stage .hd .live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--lime); }
+  .stage .next { border-top: 1px solid var(--rail-3); padding-top: 14px; display: grid; grid-template-columns: 92px 1fr auto; gap: 14px; align-items: baseline; }
+  .stage .next .lbl { font-size: 12px; color: #9dbcb3; font-weight: 600; }
+  .stage .next p { font-family: var(--serif); font-size: 18px; line-height: 1.4; color: #c9dcd6; }
+  .earlier { display: flex; flex-direction: column; min-height: 0; }
+  .earlier .hbar { padding: 12px 20px 10px; border-bottom: 1px solid var(--line); display: flex; gap: 14px; align-items: center; }
+  .earlier .scroll { padding: 4px 20px 14px; }
+
+  .right { display: grid; grid-template-rows: auto auto auto; align-content: start; gap: 14px; min-height: 0; }
+  .who-card { padding: 16px 18px; }
+  .who-card h3 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin: 8px 0 2px; }
+  dl.kv { display: grid; grid-template-columns: 76px 1fr; gap: 7px 12px; font-size: 13px; margin-top: 12px; }
+  dl.kv dt { color: var(--ink-3); font-size: 12.5px; }
+  .why { padding: 14px 18px; background: var(--esc-soft); border: 1px solid #efd3b6; border-radius: 10px; display: grid; gap: 6px; font-size: 13px; }
+  .facts { padding: 14px 18px; display: grid; gap: 10px; align-content: start; }
+  .facts ul { list-style: none; display: grid; gap: 8px; }
+  .facts li { display: flex; gap: 9px; font-size: 13px; line-height: 1.4; }
+  .facts li svg { color: var(--teal); margin-top: 2px; }
+  .meters { display: grid; gap: 8px; border-top: 1px solid var(--line-2); padding-top: 12px; margin-top: 4px; }
+  .meters div { display: grid; grid-template-columns: 90px 1fr; align-items: center; font-size: 12.5px; color: var(--ink-2); }
+  .seg-m { display: flex; gap: 2px; }
+  .seg-m i { flex: 1; height: 8px; border-radius: 1px; background: var(--line-2); }
+</style>
+</head>
+<body data-role="specialist">
+<div class="app">
+  <aside class="rail" id="rail"></aside>
+  <main class="main">
+    <header class="top" id="top"></header>
+    <div class="page" id="page"></div>
+  </main>
+</div>
+<script>
+const T = K.takeover;
+$("#rail").innerHTML = rail("specialist", "live");
+$("#top").innerHTML = topbar("On the line", `<a href="02-live-overview.html">Live board</a>${ic("chevron-right")}<span>${T.id}</span>`);
+const live = T.transcript[T.transcript.length - 1];
+const earlier = T.transcript.slice(0, -1);
+const lvl = (n, seed) => Array.from({ length: n }, (_, i) => `<i style="height:${30 + ((i * 37 + seed) % 70)}%;animation-delay:-${(i * 0.13) % 0.9}s"></i>`).join("");
+const segm = (n, on, color) => `<span class="seg-m">${Array.from({ length: n }, (_, i) => `<i style="${i < on ? `background:${color}` : ""}"></i>`).join("")}</span>`;
+
+$("#page").innerHTML = `
+<div class="left">
+  <section class="onair" aria-live="polite">
+    <span class="mic">${ic("mic")}</span>
+    <div>
+      <h2>${esc(T.guest)} can hear you</h2>
+      <p>Took over from Kiku at ${T.takeoverAt}. Kiku is writing, not speaking.</p>
+    </div>
+    <div class="ctl">
+      <button class="btn">${ic("mic-off")}Mute</button>
+      <button class="btn">${ic("bot")}Hand back to Kiku</button>
+      <button class="btn end">${ic("phone-off")}End call</button>
+    </div>
+  </section>
+
+  <section class="stage">
+    <div class="hd"><span class="live">Karaoke live</span><span>Kiku wrote this line at <b>${live.t}</b>. Read it, or say it your way.</span><span style="margin-left:auto">${live.match}% of the line so far</span></div>
+    ${interlinear(live.diff, "Priya", { live: true, saidLabel: "You're saying", cls: "onstage", style: "--fs:21px;--lane:31px;row-gap:8px" })}
+    <div class="next"><span class="lbl">Kiku's next line</span><p>${esc(T.nextLine)}</p><span class="xs" style="color:#9dbcb3">queued</span></div>
+  </section>
+
+  <section class="card earlier">
+    <div class="hbar"><span class="h2">Earlier in this call</span>
+      <span class="legend"><span><span class="sw same">kept</span>said as written</span><span><span class="sw del">cut</span>not said</span><span><span class="sw ins">added</span>your words</span></span></div>
+    <div class="scroll fade2" id="earlier">${transcript(earlier, T.specialist)}</div>
+  </section>
+</div>
+
+<div class="right">
+  <section class="card who-card">
+    <div class="row">${statusTag("escalated")}<span class="id">${T.id}</span>${dirTag(T.direction)}</div>
+    <h3>${esc(T.guest)}</h3>
+    <div class="dim small">${esc(T.phone)}</div>
+    <dl class="kv">
+      <dt>Booking</dt><dd><span class="tag">${T.booking}</span></dd>
+      <dt>Stay</dt><dd>${esc(T.stay)}</dd>
+      <dt>Purpose</dt><dd>${esc(T.purpose)}</dd>
+      <dt>Started</dt><dd>${T.started}</dd>
+    </dl>
+  </section>
+  <section class="why">
+    <span class="st st-escalated">${STATUS.escalated[1]}Why Kiku escalated</span>
+    <span>${esc(T.escalationReason)}</span>
+  </section>
+  <section class="card facts">
+    <span class="h2">Booking facts</span>
+    <ul>${T.facts.map(f => `<li>${ic("receipt-text")}<span>${esc(f)}</span></li>`).join("")}</ul>
+    <div class="meters">
+      <div><span>You</span>${segm(18, 12, "#95bd00")}</div>
+      <div><span>Guest</span>${segm(18, 3, "var(--ink-3)")}</div>
+      <div><span>Kiku</span><span class="xs muted">Silent. Writing only.</span></div>
+    </div>
+  </section>
+</div>`;
+boot();
+const e = $("#earlier"); const ks = e.querySelectorAll(".kturn"); e.scrollTop = ks[ks.length-1].offsetTop - e.offsetTop - 2;
+</script>
+</body>
+</html>

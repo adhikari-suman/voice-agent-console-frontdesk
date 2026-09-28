@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Kiku, make a call</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="app.js"></script>
+<style>
+  .content { display: flex; flex-direction: column; gap: 16px; }
+  .intro { display: flex; align-items: baseline; gap: 16px; flex: none; }
+  .intro p { color: var(--ink-soft); max-width: 80ch; }
+  .paths { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 36px 1.3fr; }
+  .purpose { font-size: 16px; line-height: 1.6; min-height: 180px; }
+  .count { font-size: 12px; color: var(--ink-mute); text-align: right; }
+  .brief { background: var(--kiku-tint); padding: 12px 14px; display: grid; grid-template-columns: 26px 1fr; gap: 12px; font-size: 13.5px; color: var(--ink-2); }
+  .prev .r { grid-template-columns: 36px 150px 120px 1fr; }
+  .prev .r .pp { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tpl { display: flex; gap: 10px; align-items: center; border: 1px dashed var(--line); padding: 10px 12px; font-size: 13px; color: var(--ink-soft); }
+  .tpl a { color: var(--kiku); font-weight: 700; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
+</style>
+</head>
+<body>
+<script>
+  const { K, icon, mount, SHAPE } = UI;
+  const s = K.makeCallSingle, u = K.makeCallCsv;
+  const sm = (k) => SHAPE[k].replace("<svg", '<svg width="11" height="11"');
+  const prev = u.preview.map((r, i) => {
+    const gap = i > 0 && r.row - u.preview[i - 1].row > 1 ? `<div class="gap">Row ${u.preview[i - 1].row + 1} ready</div>` : "";
+    return gap + (r.ok
+      ? `<div class="r"><span class="faint num">${r.row}</span><span class="num">${r.phone}</span><span>${r.name || '<span class="faint">No name</span>'}</span><span class="pp" title="${r.purpose}">${r.purpose}</span></div>`
+      : `<div class="r bad"><span class="faint num">${r.row}</span><span class="err">${sm("failed")}${r.error}</span><span>${r.name}</span><span class="pp">${r.purpose}</span></div>`);
+  }).join("") + `<div class="gap">Rows 7–${u.rows} ready</div>`;
+
+  mount({ role: "admin", active: "make", title: "Make a call", crumb: "Outbound" }, `
+    <div class="intro"><p>Tell Kiku why it's calling, in plain words. Every call appears in the call logs like any other.</p></div>
+    <div class="paths">
+      <section class="pane">
+        <div class="pane-head"><span class="path">1</span><span class="t">One call</span></div>
+        <div class="pane-body">
+          <div class="field"><label>What's the call for?</label><textarea class="input purpose" rows="4">${s.purpose}</textarea><span class="count">${s.purpose.length} characters</span></div>
+          <div class="field"><label>Name <em>optional</em></label><div class="input">${s.name}</div><span class="hint">Leave it blank if you don't know it.</span></div>
+          <div class="field"><label>Phone</label><div class="input num">${s.phone}</div></div>
+        </div>
+        <div class="pane-foot"><span class="small faint">From the hotel line ${K.hotel.line}</span><span style="flex:1"></span><button class="btn ink">${icon("call")}Place call</button></div>
+      </section>
+      <div class="or">or</div>
+      <section class="pane">
+        <div class="pane-head"><span class="path">2</span><span class="t">Many calls from a file</span><span style="flex:1"></span><span class="cols">Columns ${u.columns.map(c => `<span class="col-chip">${c}</span>`).join("")}</span></div>
+        <div class="pane-body">
+          <div class="filecard"><span class="fic">${icon("file")}</span>
+            <div><div class="fname">${u.file} <span class="faint" style="font-weight:400">${u.size}, ${u.rows} rows</span></div>
+              <div class="qbar"><span style="width:${u.ready / u.rows * 100}%;background:var(--ok)"></span><span style="width:${u.errors / u.rows * 100}%;background:var(--fail)"></span></div>
+              <div class="qlegend"><span style="color:var(--ok)">${sm("completed")}<b class="num">${u.ready}</b>&nbsp;ready</span><span style="color:var(--fail)">${sm("failed")}<b class="num">${u.errors}</b>&nbsp;error, will be skipped</span></div></div>
+            <button class="btn sm">${icon("upload")}Replace</button></div>
+          <div class="prev scroll">
+            <div class="r h"><span>Row</span><span>Phone</span><span>Name</span><span>Purpose</span></div>
+            ${prev}
+          </div>
+          <div class="tpl">${icon("file")}<span>Start from the template: one row per call, name can be left blank.</span><span style="flex:1"></span><a href="#">${icon("download")}Download template CSV</a></div>
+        </div>
+        <div class="pane-foot"><span class="small faint">Each row is a separate call with its own purpose.</span><span style="flex:1"></span><button class="btn ink">${icon("call")}Place ${u.ready} calls</button></div>
+      </section>
+    </div>`);
+</script>
+</body>
+</html>

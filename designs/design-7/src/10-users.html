@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Kiku, users</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+.g10 { display: grid; grid-template-columns: 1fr 420px; gap: 16px; height: 100%; }
+.users { align-self: start; max-height: 100%; display: flex; flex-direction: column; min-height: 0; }
+.users td { height: 60px; }
+.nm { display: flex; align-items: center; gap: 10px; }
+.nm b { font-weight: 600; }
+.nm .em { font-size: 12.5px; color: var(--ink-3); }
+.role { font-size: 13px; font-weight: 600; display: inline-flex; gap: 6px; align-items: center; }
+.role svg { width: 14px; height: 14px; color: var(--mauve); }
+.us { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; }
+.us svg { width: 13px; height: 13px; }
+.us.active { color: var(--done); }
+.us.invited { color: var(--prog); }
+.us.deactivated { color: var(--ink-3); }
+tr.off td { color: var(--ink-3); }
+tr.off .avatar { opacity: .5; }
+.to { display: flex; align-items: center; gap: 10px; }
+.to .bar { width: 70px; height: 6px; background: var(--apricot-t); border-radius: 3px; overflow: hidden; }
+.to .bar i { display: block; height: 100%; background: var(--apricot); }
+.drawer { background: var(--panel); border: 1px solid var(--hair); border-radius: 12px; display: flex; flex-direction: column; min-height: 0; box-shadow: -18px 0 40px -28px rgba(43, 30, 39, .45); }
+.drawer .dh { display: flex; align-items: center; padding: 18px 20px 6px; }
+.drawer .dh h2 { font: 700 19px/1.2 var(--display); }
+.drawer .dh button { margin-left: auto; color: var(--ink-3); }
+.drawer .in { flex: 1; min-height: 0; padding: 10px 20px; display: flex; flex-direction: column; gap: 16px; }
+.rc { border: 1px solid var(--hair-2); border-radius: 10px; padding: 12px 14px; background: #fff; }
+.rc.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.rc .rt { display: flex; align-items: center; gap: 10px; font-weight: 650; }
+.radio { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--hair-2); flex: none; }
+.rc.on .radio { border: 5px solid var(--aub); }
+.rc ul { list-style: none; margin: 8px 0 0 28px; display: flex; flex-direction: column; gap: 4px; }
+.rc li { font-size: 12.5px; color: var(--ink-2); display: flex; gap: 7px; align-items: flex-start; }
+.rc li svg { width: 14px; height: 14px; color: var(--done); margin-top: 1px; }
+.rc.dim li svg { color: var(--ink-3); }
+.drawer .df { padding: 14px 20px; border-top: 1px solid var(--hair); display: flex; align-items: center; gap: 10px; }
+</style>
+</head><body>
+<script>
+const { K, esc, ic, topbar, mount } = UI;
+const US = {
+  Active: '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="currentColor"/></svg>',
+  Invited: '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-dasharray="2.4 1.8"/></svg>',
+  Deactivated: '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 10.5l7-7" stroke="currentColor" stroke-width="1.6"/></svg>',
+};
+const max = Math.max(...K.users.map(u => u.takeovers30d));
+const rows = K.users.map(u => `<tr class="${u.status === "Deactivated" ? "off" : ""}">
+  <td><div class="nm"><span class="avatar${u.role === "Specialist" ? " h" : ""}">${u.initials}</span><div><b>${esc(u.name)}</b><div class="em">${u.email}</div></div></div></td>
+  <td><span class="role">${ic(u.role === "Admin" ? "shield" : "headset")}${u.role}</span></td>
+  <td><span class="us ${u.status.toLowerCase()}">${US[u.status]}${u.status}</span></td>
+  <td class="small soft" style="white-space:nowrap">${esc(u.lastActive)}</td>
+  <td>${u.role === "Specialist" ? `<div class="to"><span class="bar"><i style="width:${u.takeovers30d / max * 100}%"></i></span><span class="num" style="font-weight:600">${u.takeovers30d}</span></div>` : '<span class="muted">—</span>'}</td>
+</tr>`).join("");
+const draft = K.newUserDraft;
+const roleCard = r => `<div class="rc ${draft.role === r ? "on" : "dim"}"><div class="rt"><span class="radio"></span>${ic(r === "Admin" ? "shield" : "headset")}${r}</div><ul>${K.roles[r].map(p => `<li>${ic("check")}${esc(p)}</li>`).join("")}</ul></div>`;
+const counts = s => K.users.filter(u => u.status === s).length;
+
+mount("admin", "users", `
+${topbar(`<div><h1>Users</h1><div class="small muted" style="margin-top:4px">${K.users.length} people, ${counts("Active")} active, ${counts("Invited")} invited, ${counts("Deactivated")} deactivated</div></div>`, `<button class="btn btn-ink sm">${ic("user-plus")}Add user</button>`)}
+<div class="body"><div class="g10">
+  <section class="panel users">
+    <div class="scroll"><table>
+      <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last active</th><th>Takeovers, 30 days</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+  </section>
+  <aside class="drawer">
+    <div class="dh"><h2>Add a user</h2><button aria-label="Close">${ic("x")}</button></div>
+    <div class="in">
+      <div class="field"><label>Full name</label><div class="input">${esc(draft.name)}</div></div>
+      <div class="field"><label>Work email</label><div class="input focus">${draft.email}</div><span class="hint">They'll get an email to set a password.</span></div>
+      <div class="field"><label>Role</label>${roleCard("Specialist")}${roleCard("Admin")}</div>
+    </div>
+    <div class="df"><button class="btn btn-ghost">Cancel</button><button class="btn btn-ink" style="margin-left:auto">${ic("send")}Send invite</button></div>
+  </aside>
+</div></div>`);
+</script>
+</body></html>

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Call logs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Shippori+Mincho+B1:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .logs { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 18px 28px 18px; gap: 14px; }
+  .ttl { display: flex; align-items: baseline; gap: 14px; }
+  .ttl h1 { font-size: 26px; }
+  .filters { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; row-gap: 10px; }
+  .filters .brk { flex-basis: 100%; height: 0; }
+  .search { width: 380px; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--r); background: var(--sheet); overflow: hidden; }
+  .seg button { white-space: nowrap; border: 0; background: transparent; height: 36px; padding: 0 12px; display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; border-right: 1px solid var(--line-2); color: var(--ink-2); }
+  .seg button:last-child { border-right: 0; }
+  .seg button.on { background: var(--ink); color: #F4F7EF; }
+  .seg button .n { font-variant-numeric: tabular-nums; font-size: 11.5px; font-weight: 700; padding: 0 6px; border-radius: 8px; background: var(--paper-2); color: var(--ink-2); }
+  .seg button.on .n { background: rgba(255,255,255,.18); color: #fff; }
+  .seg button .st { font-size: 13px; font-weight: 500; }
+  .seg button .st svg { width: 13px; height: 13px; }
+  .date { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--sheet); font-weight: 700; font-size: 13px; }
+  .spacer { flex: 1; }
+
+  .tablep { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .tscroll { flex: 1; min-height: 0; }
+  table.grid th { position: sticky; top: 0; background: var(--sheet); padding-top: 12px; z-index: 1; }
+  table.grid td { font-size: 13.5px; padding: 9px 12px; }
+  table.grid td:first-child, table.grid th:first-child { padding-left: 20px; }
+  table.grid td:last-child, table.grid th:last-child { padding-right: 20px; }
+  .tm { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .tm small { display: block; font-weight: 400; font-size: 11.5px; color: var(--ink-3); }
+  .guest b { font-weight: 700; display: block; }
+  .guest span { font-size: 12.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .dir { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); font-size: 13px; }
+  .purpose { max-width: 330px; color: var(--ink); }
+  .dur { font-variant-numeric: tabular-nums; }
+  .spec { font-size: 13px; }
+  .spec .none { color: var(--ink-3); }
+  tr.sel td { background: var(--human-wash); }
+  tr.sel td { border-top: 1px solid var(--human-soft); border-bottom: 1px solid var(--human-soft); }
+  tr.sel .open { display: inline-flex; }
+  .open { display: none; }
+  .foot { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="shell"></div>
+  <main class="main">
+    <section class="logs">
+      <div class="ttl"><h1 class="h-serif">Call logs</h1><span class="meta" id="sub"></span></div>
+      <div class="filters" id="filters"></div>
+      <div class="panel tablep">
+        <div class="tscroll scroll">
+          <table class="grid">
+            <thead><tr><th>Time</th><th>Guest and phone</th><th>Direction</th><th>What the call was for</th><th>Status</th><th>Length</th><th>Specialist</th><th></th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div class="foot"><span id="count"></span><span>Select a call to open its audit</span></div>
+      </div>
+    </section>
+  </main>
+</div>
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<script>
+const { K, esc, status } = TT;
+TT.shell({ role: "specialist", active: "03-call-logs.html" });
+const calls = K.calls;
+const count = s => calls.filter(c => c.status === s).length;
+document.getElementById("sub").textContent = `The hotel line and every outbound call Kiku placed.`;
+document.getElementById("filters").innerHTML = `
+  <div class="seg"><button class="on">All statuses <span class="n">${calls.length}</span></button>${["completed","in_progress","escalated","failed"].map(s => `<button>${status(s)}<span class="n">${count(s)}</span></button>`).join("")}</div>
+  <span class="spacer"></span>
+  <span class="date"><i data-lucide="calendar"></i>Today, Sun 27 Sep<i data-lucide="chevron-down" style="width:14px;height:14px;color:var(--ink-3)"></i></span>
+  <span class="brk"></span>
+  <div class="input search"><i data-lucide="search" style="color:var(--ink-3)"></i><span class="ph">Search guest, phone, booking or purpose</span></div>
+  <div class="seg"><button class="on">Both directions</button><button><i data-lucide="phone-incoming"></i>Inbound</button><button><i data-lucide="phone-outgoing"></i>Outbound</button></div>
+  <div class="seg"><button class="on">All types</button><button>Inbound</button><button>Campaign</button><button>Upsell</button><button>Make a call</button></div>`;
+document.getElementById("rows").innerHTML = calls.map(c => `
+  <tr class="${c.id === "KK-24027" ? "sel" : ""}">
+    <td class="tm">${c.started}<small>${c.id}</small></td>
+    <td class="guest"><b>${c.guest}</b><span>${c.phone}</span></td>
+    <td><span class="dir"><i data-lucide="${TT.dirIcon(c.direction)}"></i>${c.direction === "inbound" ? "Inbound" : c.type}</span></td>
+    <td class="purpose">${esc(c.purpose)}</td>
+    <td>${status(c.status)}</td>
+    <td class="dur">${c.duration}</td>
+    <td class="spec">${c.specialist ? `<span style="display:inline-flex;gap:6px;align-items:center"><i data-lucide="${c.specialist.includes("listening") ? "headphones" : "mic"}" style="width:14px;height:14px;color:var(--human)"></i>${c.specialist}</span>` : `<span class="none">Kiku only</span>`}</td>
+    <td style="text-align:right"><a class="btn sm human open" href="04-call-audit.html">Open audit</a></td>
+  </tr>`).join("");
+document.getElementById("count").textContent = `Showing the latest ${calls.length} of ${K.stats.callsToday} calls today`;
+TT.icons();
+</script>
+</body>
+</html>

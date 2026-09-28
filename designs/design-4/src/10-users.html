@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Kiku, users</title>
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+.content { display: grid; grid-template-columns: 1fr 440px; }
+.list { padding: 20px 28px; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.bar { display: flex; gap: 8px; align-items: center; }
+.bar .sp { flex: 1; }
+.tablewrap { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+table.grid td { height: 58px; }
+.u { display: flex; gap: 12px; align-items: center; }
+.u b { display: block; font-size: 14px; font-weight: 600; }
+.u small { color: var(--muted); font-size: 12.5px; }
+.role { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; font-weight: 600; }
+.role svg.lucide { width: 14px; height: 14px; }
+.ust { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; font-weight: 600; }
+.ust svg { width: 13px; height: 13px; }
+.ust.Active { color: var(--ok); } .ust.Invited { color: var(--kiku); } .ust.Deactivated { color: var(--faint); }
+tr.off td { color: var(--faint); } tr.off .av { opacity: .55; }
+.to { font: 700 20px/1 var(--f-count); letter-spacing: .03em; }
+.tobar { display: inline-block; height: 5px; background: var(--human-hi); border-radius: 3px; margin-left: 10px; vertical-align: middle; }
+tr.new td { background: var(--kiku-bg); }
+.side { background: var(--surface); border-left: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; box-shadow: -12px 0 24px -18px rgba(14,44,61,.35); }
+.side .sh { padding: 18px 24px 14px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+.side .sh h2 { font-size: 18px; font-weight: 700; }
+.side .sh .x { margin-left: auto; color: var(--muted); }
+.side .body { flex: 1; padding: 18px 24px; display: flex; flex-direction: column; gap: 16px; }
+.rc { border: 1px solid var(--line); border-radius: var(--r); padding: 13px 14px; background: #fff; display: grid; grid-template-columns: 20px 1fr; gap: 4px 10px; }
+.rc.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.rc .radio { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--faint); margin-top: 1px; }
+.rc.on .radio { border: 5px solid var(--ink); }
+.rc b { font-size: 14px; }
+.rc b span { font-weight: 400; color: var(--muted); font-size: 12.5px; margin-left: 6px; }
+.rc ul { grid-column: 2; list-style: none; display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.rc li { font-size: 12.5px; display: flex; gap: 7px; align-items: center; color: var(--text); }
+.rc li svg.lucide { width: 14px; height: 14px; color: var(--ok); stroke-width: 2.2; }
+.side .foot { padding: 14px 24px; border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: center; }
+.side .foot .sp { flex: 1; }
+</style></head>
+<body>
+<div class="app">
+  <nav class="spine" id="spine"></nav>
+  <main class="main">
+    <header class="top" id="top"></header>
+    <div class="content">
+      <div class="list">
+        <div class="bar" id="bar"></div>
+        <div class="tablewrap scroll"><table class="grid" id="tbl"></table></div>
+      </div>
+      <aside class="side" id="side"></aside>
+    </div>
+  </main>
+</div>
+<script>
+const { K, esc, icon, shell } = TT; const N = K.newUserDraft;
+shell({ role: 'admin', active: 'users', title: 'Users', after: `<span class="h3" style="font-weight:500">${K.users.length} people</span>` });
+const cnt = s => K.users.filter(u => u.status === s).length;
+document.getElementById('bar').innerHTML = `<div class="input" style="width:300px">${icon('search')}<span style="color:var(--faint)">Search name or email</span></div>
+  <button class="chip on">All <span class="n">${K.users.length}</span></button><button class="chip">Active <span class="n">${cnt('Active')}</span></button><button class="chip">Invited <span class="n">${cnt('Invited')}</span></button><button class="chip">Deactivated <span class="n">${cnt('Deactivated')}</span></button>
+  <span class="sp"></span><button class="btn ink" disabled style="opacity:.5">${icon('user-plus')}New user</button>`;
+const US = {
+  Active: '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" fill="currentColor"/></svg>',
+  Invited: '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.4 2"/></svg>',
+  Deactivated: '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 11L11 3" stroke="currentColor" stroke-width="1.6"/></svg>'
+};
+const max = Math.max(...K.users.map(u => u.takeovers30d));
+document.getElementById('tbl').innerHTML = `<thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last active</th><th>Takeovers, 30 days</th><th></th></tr></thead><tbody>` +
+  K.users.map(u => `<tr class="${u.status === 'Deactivated' ? 'off' : ''}"><td><div class="u"><span class="av">${u.initials}</span><div><b>${esc(u.name)}</b><small>${esc(u.email)}</small></div></div></td>
+    <td><span class="role">${icon(u.role === 'Admin' ? 'shield' : 'headphones')}${u.role}</span></td>
+    <td><span class="ust ${u.status}">${US[u.status]}${u.status}</span></td>
+    <td style="font-size:12.5px">${esc(u.lastActive)}</td>
+    <td>${u.role === 'Specialist' ? `<span class="to">${u.takeovers30d}</span>${u.takeovers30d ? `<span class="tobar" style="width:${u.takeovers30d / max * 90}px"></span>` : ''}` : '<span style="color:var(--faint)">Not a specialist</span>'}</td>
+    <td style="text-align:right"><button class="btn sm ghost" aria-label="More">${icon('ellipsis')}</button></td></tr>`).join('') +
+  `<tr class="new"><td><div class="u"><span class="av" style="background:#fff">GM</span><div><b>${esc(N.name)}</b><small>${esc(N.email)}</small></div></div></td><td><span class="role">${icon('headphones')}${N.role}</span></td><td colspan="4" style="font-size:12.5px;color:var(--kiku)">${icon('pencil-line').replace('<i', '<i style="width:13px;height:13px;vertical-align:-2px"')} Being set up in the panel</td></tr></tbody>`;
+
+document.getElementById('side').innerHTML = `
+  <div class="sh">${icon('user-plus')}<h2>New user</h2><button class="x" aria-label="Close">${icon('x')}</button></div>
+  <div class="body scroll">
+    <div class="field"><label>Full name</label><div class="input">${esc(N.name)}</div></div>
+    <div class="field"><label>Work email</label><div class="input focus">${esc(N.email)}</div><span class="help">Grace gets an email here to set her password.</span></div>
+    <div class="field"><label>Role</label>
+      ${['Specialist', 'Admin'].map(r => `<div class="rc ${r === N.role ? 'on' : ''}"><span class="radio"></span><b>${r}<span>${r === 'Specialist' ? 'Guest services on the phones' : 'Runs the console'}</span></b>
+        <ul>${K.roles[r].map(p => `<li>${icon('check')}${esc(p)}</li>`).join('')}</ul></div>`).join('')}
+    </div>
+  </div>
+  <div class="foot"><button class="btn">Cancel</button><span class="sp"></span><button class="btn ink lg">${icon('send')}Send invite</button></div>`;
+TT.draw();
+</script>
+</body></html>

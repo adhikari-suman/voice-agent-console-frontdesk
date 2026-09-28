@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku call audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..800&family=Young+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<style>
+  .body { padding-top: 16px; }
+  .audit { display: grid; grid-template-columns: 316px 1fr; gap: 18px; height: 100%; }
+
+  /* Dossier: everything about the call, read top to bottom */
+  .dossier { display: flex; flex-direction: column; min-height: 0; overflow: auto; }
+  .dossier::-webkit-scrollbar { width: 0; }
+  .dsec { padding: 11px 18px; }
+  .dsec + .dsec { border-top: 3px double var(--line-2); }
+  .dsec h2 { font-size: 13px; font-weight: 650; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .dsec h2 .aside { margin-left: auto; font-weight: 500; color: var(--ink-3); font-size: 12px; }
+  dl.kv { display: grid; grid-template-columns: 74px 1fr; gap: 5px 10px; font-size: 12.5px; line-height: 1.4; }
+  dl.kv dt { color: var(--ink-3); }
+  dl.kv dd .tag { font-size: 12.5px; }
+
+  .vennbig { display: block; margin: 2px auto 0; }
+  .vennbig circle { mix-blend-mode: multiply; }
+  .vennbig text { font-family: var(--sans); font-size: 11px; font-weight: 600; }
+  .klines { display: flex; justify-content: space-between; margin-top: 6px; }
+  .klines div { display: flex; flex-direction: column; align-items: center; font-size: 10.5px; color: var(--ink-3); gap: 1px; }
+  .klines b { font-size: 11px; color: var(--ink-2); font-weight: 600; }
+  .klines .as b { color: var(--violet); }
+  .ksay { font-size: 12.5px; color: var(--ink-2); margin-top: 6px; }
+  .ksay b { color: var(--ink); }
+
+  .oi { display: grid; grid-template-columns: 18px 1fr auto; gap: 0 8px; padding: 4px 0; font-size: 12.5px; }
+  .oi .ico.added { color: var(--ok); } .oi .ico.declined { color: var(--ink-3); }
+  .oi .ico svg { width: 15px; height: 15px; margin-top: 1px; }
+  .oi .amt { font-weight: 600; }
+  .oi.dec .item { color: var(--ink-3); }
+  .oi .r { grid-column: 2; font-size: 11.5px; color: var(--ink-3); }
+  .total { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0 6px; border-top: 1px solid var(--line); margin-top: 4px; }
+  .total b { font-family: var(--serif); font-size: 22px; font-weight: 400; }
+  .note { font-size: 12px; color: var(--ink-2); display: flex; gap: 8px; align-items: flex-start; }
+  .note svg { width: 14px; height: 14px; margin-top: 1px; }
+
+  /* Recording spine + message history */
+  .history { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .hbar { display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-bottom: 1px solid var(--line); }
+  .play { width: 38px; height: 38px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; border: 0; flex: none; }
+  .play svg { width: 16px; height: 16px; }
+  .ptime { font-size: 12px; color: var(--ink-3); line-height: 1.2; }
+  .ptime b { display: block; font-size: 17px; color: var(--ink); font-weight: 650; }
+  .hbar h2 { font-size: 15px; font-weight: 650; margin-left: 8px; }
+  .hbar .oplegend { margin-left: auto; }
+  .hmain { flex: 1; min-height: 0; display: grid; grid-template-columns: 172px 1fr; }
+  .spine { position: relative; border-right: 1px solid var(--line); background: var(--sheet-2); }
+  .bars { position: absolute; left: 14px; width: 54px; top: 14px; bottom: 14px; display: flex; flex-direction: column; gap: 2px; }
+  .bars i { flex: 1; display: block; margin: 0 auto; border-radius: 1px; }
+  .bars i.agent { background: var(--cyan); }
+  .bars i.guest { background: #B5B3C4; }
+  .bars i.specialist { background: var(--magenta); }
+  .bars i.quiet { background: var(--line-2); }
+  .bars i.future { opacity: .45; }
+  .tick { position: absolute; left: 82px; font-size: 10.5px; color: var(--ink-3); transform: translateY(-50%); }
+  .smk { position: absolute; left: 6px; right: 0; height: 0; border-top: 1.5px dashed var(--ink-2); }
+  .smk span { position: absolute; left: 76px; top: -17px; font-size: 11px; font-weight: 650; line-height: 1.2; display: flex; gap: 4px; align-items: center; white-space: nowrap; }
+  .smk span svg { width: 12px; height: 12px; }
+  .smk.esc span { color: var(--magenta-ink); }
+  .smk.take { border-top: 2px solid var(--magenta); }
+  .smk.take span { color: var(--ink); }
+  .playhead { position: absolute; left: 2px; right: -7px; height: 0; border-top: 2px solid var(--ink); z-index: 2; }
+  .playhead::after { content: ""; position: absolute; right: 0; top: -7px; border: 6px solid transparent; border-left: 7px solid var(--ink); }
+  .playhead span { position: absolute; left: 92px; top: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .txpane { padding: 4px 22px 14px; }
+  .turn.now > .t, .kturn.now > .t { color: var(--ink); font-weight: 700; }
+</style>
+</head>
+<body>
+<script>
+const A = K.audit;
+const body = shell({ role: "specialist", page: "logs", title: A.guest,
+  sub: `Audit of ${A.id}, an outbound upsell call started ${A.started}`,
+  right: `${st("completed")}<button class="btn">${ic("arrow-left")}Call logs</button><button class="btn">${ic("download")}Export transcript</button>` });
+
+const sec = t => { const [m, s] = t.split(":").map(Number); return m * 60 + s; };
+const total = sec(A.duration), now = sec("00:54");
+const tx = A.transcript;
+
+// Vertical recording spine, mirrored bars coloured by who was speaking
+const N = 84; let bars = "", v = 7;
+for (let i = 0; i < N; i++) {
+  const t = (i / N) * total;
+  const cur = tx.filter(x => sec(x.t) <= t && x.speaker !== "system").pop();
+  const sysNear = tx.some(x => x.speaker === "system" && Math.abs(sec(x.t) - t) < 1.2);
+  v = (v * 9301 + 49297) % 233280;
+  const w = 22 + Math.round((v / 233280) * 78);
+  const who = sysNear || !cur ? "quiet" : cur.speaker;
+  bars += `<i class="${who} ${t > now ? "future" : ""}" style="width:${who === "quiet" ? 14 : w}%"></i>`;
+}
+const spineTop = t => `calc(14px + (100% - 28px) * ${sec(t) / total})`;
+
+const kturns = tx.filter(x => x.karaoke);
+const ks = A.karaokeSummary;
+const avg = Math.round(kturns.reduce((a, x) => a + x.match, 0) / kturns.length);
+// Big venn: circles overlap by the average share
+const R = 46, W = 280, H = 112, d = 2 * R * (1 - avg / 100) + 18;
+const vbig = `<svg class="vennbig" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-label="Karaoke overlap">
+  <circle cx="${W / 2 - d / 2}" cy="48" r="${R}" fill="#12A5C6"/><circle cx="${W / 2 + d / 2}" cy="48" r="${R}" fill="#FB6BD5"/>
+  <text x="${W / 2 - d / 2 - R}" y="${H - 2}" fill="#0A6E86">Kiku wrote</text>
+  <text x="${W / 2 + d / 2 + R}" y="${H - 2}" fill="#A61E88" text-anchor="end">Tomasz said</text>
+  <text x="${W / 2}" y="53" fill="#fff" text-anchor="middle" style="font-size:14px;font-weight:700">${avg}%</text></svg>`;
+
+body.innerHTML = `<div class="audit">
+  <aside class="panel dossier">
+    <section class="dsec">
+      <h2>The call</h2>
+      <dl class="kv">
+        <dt>Phone</dt><dd>${A.phone}</dd>
+        <dt>Booking</dt><dd>${A.booking}</dd>
+        <dt>Stay</dt><dd>${A.stay.replace(/ · /g, ", ")}</dd>
+        <dt>For</dt><dd>${A.purpose}</dd>
+        <dt>Type</dt><dd><span class="tag">${ic("phone-outgoing")}Outbound, ${A.type}</span></dd>
+        <dt>Handled</dt><dd>Kiku, then <b style="font-weight:650">${A.specialist}</b> from ${A.takeoverAt}</dd>
+      </dl>
+    </section>
+    <section class="dsec">
+      <h2>Karaoke<span class="aside">${ks.lines} lines</span></h2>
+      ${vbig}
+      <p class="ksay"><b>${ks.asWritten}</b> line spoken as written, <b>${ks.improvised}</b> improvised.</p>
+      <div class="klines">${kturns.map(x => `<div class="${x.asWritten ? "as" : ""}">${venn(x.match, 22)}<b>${x.match}%</b>${x.t}</div>`).join("")}</div>
+    </section>
+    <section class="dsec">
+      <h2>Outcome</h2>
+      ${A.outcome.map(o => `<div class="oi ${o.result === "declined" ? "dec" : ""}"><span class="ico ${o.result}">${ic(o.result === "added" ? "circle-plus" : "circle-minus")}</span><span class="item">${o.item}</span><span class="amt">${o.amount}</span>
+        <span class="r">${o.result === "added" ? "Added to booking" : "Declined by guest"}</span></div>`).join("")}
+      <div class="total"><span class="muted small">Added to ${A.booking}</span><b>${A.total}</b></div>
+      <div class="note">${ic("sticky-note")}<span>${A.note}</span></div>
+    </section>
+  </aside>
+
+  <section class="panel history">
+    <div class="hbar">
+      <button class="play" aria-label="Play recording">${ic("play")}</button>
+      <div class="ptime"><b>00:54</b>of ${A.duration}</div>
+      <h2>Message history</h2>
+      ${opLegend("Tomasz")}
+    </div>
+    <div class="hmain">
+      <div class="spine" aria-label="Recording timeline">
+        <div class="bars">${bars}</div>
+        ${["00:00", "01:30", "02:00", "02:41"].map(t => `<span class="tick" style="top:${spineTop(t)}">${t}</span>`).join("")}
+        <div class="smk esc" style="top:${spineTop("00:36")}"><span>${ic("triangle-alert")}Escalated 00:36</span></div>
+        <div class="smk take" style="top:${spineTop(A.takeoverAt)}"><span>${ic("mic")}Takeover ${A.takeoverAt}</span></div>
+        <div class="playhead" style="top:${spineTop("00:54")}"><span>Now 00:54</span></div>
+      </div>
+      <div class="scroll txpane" id="tx"><div class="tx">${transcript(tx, { guest: "Eleanor Vance", specialist: "Tomasz Nowak" })}</div></div>
+    </div>
+  </section>
+</div>`;
+done();
+const pane = document.getElementById("tx");
+pane.querySelector('[data-t="00:54"]').classList.add("now");
+const anchor = pane.querySelector('[data-t="00:31"]');
+pane.scrollTop = anchor.offsetTop - pane.offsetTop - 4;
+</script>
+</body>
+</html>

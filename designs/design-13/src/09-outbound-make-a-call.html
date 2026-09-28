@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku make a call</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..800&family=Young+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<link rel="stylesheet" href="outbound.css">
+<style>
+  .purpose-box { background: #F4FBFD; }
+  .tpl { display: flex; gap: 12px; align-items: center; background: var(--sheet-2); border: 1px dashed var(--line-2); border-radius: var(--r); padding: 10px 12px; font-size: 13px; }
+  .tpl svg { color: var(--ink-2); }
+  .tpl a { margin-left: auto; color: var(--violet); font-weight: 600; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; }
+  .prev td.pp { color: var(--ink-2); }
+  .how { font-size: 13px; color: var(--ink-2); display: flex; gap: 10px; align-items: flex-start; }
+  .how svg { color: var(--cyan-ink); margin-top: 2px; }
+</style>
+</head>
+<body>
+<script>
+const S = K.makeCallSingle, C = K.makeCallCsv;
+const body = shell({ role: "admin", page: "make", title: "Make a call", sub: "Tell Kiku who to call and what the call is for" });
+
+body.innerHTML = `<div class="paths" style="height:100%">
+  <section class="panel path">
+    <div class="pth"><span class="pn">${ic("phone-outgoing")}</span><div><h2>One call</h2><p>Kiku places the call as soon as you confirm</p></div></div>
+    <div class="pbody">
+      <div class="field"><label>What is the call for?</label>
+        <textarea class="input purpose-box" rows="4">${S.purpose}</textarea>
+        <span class="hint">Write it the way you'd brief a colleague. Kiku opens the call with this and handles the replies.</span></div>
+      <div class="two">
+        <div class="field"><label>Name <em>(optional)</em></label><div class="input">${S.name}</div></div>
+        <div class="field"><label>Phone</label><div class="input">${S.phone}</div></div>
+      </div>
+      <div class="how">${ic("info")}<span>If the guest asks for something Kiku can't handle, the call is escalated and shows on the live board for a specialist.</span></div>
+    </div>
+    <div class="pfoot"><span class="small muted">Calls go out from ${K.hotel.line}.</span><button class="btn ink lg">${ic("phone-call")}Place call</button></div>
+  </section>
+
+  <section class="panel path">
+    <div class="pth"><span class="pn">${ic("file-spreadsheet")}</span><div><h2>A list of calls</h2><p>A CSV with columns ${C.columns.map(c => `<code>${c}</code>`).join(", ")}</p></div></div>
+    <div class="pbody">
+      <div class="tpl">${ic("file-down")}<span>Start from the template so the columns match.</span><a href="#">${ic("download")}Download CSV template</a></div>
+      <div class="file"><span class="fi">${ic("file-spreadsheet")}</span><div><b>${C.file}</b><span class="sm">${C.size}, ${C.rows} rows</span></div><button class="btn sm">${ic("upload")}Replace</button></div>
+      <div class="rows"><span class="ok">${ic("circle-check")}${C.ready} ready</span><span class="er">${ic("circle-x")}${C.errors} error, skipped</span></div>
+      <div class="prev">
+        <table><thead><tr><th>Row</th><th>phone</th><th>name</th><th>purpose</th></tr></thead>
+        <tbody>${C.preview.map(r => `<tr class="${r.ok ? "" : "bad"}"><td class="rn">${r.row}</td>
+          <td style="white-space:nowrap">${r.phone || `<span class="err">${ic("circle-x")}${r.error}</span>`}</td>
+          <td style="white-space:nowrap">${r.name || "<span class='muted'>No name</span>"}</td><td class="pp">${r.purpose}</td></tr>`).join("")}
+        <tr class="more"><td colspan="4">${C.rows - C.preview.length} more rows, all ready</td></tr></tbody></table>
+      </div>
+    </div>
+    <div class="pfoot"><span class="small muted">Row 6 needs a phone number before Kiku can call it.</span><button class="btn ink lg">${ic("phone-outgoing")}Start ${C.ready} calls</button></div>
+  </section>
+</div>`;
+done();
+</script>
+</body>
+</html>

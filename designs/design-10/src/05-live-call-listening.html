@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kiku · Listening to Rashid Karimi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Shippori+Mincho+B1:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .main { flex-direction: column; }
+  .strip { flex: none; display: flex; align-items: center; gap: 18px; padding: 16px 28px 14px; }
+  .listen-tag { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 10px; border: 1.5px solid var(--human); color: var(--human); font-weight: 700; font-size: 13px; border-radius: 3px; background: var(--human-wash); }
+  .strip h1 { font-size: 26px; }
+  .strip .facts { display: flex; gap: 18px; font-size: 13px; color: var(--ink-2); align-items: center; }
+  .strip .facts b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .strip .spacer { flex: 1; }
+
+  .stage { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) 368px; gap: 22px; padding: 0 28px 18px; }
+  .callp { min-height: 0; display: flex; flex-direction: column; }
+
+  /* twin audio lanes */
+  .audio { padding: 14px 20px 12px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 92px 1fr 60px; gap: 6px 14px; align-items: center; }
+  .audio .who { font-size: 12.5px; font-weight: 700; display: flex; gap: 6px; align-items: center; }
+  .audio .lane { height: 26px; display: flex; align-items: center; gap: 2px; overflow: hidden; }
+  .audio .lane i { flex: none; width: 3px; border-radius: 1px; }
+  .audio .lane.k i { background: var(--kiku); }
+  .audio .lane.g i { background: var(--ink-2); }
+  .audio .lane .now { width: 2px; height: 26px; background: var(--human); margin-left: 2px; }
+  .audio .lvl { font-size: 11.5px; color: var(--ink-3); text-align: right; }
+  .audio .lvl.on { color: var(--ink); font-weight: 700; }
+
+  .tx { flex: 1; min-height: 0; padding: 6px 20px 10px; mask-image: linear-gradient(transparent, #000 36px); }
+  .row { display: grid; grid-template-columns: 44px 96px 1fr; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line-2); }
+  .row .t { font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; padding-top: 2px; }
+  .row .who { font-size: 12.5px; font-weight: 700; }
+  .who.agent { color: var(--kiku); } .who.guest { color: var(--ink-2); }
+  .say.agent { font-family: var(--serif); font-weight: 500; font-size: 14.5px; color: #33461A; max-width: 700px; }
+  .say.guest { max-width: 700px; }
+  .row.latest { background: #fff; border: 1px solid var(--line); border-radius: 4px; margin-top: 8px; padding: 12px 12px 12px 0; }
+  .row.latest .t { padding-left: 12px; }
+  .row.latest .say { font-size: 18px; font-weight: 500; color: var(--ink); }
+  .row.latest .tag { font-size: 11.5px; font-weight: 700; color: var(--ink-3); display: block; margin-top: 2px; }
+  .gapnote { font-size: 12px; color: var(--ink-3); padding: 8px 0 0 56px; display: flex; gap: 6px; align-items: center; }
+
+  .draft { margin: 10px 0 4px 56px; border: 1.5px dashed var(--kiku); background: var(--kiku-wash); border-radius: 3px; padding: 12px 16px; display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; }
+  .draft .lbl { font-size: 12px; font-weight: 700; color: var(--kiku); display: flex; gap: 8px; align-items: center; }
+  .dots { display: inline-flex; gap: 3px; }
+  .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--kiku); animation: bob 1.2s infinite; }
+  .dots i:nth-child(2) { animation-delay: .2s; } .dots i:nth-child(3) { animation-delay: .4s; }
+  @keyframes bob { 0%, 60%, 100% { opacity: .3 } 30% { opacity: 1 } }
+  .draft p { grid-column: 1 / -1; font-family: var(--serif); font-size: 17px; color: #3E5516; }
+  .draft .hint { grid-column: 1 / -1; font-size: 12px; color: var(--ink-3); }
+
+  .ctl { flex: none; display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-top: 1px solid var(--line); background: var(--paper-2); }
+  .ctl .state { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); margin-right: auto; }
+  .ctl .state .m { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: #DDE3D8; color: var(--ink-2); }
+
+  .side { min-height: 0; display: flex; flex-direction: column; gap: 14px; }
+  .side .panel { padding: 16px 18px; }
+  .kv { display: grid; grid-template-columns: 84px 1fr; gap: 8px 12px; font-size: 13.5px; margin-top: 10px; }
+  .kv dt { color: var(--ink-3); font-size: 12.5px; padding-top: 1px; }
+  .acts li { list-style: none; display: grid; grid-template-columns: 20px 1fr; gap: 8px; padding: 9px 0; border-top: 1px solid var(--line-2); font-size: 13.5px; }
+  .acts li:first-child { border-top: 0; }
+  .acts li svg { color: var(--kiku); margin-top: 2px; }
+  .people { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; font-size: 13px; }
+  .people div { display: flex; align-items: center; gap: 10px; }
+  .kmark { width: 26px; height: 26px; border-radius: 50%; background: var(--kiku-soft); color: #3E5516; display: grid; place-items: center; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="shell"></div>
+  <main class="main">
+    <div class="strip" id="strip"></div>
+    <div class="stage">
+      <section class="panel callp">
+        <div class="audio" id="audio"></div>
+        <div class="tx scroll" id="tx"></div>
+        <div class="ctl">
+          <span class="state"><span class="m"><i data-lucide="mic-off"></i></span>Your mic is off. The guest can't hear you.</span>
+          <button class="btn"><i data-lucide="volume-x"></i>Mute call audio</button>
+          <button class="btn"><i data-lucide="log-out"></i>Leave</button>
+          <a class="btn lg human" href="06-takeover-karaoke.html"><i data-lucide="mic"></i>Take over</a>
+        </div>
+      </section>
+      <aside class="side scroll" id="side"></aside>
+    </div>
+  </main>
+</div>
+<script src="../../_shared/data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script src="app.js"></script>
+<script>
+const { K, esc, status } = TT;
+TT.shell({ role: "specialist", active: "02-live-overview.html" });
+const c = K.liveCall;
+document.getElementById("strip").innerHTML = `
+  <span class="listen-tag"><i data-lucide="headphones"></i>Listening</span>
+  <h1 class="h-serif">${c.guest}</h1>
+  ${status(c.status, true)}
+  <div class="facts">
+    <span style="display:inline-flex;gap:6px;align-items:center"><i data-lucide="phone-incoming"></i>Inbound <b>${c.phone}</b></span>
+    <span>On the line <b>${c.duration}</b></span>
+    <span>Started <b>${c.started}</b></span>
+  </div>
+  <span class="spacer"></span>
+  <span class="meta num">${c.id}</span>`;
+
+// deterministic pseudo-waveforms
+let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+const lane = (n, quietFrom, amp) => Array.from({ length: n }, (_, i) => { const q = i > quietFrom ? .12 : 1; return `<i style="height:${Math.max(2, Math.round((4 + rnd() * amp) * q))}px"></i>`; }).join("");
+document.getElementById("audio").innerHTML = `
+  <span class="who" style="color:var(--kiku)"><i data-lucide="audio-lines" style="width:14px;height:14px"></i>Kiku</span>
+  <div class="lane k">${lane(150, 118, 18)}<span class="now"></span></div>
+  <span class="lvl">Quiet</span>
+  <span class="who" style="color:var(--ink-2)"><i data-lucide="user-round" style="width:14px;height:14px"></i>Guest</span>
+  <div class="lane g">${Array.from({ length: 150 }, (_, i) => `<i style="height:${i < 112 ? 2 : Math.max(3, Math.round(5 + rnd() * 20))}px"></i>`).join("")}<span class="now"></span></div>
+  <span class="lvl on">Speaking</span>`;
+
+const t = c.transcript;
+const last = t[t.length - 1];
+document.getElementById("tx").innerHTML = t.slice(0, -1).map(m => `
+  <div class="row"><span class="t">${m.t}</span><span class="who ${m.speaker}">${m.speaker === "agent" ? "Kiku" : "Guest"}</span><div class="say ${m.speaker}">${esc(m.text)}</div></div>`).join("") +
+  `<div class="row latest"><span class="t">${last.t}</span><span class="who guest">Guest<span class="tag">Latest</span></span><div class="say guest">${esc(last.text)}</div></div>
+  <div class="draft">
+    <span class="lbl"><i data-lucide="pen-line" style="width:14px;height:14px"></i>Kiku is drafting a reply <span class="dots"><i></i><i></i><i></i></span></span>
+    <span class="meta">Not spoken yet</span>
+    <p>${esc(c.agentDraft)}</p>
+    <span class="hint">Take over now and this line becomes your first karaoke prompt.</span>
+  </div>`;
+const tx = document.getElementById("tx");
+const toEnd = () => tx.scrollTop = tx.scrollHeight;
+toEnd(); document.fonts.ready.then(toEnd);
+
+document.getElementById("side").innerHTML = `
+  <div class="panel">
+    <div class="sec-title">Call facts</div>
+    <dl class="kv">
+      <dt>Booking</dt><dd class="num">${c.booking}</dd>
+      <dt>Stay</dt><dd>${c.stay.replace(/ · /g, ", ")}</dd>
+      <dt>Calling about</dt><dd>${c.purpose}</dd>
+      <dt>Hotel line</dt><dd class="num">${K.hotel.line}</dd>
+    </dl>
+  </div>
+  <div class="panel">
+    <div class="sec-title">Kiku has already <span class="aside">${c.actionsTaken.length} actions</span></div>
+    <ul class="acts" style="margin-top:6px">${c.actionsTaken.map(a => `<li><i data-lucide="circle-check"></i>${a}</li>`).join("")}</ul>
+  </div>
+  <div class="panel">
+    <div class="sec-title">On this call</div>
+    <div class="people">
+      <div><span class="kmark"><i data-lucide="audio-lines" style="width:14px;height:14px"></i></span><span><b>Kiku</b> <span class="meta">${c.agentState}</span></span></div>
+      <div><span class="avatar">PR</span><span><b>${c.listening[0]}</b> <span class="meta">Listening, mic off</span></span></div>
+      <div><span class="avatar" style="background:#DDE3D8;color:var(--ink-2)">RK</span><span><b>${c.guest}</b> <span class="meta">Guest</span></span></div>
+    </div>
+  </div>`;
+TT.icons();
+</script>
+</body>
+</html>
